@@ -1,28 +1,245 @@
 #!/usr/bin/env node
 
 /**
- * Remember - Simple wrapper for save-session.js
+ * Remember - Smart wrapper for save-session.js
  *
  * Usage:
- *   remember "what you did" --topics topic1,topic2
- *   remember --interactive
- *   remember -i
+ *   memex                          # Auto-capture from git changes
+ *   remember "what you did"        # Quick with auto-topics
+ *   learn "summary" --topics a,b   # Full control
+ *   remember --interactive         # Prompts for everything
  */
 
 const { execSync } = require('child_process');
 const path = require('path');
+const fs = require('fs');
 
 const MEMEX_PATH = process.env.MEMEX_PATH || path.join(process.env.HOME, 'code/cirrus/DevOps/Memex');
 const SAVE_SESSION = path.join(MEMEX_PATH, 'scripts', 'save-session.js');
 
-// Pass all arguments to save-session.js
-const args = process.argv.slice(2).join(' ');
+/**
+ * Check if we should update recent session instead of creating new one
+ */
+function shouldUpdateRecent(topics, files) {
+  try {
+    // Detect current project
+    const Memex = require(path.join(MEMEX_PATH, 'scripts', 'memex-loader.js'));
+    const memex = new Memex();
+    memex.loadIndex();
+    const detection = memex.detectProject();
 
-try {
+    if (!detection.project) return null;
+
+    // Load sessions index
+    const sessionsPath = path.join(MEMEX_PATH, 'summaries', 'projects', detection.project, 'sessions-index.json');
+    if (!fs.existsSync(sessionsPath)) return null;
+
+    const sessionsData = JSON.parse(fs.readFileSync(sessionsPath, 'utf8'));
+    if (!sessionsData.sessions || sessionsData.sessions.length === 0) return null;
+
+    // Get most recent session
+    const recent = sessionsData.sessions[0]; // Already sorted by date
+
+    // Check if it's from today
+    const today = new Date().toISOString().split('T')[0];
+    if (recent.date !== today) return null;
+
+    // Calculate topic overlap
+    const recentTopics = new Set(recent.topics || []);
+    const overlap = Array.from(topics).filter(t => recentTopics.has(t)).length;
+    const similarity = topics.size > 0 ? overlap / topics.size : 0;
+
+    // If >60% topic overlap, suggest update
+    if (similarity > 0.6) {
+      return {
+        id: recent.id,
+        summary: recent.summary,
+        topics: recent.topics,
+        similarity: Math.round(similarity * 100)
+      };
+    }
+
+    return null;
+  } catch (e) {
+    return null;
+  }
+}
+
+/**
+ * Auto-detect what changed and generate summary
+ */
+function autoCapture() {
+  try {
+    // Check git status
+    const status = execSync('git status --short', { encoding: 'utf8' }).trim();
+
+    if (!status) {
+      console.log('📭 No changes detected to capture.');
+      console.log('💡 Make some changes first, or use: memex --interactive');
+      process.exit(0);
+    }
+
+    // Get changed files
+    const files = status.split('\n').map(line => {
+      const match = line.match(/^\s*[MADRCU?]+\s+(.+)$/);
+      return match ? match[1] : null;
+    }).filter(Boolean);
+
+    // Get git diff summary
+    let diffSummary = '';
+    try {
+      diffSummary = execSync('git diff --stat HEAD', { encoding: 'utf8' }).trim();
+    } catch (e) {
+      // Might be untracked files
+      diffSummary = `${files.length} files changed`;
+    }
+
+    // Extract topics from file paths
+    const topics = new Set();
+    files.forEach(file => {
+      const parts = file.toLowerCase().split(/[\/\.\-_]/);
+      parts.forEach(part => {
+        // Filter meaningful words (3+ chars, not common dirs)
+        if (part.length >= 3 &&
+            !['src', 'lib', 'test', 'spec', 'index', 'main', 'app'].includes(part) &&
+            !part.match(/^\d+$/) &&
+            !['tsx', 'jsx', 'ts', 'js', 'json', 'md', 'css', 'scss'].includes(part)) {
+          topics.add(part);
+        }
+      });
+    });
+
+    // Generate summary
+    const topFiles = files.slice(0, 3).map(f => path.basename(f)).join(', ');
+    const moreFiles = files.length > 3 ? ` +${files.length - 3} more` : '';
+    const summary = `Updated ${topFiles}${moreFiles}`;
+
+    // Check for recent similar session
+    const recentSession = shouldUpdateRecent(topics, files);
+
+    if (recentSession) {
+      console.log(`🔄 Found similar recent session from today:`);
+      console.log(`   ID: ${recentSession.id}`);
+      console.log(`   Summary: "${recentSession.summary}"`);
+      console.log(`   Similarity: ${recentSession.similarity}%`);
+      console.log('');
+      console.log('✅ Skipping - already captured similar work today');
+      console.log('💡 To force new session: memex "your summary"');
+      console.log('💡 To add more: memex --interactive');
+      process.exit(0);
+    }
+
+    // Show what we detected
+    console.log('🔍 Auto-detected changes:');
+    console.log(`   Files: ${files.length}`);
+    console.log(`   Summary: "${summary}"`);
+    console.log(`   Topics: ${Array.from(topics).slice(0, 5).join(', ') || 'none detected'}`);
+    console.log('');
+
+    // Build command
+    const topicsArg = topics.size > 0 ? `--topics ${Array.from(topics).slice(0, 8).join(',')}` : '';
+    const command = `node "${SAVE_SESSION}" "${summary}" ${topicsArg}`;
+
+    // Execute
+    execSync(command, {
+      stdio: 'inherit',
+      cwd: process.cwd()
+    });
+
+  } catch (error) {
+    console.error('❌ Auto-capture failed:', error.message);
+    console.log('💡 Try: memex --interactive');
+    process.exit(1);
+  }
+}
+
+/**
+ * Smart mode: auto-detect topics if not provided
+ */
+function smartCapture(summary) {
+  // Check if topics already provided
+  const hasTopics = process.argv.some(arg => arg.startsWith('--topics'));
+
+  if (hasTopics) {
+    // User provided topics, pass through
+    const args = process.argv.slice(2).join(' ');
+    execSync(`node "${SAVE_SESSION}" ${args}`, {
+      stdio: 'inherit',
+      cwd: process.cwd()
+    });
+    return;
+  }
+
+  // Auto-generate topics from summary
+  const topics = new Set();
+  const words = summary.toLowerCase().split(/\s+/);
+
+  // Extract meaningful words
+  const stopWords = ['a', 'an', 'the', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with'];
+  words.forEach(word => {
+    const clean = word.replace(/[^a-z0-9]/g, '');
+    if (clean.length >= 3 && !stopWords.includes(clean)) {
+      topics.add(clean);
+    }
+  });
+
+  // Get git context for more topics
+  try {
+    const files = execSync('git status --short', { encoding: 'utf8' })
+      .trim()
+      .split('\n')
+      .map(line => line.replace(/^\s*[MADRCU?]+\s+/, ''))
+      .filter(Boolean);
+
+    files.forEach(file => {
+      const parts = file.toLowerCase().split(/[\/\.\-_]/);
+      parts.forEach(part => {
+        if (part.length >= 3 &&
+            !['src', 'lib', 'test', 'index'].includes(part) &&
+            !part.match(/^(tsx?|jsx?|json|md|css)$/)) {
+          topics.add(part);
+        }
+      });
+    });
+  } catch (e) {
+    // Ignore git errors
+  }
+
+  const topicsList = Array.from(topics).slice(0, 8).join(',');
+  const topicsArg = topicsList ? `--topics ${topicsList}` : '';
+
+  console.log(`💡 Auto-detected topics: ${topicsList || 'none'}\n`);
+
+  const args = `"${summary}" ${topicsArg}`;
   execSync(`node "${SAVE_SESSION}" ${args}`, {
     stdio: 'inherit',
     cwd: process.cwd()
   });
+}
+
+// Main logic
+const args = process.argv.slice(2);
+
+try {
+  if (args.length === 0) {
+    // Zero parameters: auto-capture everything
+    autoCapture();
+  } else if (args[0] === '--interactive' || args[0] === '-i') {
+    // Interactive mode
+    execSync(`node "${SAVE_SESSION}" ${args.join(' ')}`, {
+      stdio: 'inherit',
+      cwd: process.cwd()
+    });
+  } else if (!args.some(arg => arg.startsWith('--topics'))) {
+    // Has summary but no topics: smart mode
+    smartCapture(args[0]);
+  } else {
+    // Full control: pass through
+    execSync(`node "${SAVE_SESSION}" ${args.join(' ')}`, {
+      stdio: 'inherit',
+      cwd: process.cwd()
+    });
+  }
 } catch (error) {
   process.exit(error.status || 1);
 }
