@@ -81,7 +81,7 @@ Memex/
 │
 └── scripts/
     ├── memex-loader.js        # Efficient loader
-    └── recuerda.js                 # Save sessions
+    └── save-session.js        # Save sessions
 ```
 
 ---
@@ -137,10 +137,10 @@ memex-loader.js list
 
 ```bash
 # Quick save
-recuerda.js "Implemented OAuth2 authentication" --topics auth,oauth,google
+save-session.js "Implemented OAuth2 authentication" --topics auth,oauth,google
 
 # Interactive mode
-recuerda.js --interactive
+save-session.js --interactive
 # Prompts for summary, topics, and optional detailed notes
 ```
 
@@ -305,10 +305,10 @@ const authProject = memex.loadProjectMetadata("ProjectAuth");
 
 ```bash
 # Save session
-recuerda.js "Added rate limiting to API" --topics api,rate-limiting,redis
+save-session.js "Added rate limiting to API" --topics api,rate-limiting,redis
 
 # Interactive save
-recuerda.js --interactive
+save-session.js --interactive
 
 # Query from CLI
 memex-loader.js quick "commit format"
@@ -393,8 +393,8 @@ Full content only loaded when truly needed
 
 1. **Extract DemoProject standards** → Populate global/
 2. **Add more projects** → ProjectAuth, etc.
-3. **Start logging sessions** → Use `recuerda`
-4. **Optional: Add embeddings** → Semantic search
+3. **Start logging sessions** → Use `save-session.js`
+4. **Optional: Add embeddings** → Semantic search (✅ Done in v3.2)
 5. **Optional: Build web UI** → Browse Memex visually
 
 ---
