@@ -1,6 +1,8 @@
-# Memex v3.0
+# Memex v3.1
 
 **Extended Memory for Claude - Ultra Token-Efficient Knowledge System**
+
+> **v3.1.1 Update (2025-12-02):** Added persistent cache with SQLite! Cache survives restarts for 20% faster cold starts (52ms → 42ms). Cache auto-expires after 60 minutes with version-based invalidation.
 
 > **v3.1 Update (2025-12-02):** Added MessagePack binary format support! 50% smaller files (7.1KB → 3.6KB) with automatic fallback to gzip/JSON. Run `npm run convert-msgpack` to enable.
 
@@ -13,10 +15,11 @@
 ## What Makes This Efficient?
 
 ### 🚀 Speed
+- **Persistent cache**: SQLite cache survives restarts (52ms → 42ms)
 - **Index-first**: Load 1.9KB compressed (67% smaller than v2.0!)
 - **On-demand content**: Load only what's needed (async/await, non-blocking)
-- **Smart caching**: LRU hot cache + memoization + warm cache
-- **Startup time**: <30ms typical (3-5x faster than v2.0, ~70ms faster than v1.0)
+- **Smart caching**: Persistent cache + LRU hot cache + memoization + warm cache
+- **Startup time**: <42ms typical from cache, <52ms cold start
 
 ### 💾 Token Efficiency
 - **80% of queries**: Answered from index alone (no file loading)
