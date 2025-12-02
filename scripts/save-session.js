@@ -198,6 +198,21 @@ class Recuerda {
         index.p[this.currentProject].sc = sessionsIndex.total_sessions;
         index.p[this.currentProject].u = new Date().toISOString().split('T')[0];
       }
+
+      // Update topics index - v2.0 uses: t=topics, p=projects, sc=session_count
+      if (index.t && sessionsIndex.topics_index) {
+        Object.entries(sessionsIndex.topics_index).forEach(([topic, sessionIds]) => {
+          if (!index.t[topic]) {
+            index.t[topic] = { p: [], sc: 0 };
+          }
+          // Add project if not already there
+          if (!index.t[topic].p.includes(this.currentProject)) {
+            index.t[topic].p.push(this.currentProject);
+          }
+          // Update session count for this topic
+          index.t[topic].sc = sessionIds.length;
+        });
+      }
     }
 
     // Update metadata - v2.0 uses: u=last_updated, m=metadata, ts=total_sessions
