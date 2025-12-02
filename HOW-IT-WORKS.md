@@ -9,7 +9,7 @@
 ### 1. **Save Sessions**
 When you finish work, save what you did:
 ```bash
-recuerda.js "Implemented OAuth2 authentication" --topics auth,oauth,google
+save-session.js "Implemented OAuth2 authentication" --topics auth,oauth,google
 ```
 
 ### 2. **Builds Index**
@@ -226,7 +226,7 @@ Average: 1,000 tokens vs 50,000 tokens (95% reduction)
 ### 1. **Save More Sessions**
 ```bash
 # After any significant work
-recuerda.js "Fixed rate limiting bug" --topics api,rate-limit,redis
+save-session.js "Fixed rate limiting bug" --topics api,rate-limit,redis
 
 # Include decisions
 # Key decisions: Use Redis instead of in-memory

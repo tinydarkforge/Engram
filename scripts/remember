@@ -1,0 +1,28 @@
+#!/usr/bin/env node
+
+/**
+ * Remember - Simple wrapper for save-session.js
+ *
+ * Usage:
+ *   remember "what you did" --topics topic1,topic2
+ *   remember --interactive
+ *   remember -i
+ */
+
+const { execSync } = require('child_process');
+const path = require('path');
+
+const MEMEX_PATH = process.env.MEMEX_PATH || path.join(process.env.HOME, 'code/cirrus/DevOps/Memex');
+const SAVE_SESSION = path.join(MEMEX_PATH, 'scripts', 'save-session.js');
+
+// Pass all arguments to save-session.js
+const args = process.argv.slice(2).join(' ');
+
+try {
+  execSync(`node "${SAVE_SESSION}" ${args}`, {
+    stdio: 'inherit',
+    cwd: process.cwd()
+  });
+} catch (error) {
+  process.exit(error.status || 1);
+}
