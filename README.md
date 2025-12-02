@@ -81,7 +81,10 @@ Memex/
 │
 └── scripts/
     ├── memex-loader.js        # Efficient loader
-    └── save-session.js        # Save sessions
+    ├── save-session.js        # Save sessions (main)
+    ├── remember               # Alias for save-session
+    ├── learn                  # Alias for save-session
+    └── memex                  # Alias for save-session
 ```
 
 ---
@@ -136,11 +139,14 @@ memex-loader.js list
 ### Save Session
 
 ```bash
-# Quick save
-save-session.js "Implemented OAuth2 authentication" --topics auth,oauth,google
+# Quick save (use any command you prefer - they all work the same)
+remember "Implemented OAuth2 authentication" --topics auth,oauth,google
+learn "Fixed Docker build issue" --topics docker,ci
+memex "Added rate limiting" --topics api,performance
 
 # Interactive mode
-save-session.js --interactive
+remember --interactive
+learn -i
 # Prompts for summary, topics, and optional detailed notes
 ```
 
@@ -304,11 +310,13 @@ const authProject = memex.loadProjectMetadata("ProjectAuth");
 ### For Developers
 
 ```bash
-# Save session
-save-session.js "Added rate limiting to API" --topics api,rate-limiting,redis
+# Save session (pick your favorite command)
+remember "Added rate limiting to API" --topics api,rate-limiting,redis
+learn "Optimized database queries" --topics db,performance
+memex "Implemented caching" --topics cache,redis
 
 # Interactive save
-save-session.js --interactive
+remember --interactive
 
 # Query from CLI
 memex-loader.js quick "commit format"
@@ -393,7 +401,7 @@ Full content only loaded when truly needed
 
 1. **Extract DemoProject standards** → Populate global/
 2. **Add more projects** → ProjectAuth, etc.
-3. **Start logging sessions** → Use `save-session.js`
+3. **Start logging sessions** → Use `remember`, `learn`, or `memex` commands
 4. **Optional: Add embeddings** → Semantic search (✅ Done in v3.2)
 5. **Optional: Build web UI** → Browse Memex visually
 

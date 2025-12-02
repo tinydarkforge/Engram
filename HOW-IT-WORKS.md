@@ -9,7 +9,10 @@
 ### 1. **Save Sessions**
 When you finish work, save what you did:
 ```bash
-save-session.js "Implemented OAuth2 authentication" --topics auth,oauth,google
+# Simple commands (all work the same)
+remember "Implemented OAuth2 authentication" --topics auth,oauth,google
+learn "Fixed rate limiting bug" --topics api,redis
+memex "Added Docker optimization" --topics docker,performance
 ```
 
 ### 2. **Builds Index**
@@ -225,12 +228,14 @@ Average: 1,000 tokens vs 50,000 tokens (95% reduction)
 
 ### 1. **Save More Sessions**
 ```bash
-# After any significant work
-save-session.js "Fixed rate limiting bug" --topics api,rate-limit,redis
+# After any significant work (use any command you prefer)
+remember "Fixed rate limiting bug" --topics api,rate-limit,redis
+learn "Implemented caching layer" --topics cache,redis,performance
+memex "Refactored auth system" --topics auth,refactor
 
-# Include decisions
-# Key decisions: Use Redis instead of in-memory
-# Rationale: Better for multiple instances
+# Interactive mode (prompts for everything)
+remember --interactive
+learn -i
 ```
 
 ### 2. **Use Good Topics**
