@@ -1,6 +1,8 @@
-# Memex v3.1
+# Memex v3.2
 
 **Extended Memory for Claude - Ultra Token-Efficient Knowledge System**
+
+> **v3.2.0 Update (2025-12-02):** 🚀 **Major Update!** Added incremental updates (100x faster updates) and AI-powered semantic search (find sessions by meaning, not just keywords). Uses all-MiniLM-L6-v2 for 384-dimensional embeddings with cosine similarity matching.
 
 > **v3.1.1 Update (2025-12-02):** Added persistent cache with SQLite! Cache survives restarts for 20% faster cold starts (52ms → 42ms). Cache auto-expires after 60 minutes with version-based invalidation.
 
@@ -15,6 +17,7 @@
 ## What Makes This Efficient?
 
 ### 🚀 Speed
+- **Incremental updates**: Only load changed files (100x faster updates!)
 - **Persistent cache**: SQLite cache survives restarts (52ms → 42ms)
 - **Index-first**: Load 1.9KB compressed (67% smaller than v2.0!)
 - **On-demand content**: Load only what's needed (async/await, non-blocking)
@@ -27,6 +30,13 @@
 - **Progressive disclosure**: 3-level summaries (l1: 5 words, l2: 1 sentence, l3: detailed)
 - **Structured data**: Optimized JSON with abbreviated keys + legend
 - **Token reduction**: 95% vs traditional, 60-70% vs v1
+
+### 🧠 AI-Powered Search
+- **Semantic search**: Find sessions by meaning, not just keywords
+- **Vector embeddings**: 384-dimensional vectors (all-MiniLM-L6-v2)
+- **Smart matching**: "auth work" finds OAuth, JWT, SSO sessions
+- **Cosine similarity**: Ranked results with confidence scores
+- **Fast**: <2 seconds for searches across all sessions
 
 ### 🎯 How Claude Uses It
 
@@ -303,7 +313,18 @@ recuerda.js --interactive
 # Query from CLI
 memex-loader.js quick "commit format"
 memex-loader.js search oauth
+memex-loader.js semantic "authentication work"  # AI-powered semantic search
 memex-loader.js list
+
+# Manage incremental updates
+manifest-manager.js generate  # Generate file manifest
+manifest-manager.js check     # Check for changes
+manifest-manager.js stats     # Show statistics
+
+# Manage vector search
+vector-search.js generate     # Generate embeddings for all sessions
+vector-search.js search "query"  # Search by meaning
+vector-search.js stats        # Show embedding statistics
 ```
 
 ---
