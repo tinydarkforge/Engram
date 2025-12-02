@@ -12,6 +12,8 @@ const { execSync } = require('child_process');
 const { gunzipSync } = require('zlib');
 const msgpack = require('msgpack-lite');
 const PersistentCache = require('./persistent-cache');
+const ManifestManager = require('./manifest-manager');
+const VectorSearch = require('./vector-search');
 
 const MEMEX_PATH = process.env.MEMEX_PATH || path.join(process.env.HOME, 'code/cirrus/DevOps/Memex');
 
@@ -28,6 +30,23 @@ class Memex {
       version: '3.1.0',
       ttl: 60 * 60 * 1000 // 60 minutes
     });
+    // Manifest manager for incremental updates
+    this.manifestManager = new ManifestManager();
+    // Vector search for semantic queries
+    this.vectorSearch = new VectorSearch();
+  }
+
+  /**
+   * Check if index needs reloading (incremental update check)
+   * Returns true if index has changed since last load
+   */
+  needsReload() {
+    try {
+      return this.manifestManager.needsIndexUpdate();
+    } catch (e) {
+      // If manifest doesn't exist or error, assume needs reload
+      return true;
+    }
   }
 
   /**
@@ -303,6 +322,23 @@ class Memex {
   }
 
   /**
+   * Semantic search using vector embeddings
+   * Finds sessions by meaning, not just keywords
+   * Example: "authentication work" → finds OAuth, JWT, SSO sessions
+   */
+  async semanticSearch(query, options = {}) {
+    try {
+      return await this.vectorSearch.search(query, options);
+    } catch (e) {
+      return {
+        query,
+        error: e.message,
+        fallback: this.search(query) // Fall back to keyword search
+      };
+    }
+  }
+
+  /**
    * List all available projects
    */
   listProjects() {
@@ -389,7 +425,8 @@ class Memex {
       optimization: {
         index_size_kb: indexResult.size_kb,
         estimated_token_reduction: '60-70%',
-        load_speed_improvement: '2-3x faster'
+        load_speed_improvement: '2-3x faster',
+        incremental_updates: 'enabled'
       }
     };
   }
@@ -452,6 +489,18 @@ if (require.main === module) {
         console.log(JSON.stringify(results, null, 2));
         break;
 
+      case 'semantic':
+        const semanticQuery = process.argv.slice(3).join(' ');
+        (async () => {
+          try {
+            const semanticResults = await memex.semanticSearch(semanticQuery);
+            console.log(JSON.stringify(semanticResults, null, 2));
+          } catch (e) {
+            console.error('Semantic search error:', e.message);
+          }
+        })();
+        return;
+
       case 'list':
         memex.loadIndex();
         const projects = memex.listProjects();
@@ -487,12 +536,13 @@ if (require.main === module) {
         console.log('Usage: memex-loader.js [command] [args]');
         console.log('');
         console.log('Commands:');
-        console.log('  startup          - Load and display startup info');
-        console.log('  search <query>   - Search across all projects');
-        console.log('  list             - List all projects');
-        console.log('  quick <query>    - Quick answer from index');
-        console.log('  content <file>   - Load specific content file');
-        console.log('  expand [context] - Show legend for abbreviated keys');
+        console.log('  startup            - Load and display startup info');
+        console.log('  search <query>     - Search across all projects (keyword)');
+        console.log('  semantic <query>   - Semantic search by meaning (AI-powered)');
+        console.log('  list               - List all projects');
+        console.log('  quick <query>      - Quick answer from index');
+        console.log('  content <file>     - Load specific content file');
+        console.log('  expand [context]   - Show legend for abbreviated keys');
     }
   } catch (error) {
     console.error('Error:', error.message);
