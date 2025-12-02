@@ -20,7 +20,8 @@
   "license": "UNLICENSED",
   "private": true,
   "dependencies": {
-    "msgpack-lite": "^0.1.26"
+    "msgpack-lite": "^0.1.26",
+    "better-sqlite3": "^9.2.2"
   },
   "engines": {
     "node": ">=14.0.0"
