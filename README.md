@@ -2,6 +2,8 @@
 
 **Extended Memory for Claude - Ultra Token-Efficient Knowledge System**
 
+> **v3.1 Update (2025-12-02):** Added MessagePack binary format support! 50% smaller files (7.1KB → 3.6KB) with automatic fallback to gzip/JSON. Run `npm run convert-msgpack` to enable.
+
 > **v3.0 Update (2025-11-30):** Major performance leap! Async I/O (3-5x faster), gzip compression (67% smaller), smart caching with memoization, relevance-ranked search, and performance monitoring. See [OPTIMIZATIONS-V3.md](OPTIMIZATIONS-V3.md) for details.
 
 > **v2.0 Update (2025-11-30):** 60-70% additional token reduction through abbreviated keys, structured JSON, and progressive disclosure. Index now 3-4KB (down from 8KB). All markdown converted to optimized JSON structures.

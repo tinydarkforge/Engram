@@ -1,0 +1,28 @@
+{
+  "name": "@cirrus/memex",
+  "version": "3.0.0",
+  "description": "Memex - Memory system for Claude across all Cirrus projects",
+  "main": "scripts/memex-loader.js",
+  "scripts": {
+    "compress": "node scripts/compress-index.js",
+    "convert-msgpack": "node scripts/convert-to-msgpack.js",
+    "startup": "node scripts/memex-loader.js startup",
+    "test": "node scripts/memex-loader.js startup"
+  },
+  "keywords": [
+    "memex",
+    "memory",
+    "knowledge-base",
+    "claude",
+    "ai"
+  ],
+  "author": "Cirrus Inc",
+  "license": "UNLICENSED",
+  "private": true,
+  "dependencies": {
+    "msgpack-lite": "^0.1.26"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}
