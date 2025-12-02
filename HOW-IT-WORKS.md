@@ -8,12 +8,26 @@
 
 ### 1. **Save Sessions**
 When you finish work, save what you did:
+
 ```bash
-# Simple commands (all work the same)
-remember "Implemented OAuth2 authentication" --topics auth,oauth,google
-learn "Fixed rate limiting bug" --topics api,redis
-memex "Added Docker optimization" --topics docker,performance
+# ZERO-EFFORT MODE: Just type one word!
+memex          # Auto-captures everything from git changes
+remember       # Same as memex
+learn          # Same as memex
+
+# SMART MODE: Provide summary, auto-detects topics
+remember "Fixed OAuth timeout bug"
+learn "Optimized database queries"
+
+# FULL CONTROL: Specify everything
+memex "Added Docker optimization" --topics docker,performance,ci
+
+# INTERACTIVE: Guided prompts
+remember --interactive
+learn -i
 ```
+
+**Anti-Duplication:** If you run `memex` multiple times on similar work today, it will detect the duplicate and skip saving. Just keeps the first one!
 
 ### 2. **Builds Index**
 - Creates tiny 4KB index with all project knowledge
