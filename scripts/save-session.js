@@ -177,7 +177,7 @@ class Recuerda {
   }
 
   /**
-   * Update main Memex index
+   * Update main Memex index (v2.0 with abbreviated keys)
    */
   updateMainIndex() {
     const indexPath = path.join(MEMEX_PATH, 'index.json');
@@ -193,16 +193,17 @@ class Recuerda {
 
     if (fs.existsSync(sessionsIndexPath)) {
       const sessionsIndex = JSON.parse(fs.readFileSync(sessionsIndexPath, 'utf8'));
-      if (index.projects[this.currentProject]) {
-        index.projects[this.currentProject].session_count = sessionsIndex.total_sessions;
-        index.projects[this.currentProject].last_updated = new Date().toISOString().split('T')[0];
+      // v2.0 uses abbreviated keys: p=projects, sc=session_count, u=last_updated
+      if (index.p && index.p[this.currentProject]) {
+        index.p[this.currentProject].sc = sessionsIndex.total_sessions;
+        index.p[this.currentProject].u = new Date().toISOString().split('T')[0];
       }
     }
 
-    // Update metadata
-    index.last_updated = new Date().toISOString();
-    index.metadata.total_sessions = Object.values(index.projects)
-      .reduce((sum, p) => sum + (p.session_count || 0), 0);
+    // Update metadata - v2.0 uses: u=last_updated, m=metadata, ts=total_sessions
+    index.u = new Date().toISOString();
+    index.m.ts = Object.values(index.p)
+      .reduce((sum, p) => sum + (p.sc || 0), 0);
 
     fs.writeFileSync(indexPath, JSON.stringify(index, null, 2));
   }
