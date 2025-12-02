@@ -1,0 +1,291 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://cirrus.com/schemas/memex-session.json",
+  "title": "Memex Session",
+  "description": "Schema for Claude session records in Memex v2.0 - Optimized with progressive disclosure",
+  "type": "object",
+  "required": ["id", "project", "date", "summary"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique session ID (format: project-date-topic)",
+      "pattern": "^[a-z0-9-]+$",
+      "examples": ["ct-2025-11-29-oauth", "ca-2025-09-12-jwt"]
+    },
+    "project": {
+      "type": "string",
+      "description": "Project name",
+      "examples": ["DemoProject", "ProjectAuth", "DevOps"]
+    },
+    "date": {
+      "type": "string",
+      "format": "date",
+      "description": "Session date (ISO 8601)",
+      "examples": ["2025-11-29"]
+    },
+    "summary": {
+      "type": "object",
+      "description": "Progressive disclosure summaries (3 levels: ultra-compact, brief, detailed)",
+      "required": ["l1", "l2"],
+      "properties": {
+        "l1": {
+          "type": "string",
+          "description": "Level 1: Ultra-compact (2-5 words) - Always loaded",
+          "maxLength": 30,
+          "examples": ["Added OAuth2 auth", "Fixed rate limiting bug", "Optimized DB queries"]
+        },
+        "l2": {
+          "type": "string",
+          "description": "Level 2: Brief summary (1 sentence, max 100 chars) - Loaded with index",
+          "maxLength": 100,
+          "examples": [
+            "Implemented OAuth2 with Google provider using Passport.js",
+            "Fixed rate limiting bug and added Redis caching for API endpoints"
+          ]
+        },
+        "l3": {
+          "type": "string",
+          "description": "Level 3: Detailed summary (2-3 sentences, max 300 chars) - Loaded on-demand",
+          "maxLength": 300,
+          "examples": [
+            "Implemented OAuth2 authentication with Google and GitHub providers using Passport.js. Added JWT token refresh mechanism. Updated database schema to support multiple auth providers per user."
+          ]
+        }
+      }
+    },
+    "topics": {
+      "type": "array",
+      "description": "Relevant topics/tags (lowercase, hyphenated)",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9-]+$"
+      },
+      "examples": [
+        ["auth", "oauth", "google", "passport"],
+        ["api", "rate-limiting", "redis", "bug-fix"]
+      ]
+    },
+    "key_decisions": {
+      "type": "array",
+      "description": "Important architectural or technical decisions made",
+      "items": {
+        "type": "object",
+        "required": ["decision", "rationale"],
+        "properties": {
+          "decision": {
+            "type": "string",
+            "description": "What was decided (concise)",
+            "maxLength": 100
+          },
+          "rationale": {
+            "type": "string",
+            "description": "Why it was decided",
+            "maxLength": 200
+          },
+          "alternatives": {
+            "type": "array",
+            "description": "Other options considered",
+            "items": {"type": "string"}
+          },
+          "impact": {
+            "type": "string",
+            "enum": ["low", "medium", "high"],
+            "description": "Impact level of this decision"
+          },
+          "supersedes": {
+            "type": "string",
+            "description": "Session ID of previous decision this replaces"
+          }
+        }
+      }
+    },
+    "code_changes": {
+      "type": "object",
+      "description": "Summary of code changes",
+      "properties": {
+        "files_added": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "List of files added"
+        },
+        "files_modified": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "List of files modified"
+        },
+        "files_deleted": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "List of files deleted"
+        },
+        "lines_added": {
+          "type": "integer",
+          "description": "Total lines added"
+        },
+        "lines_removed": {
+          "type": "integer",
+          "description": "Total lines removed"
+        },
+        "key_files": {
+          "type": "array",
+          "description": "Most important files changed (for quick reference)",
+          "items": {"type": "string"},
+          "maxItems": 5
+        }
+      }
+    },
+    "outcomes": {
+      "type": "object",
+      "description": "What was accomplished",
+      "properties": {
+        "completed": {
+          "type": "array",
+          "description": "Tasks completed",
+          "items": {"type": "string"}
+        },
+        "issues_closed": {
+          "type": "array",
+          "description": "GitHub issues closed (format: #123)",
+          "items": {"type": "string"}
+        },
+        "prs_created": {
+          "type": "array",
+          "description": "Pull requests created (format: #123 or URL)",
+          "items": {"type": "string"}
+        },
+        "status": {
+          "type": "string",
+          "enum": ["completed", "partial", "blocked", "cancelled"],
+          "description": "Overall status of the session"
+        }
+      }
+    },
+    "learnings": {
+      "type": "array",
+      "description": "Key learnings or discoveries",
+      "items": {
+        "type": "object",
+        "required": ["insight"],
+        "properties": {
+          "insight": {
+            "type": "string",
+            "description": "What was learned",
+            "maxLength": 150
+          },
+          "application": {
+            "type": "string",
+            "description": "How it can be applied in future",
+            "maxLength": 150
+          },
+          "category": {
+            "type": "string",
+            "enum": ["technical", "architectural", "process", "tooling", "other"],
+            "description": "Category of learning"
+          }
+        }
+      }
+    },
+    "patterns": {
+      "type": "object",
+      "description": "Extracted patterns from this session (for ML/pattern recognition)",
+      "properties": {
+        "approach": {
+          "type": "string",
+          "description": "General approach used (e.g., 'index-first', 'test-driven', 'incremental')"
+        },
+        "tech_choices": {
+          "type": "object",
+          "description": "Technology choices made",
+          "additionalProperties": {"type": "string"}
+        },
+        "problem_solving": {
+          "type": "string",
+          "description": "Problem-solving pattern used"
+        },
+        "reusable": {
+          "type": "boolean",
+          "description": "Whether this pattern is reusable across projects"
+        }
+      }
+    },
+    "related_sessions": {
+      "type": "array",
+      "description": "Related session IDs with relationship types",
+      "items": {
+        "type": "object",
+        "required": ["id", "relation"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Related session ID"
+          },
+          "relation": {
+            "type": "string",
+            "enum": ["builds_on", "related_to", "supersedes", "inspired_by", "prerequisite_for"],
+            "description": "Type of relationship"
+          },
+          "description": {
+            "type": "string",
+            "description": "Optional description of the relationship",
+            "maxLength": 100
+          }
+        }
+      }
+    },
+    "embedding": {
+      "type": "object",
+      "description": "Vector embeddings for semantic search",
+      "properties": {
+        "model": {
+          "type": "string",
+          "description": "Embedding model used (e.g., 'all-MiniLM-L6-v2')",
+          "default": "all-MiniLM-L6-v2"
+        },
+        "vector": {
+          "type": "array",
+          "description": "384-dimensional vector",
+          "items": {"type": "number"},
+          "minItems": 384,
+          "maxItems": 384
+        },
+        "computed_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When embedding was computed"
+        }
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Additional metadata",
+      "properties": {
+        "duration_minutes": {
+          "type": "integer",
+          "description": "Session duration in minutes"
+        },
+        "participants": {
+          "type": "array",
+          "description": "Human participants (if collaborative)",
+          "items": {"type": "string"}
+        },
+        "ai_model": {
+          "type": "string",
+          "description": "Claude model used (e.g., 'claude-sonnet-4-5-20250929')"
+        },
+        "token_usage": {
+          "type": "integer",
+          "description": "Total tokens used in session"
+        }
+      }
+    },
+    "full_content": {
+      "type": "string",
+      "description": "Full session transcript/notes (stored separately, loaded last)"
+    },
+    "version": {
+      "type": "string",
+      "description": "Schema version",
+      "default": "2.0.0"
+    }
+  }
+}

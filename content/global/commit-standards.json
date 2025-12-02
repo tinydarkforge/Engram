@@ -1,0 +1,152 @@
+{
+  "$schema": "../../schemas/content.schema.json",
+  "version": "2.0.0",
+  "type": "global_standard",
+  "title": "Commit Standards - Cirrus Inc.",
+  "applies_to": "all_repos",
+  "last_updated": "2025-11-30",
+  "format": {
+    "name": "Conventional Commits",
+    "structure": "<type>(<scope>): <description>\\n\\n[optional body]\\n\\n[optional footer]",
+    "reference": "https://www.conventionalcommits.org/"
+  },
+  "types": {
+    "feat": {
+      "desc": "New feature",
+      "when": "Adding new functionality",
+      "example": "feat(auth): add OAuth2 authentication"
+    },
+    "fix": {
+      "desc": "Bug fix",
+      "when": "Fixing an issue",
+      "example": "fix(api): handle null user response"
+    },
+    "docs": {
+      "desc": "Documentation",
+      "when": "Only documentation changes",
+      "example": "docs(readme): update installation steps"
+    },
+    "style": {
+      "desc": "Code style",
+      "when": "Formatting, semicolons (no logic change)",
+      "example": "style(components): fix indentation"
+    },
+    "refactor": {
+      "desc": "Code refactoring",
+      "when": "Restructuring code without changing behavior",
+      "example": "refactor(utils): simplify date formatting"
+    },
+    "test": {
+      "desc": "Tests",
+      "when": "Adding or updating tests",
+      "example": "test(auth): add OAuth2 unit tests"
+    },
+    "chore": {
+      "desc": "Maintenance",
+      "when": "Build tasks, dependency updates",
+      "example": "chore(deps): update React to 18.2"
+    },
+    "perf": {
+      "desc": "Performance",
+      "when": "Performance improvements",
+      "example": "perf(api): cache user queries"
+    },
+    "ci": {
+      "desc": "CI/CD",
+      "when": "CI/CD configuration changes",
+      "example": "ci(github): add deployment workflow"
+    }
+  },
+  "rules": [
+    {
+      "rule": "imperative_mood",
+      "desc": "Use imperative mood",
+      "good": "add",
+      "bad": ["added", "adds"],
+      "priority": "high"
+    },
+    {
+      "rule": "no_period",
+      "desc": "No period at end",
+      "good": "feat(auth): add login",
+      "bad": "feat(auth): add login.",
+      "priority": "high"
+    },
+    {
+      "rule": "max_length",
+      "desc": "Keep description under 72 characters",
+      "max": 72,
+      "priority": "medium"
+    },
+    {
+      "rule": "lowercase_description",
+      "desc": "Lowercase description",
+      "good": "add login",
+      "bad": "Add login",
+      "priority": "high"
+    },
+    {
+      "rule": "scope_optional",
+      "desc": "Scope is optional but recommended",
+      "priority": "low"
+    }
+  ],
+  "examples": {
+    "good": [
+      "feat(auth): add OAuth2 authentication",
+      "fix(api): handle null user response",
+      "docs(readme): update installation steps",
+      "refactor(utils): simplify date formatting",
+      "test(auth): add OAuth2 unit tests",
+      "chore(deps): update React to 18.2"
+    ],
+    "bad": [
+      {
+        "commit": "Added new feature",
+        "issues": ["no_type", "past_tense", "capitalized"]
+      },
+      {
+        "commit": "fix: Fixed bug.",
+        "issues": ["missing_scope", "period", "past_tense"]
+      },
+      {
+        "commit": "Updated docs",
+        "issues": ["no_type", "past_tense"]
+      },
+      {
+        "commit": "feat(auth): Added OAuth2.",
+        "issues": ["past_tense", "period", "capitalized"]
+      }
+    ]
+  },
+  "breaking_changes": {
+    "indicator": "!",
+    "format": "type(scope)!: description",
+    "example": "feat(api)!: change authentication endpoint structure",
+    "footer_format": "BREAKING CHANGE: <detailed description>",
+    "example_full": {
+      "message": "feat(api)!: change authentication endpoint structure",
+      "body": "BREAKING CHANGE: The /auth/login endpoint now returns different format.\\nOld: { token: \\\"...\\\" }\\nNew: { accessToken: \\\"...\\\", refreshToken: \\\"...\\\" }"
+    }
+  },
+  "best_practices": {
+    "multiple_changes": {
+      "rule": "Split into separate commits",
+      "bad": "feat(api): add endpoint and fix bug and update docs",
+      "good": [
+        "feat(api): add user profile endpoint",
+        "fix(api): prevent null pointer in auth",
+        "docs(api): document profile endpoint"
+      ]
+    },
+    "co_authored": {
+      "format": "Co-authored-by: Name <email>",
+      "example": "feat(auth): implement OAuth2 flow\\n\\nCo-authored-by: Jane Doe <jane@example.com>"
+    }
+  },
+  "enforcement": {
+    "pre_commit_hook": true,
+    "ci_check": true,
+    "auto_reject_pr": false
+  }
+}
