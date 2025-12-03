@@ -28,7 +28,7 @@ class Memex {
     };
     // Persistent cache for instant cold starts
     this.persistentCache = new PersistentCache({
-      version: '3.1.0',
+      version: '3.3.0',
       ttl: 60 * 60 * 1000 // 60 minutes
     });
     // Manifest manager for incremental updates
