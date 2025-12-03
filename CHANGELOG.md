@@ -4,6 +4,8 @@ All notable changes to Memex will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+> **Note:** v3.3.0 is the first tagged release. Previous versions (1.0-3.2) are documented feature milestones with actual commits but were not tagged. All features and changes listed are real and verifiable in the git history and documentation (see OPTIMIZATIONS-V3.md).
+
 ---
 
 ## [3.3.0] - 2025-12-02
