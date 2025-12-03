@@ -8,11 +8,11 @@ Get Memex running in 5 minutes.
 
 ```bash
 # Make scripts executable
-cd ~/code/cirrus/DevOps/Memex/scripts
-chmod +x memex-loader.js recuerda.js
+cd ~/code/cirrus/DevOps/Memex
+chmod +x scripts/*.js scripts/*.sh
 
 # Test it works
-node memex-loader.js startup
+node scripts/memex-loader.js startup
 ```
 
 Expected output:
@@ -119,7 +119,7 @@ node ~/code/cirrus/DevOps/Memex/scripts/memex-loader.js list
 cd ~/code/cirrus/DemoProject
 
 # Quick save
-node ~/code/cirrus/DevOps/Memex/scripts/recuerda.js \
+node ~/code/cirrus/DevOps/Memex/scripts/remember.js \
   "Set up Memex memory system" \
   --topics memex,setup,memory
 
@@ -130,7 +130,7 @@ node ~/code/cirrus/DevOps/Memex/scripts/recuerda.js \
 ### Interactive Mode
 
 ```bash
-node ~/code/cirrus/DevOps/Memex/scripts/recuerda.js --interactive
+node ~/code/cirrus/DevOps/Memex/scripts/remember.js --interactive
 
 # Prompts:
 # 📝 Recuerda - Save session for DemoProject
@@ -158,7 +158,7 @@ Add to `~/.zshrc` or `~/.bashrc`:
 # Memex shortcuts
 export MEMEX_PATH="$HOME/code/cirrus/DevOps/Memex"
 alias memex='node $MEMEX_PATH/scripts/memex-loader.js'
-alias recuerda='node $MEMEX_PATH/scripts/recuerda.js'
+alias remember='node $MEMEX_PATH/scripts/remember.js'
 
 # Reload
 source ~/.zshrc
@@ -172,8 +172,8 @@ memex quick "commit format"
 memex search auth
 memex list
 
-recuerda "Implemented feature X" --topics feature,x
-recuerda --interactive
+remember "Implemented feature X" --topics feature,x
+remember --interactive
 ```
 
 ---
@@ -237,7 +237,7 @@ cd ~/code/cirrus/NewProject
 
 ```bash
 # After working on a feature
-recuerda --interactive
+remember --interactive
 
 # Summary: Implemented rate limiting for API endpoints
 # Topics: api,rate-limiting,redis,performance
@@ -282,10 +282,10 @@ memex search "rate limiting"
 
 ```bash
 # Quick session save
-recuerda "Did X" --topics x,y,z
+remember "Did X" --topics x,y,z
 
 # Detailed session save
-recuerda --interactive
+remember --interactive
 
 # View saved sessions
 cat ~/code/cirrus/DevOps/Memex/summaries/projects/DemoProject/sessions-index.json | jq '.sessions[0]'
@@ -312,7 +312,7 @@ memex quick "commit"
 # Should return commit format
 
 # 4. Session saving works
-recuerda "Test session" --topics test
+remember "Test session" --topics test
 # Should create session file
 ```
 
@@ -373,7 +373,7 @@ export MEMEX_PATH="/correct/path/to/Memex"
 
 ### "Session not saving"
 
-**Problem:** recuerda fails to save
+**Problem:** remember fails to save
 
 **Solution:**
 1. Check you're in a recognized project
@@ -385,7 +385,7 @@ export MEMEX_PATH="/correct/path/to/Memex"
 ## Next Steps
 
 1. ✅ **You're ready!** Memex is working
-2. 📝 **Start saving sessions** - Use `recuerda` after each work session
+2. 📝 **Start saving sessions** - Use `remember` after each work session
 3. 🌍 **Add global standards** - Extract from DemoProject
 4. 🎯 **Add more projects** - Set up ProjectAuth, etc.
 5. 🔍 **Optional: Embeddings** - Add semantic search
@@ -402,8 +402,8 @@ memex search <query>                       # Search projects
 memex list                                 # List all projects
 
 # Save sessions
-recuerda "Summary" --topics tag1,tag2,tag3     # Quick save
-recuerda --interactive                          # Interactive mode
+remember "Summary" --topics tag1,tag2,tag3     # Quick save
+remember --interactive                          # Interactive mode
 
 # View data
 cat $MEMEX_PATH/index.json | jq           # View index
