@@ -8,6 +8,61 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [3.4.0] - 2025-12-03
+
+### 🔧 Polish & Production Readiness
+
+**Focus:** Bug fixes, comprehensive testing, documentation improvements, and performance validation.
+
+### Fixed
+- **Project Detection Bug** - Fixed `remember` command project detection
+  - Updated cache version from 3.1.0 to 3.3.0
+  - Regenerated MessagePack index with Memex project
+  - Fixed sessions-index.json structure (added `topics_index`)
+  - All projects now detected correctly
+
+### Added
+- **Comprehensive Test Suites**
+  - `scripts/test-bloom-filter.js` - 12 tests for bloom filter
+    - Validates 0.99% false positive rate (within target)
+    - Tests performance: 0.003ms average check time
+    - Confirms size efficiency: 1.20 bytes/item
+  - `scripts/test-lazy-loading.js` - 10 tests for lazy loading
+    - Validates 61-77% size reduction
+    - Tests memory savings: 60.7% with realistic usage
+    - Confirms progressive disclosure works correctly
+
+- **Performance Benchmarks**
+  - `scripts/benchmark.js` - Comprehensive performance testing
+  - Validated with 1000+ sessions
+  - Results: 69.9% size reduction, 50% faster load times
+  - Scalability tested up to 5000 sessions
+
+- **Real-World Documentation Examples**
+  - 7 comprehensive examples added to QUICKSTART.md
+  - Bug fix workflow, feature implementation, optimization patterns
+  - Cross-project learning, daily work patterns
+  - Zero-effort auto-capture examples
+
+### Changed
+- **QUICKSTART.md** - Added real-world usage examples
+- **Repository Cleanup** - Removed 8 obsolete docs (2,278 lines)
+- **.gitignore** - Updated to exclude generated cache files
+
+### Performance
+- Benchmark results (1000 sessions):
+  - Load time: 1-2ms (50% faster with lazy loading)
+  - Search time: Sub-millisecond for most queries
+  - Memory: 69.9% reduction (973 KB → 292 KB)
+  - Bloom filter: 87 bytes for 36 topics
+
+### Testing
+- 22 total tests (12 bloom filter + 10 lazy loading)
+- All tests passing ✅
+- Performance validated at scale
+
+---
+
 ## [3.3.0] - 2025-12-02
 
 ### 🎯 Phase 1 Optimizations - Quick Wins
