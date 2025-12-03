@@ -1,0 +1,26 @@
+{
+  "key_decisions": [
+    "Decision 941-1: Important architectural choice",
+    "Decision 941-2: Performance optimization approach"
+  ],
+  "outcomes": [
+    "Outcome 941-1: Successfully implemented feature",
+    "Outcome 941-2: Improved performance by 13%"
+  ],
+  "learnings": [
+    "Learning 941-1: Best practice discovered",
+    "Learning 941-2: Anti-pattern to avoid"
+  ],
+  "code_changes": {
+    "files_added": [
+      "new-file-941.ts"
+    ],
+    "files_modified": [
+      "existing-941.ts",
+      "utils-941.ts"
+    ],
+    "files_deleted": [],
+    "lines_added": 93,
+    "lines_removed": 48
+  }
+}

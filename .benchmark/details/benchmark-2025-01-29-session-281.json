@@ -1,0 +1,26 @@
+{
+  "key_decisions": [
+    "Decision 281-1: Important architectural choice",
+    "Decision 281-2: Performance optimization approach"
+  ],
+  "outcomes": [
+    "Outcome 281-1: Successfully implemented feature",
+    "Outcome 281-2: Improved performance by 54%"
+  ],
+  "learnings": [
+    "Learning 281-1: Best practice discovered",
+    "Learning 281-2: Anti-pattern to avoid"
+  ],
+  "code_changes": {
+    "files_added": [
+      "new-file-281.ts"
+    ],
+    "files_modified": [
+      "existing-281.ts",
+      "utils-281.ts"
+    ],
+    "files_deleted": [],
+    "lines_added": 178,
+    "lines_removed": 55
+  }
+}

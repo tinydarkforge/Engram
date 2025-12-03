@@ -1,0 +1,26 @@
+{
+  "key_decisions": [
+    "Decision 322-1: Important architectural choice",
+    "Decision 322-2: Performance optimization approach"
+  ],
+  "outcomes": [
+    "Outcome 322-1: Successfully implemented feature",
+    "Outcome 322-2: Improved performance by 38%"
+  ],
+  "learnings": [
+    "Learning 322-1: Best practice discovered",
+    "Learning 322-2: Anti-pattern to avoid"
+  ],
+  "code_changes": {
+    "files_added": [
+      "new-file-322.ts"
+    ],
+    "files_modified": [
+      "existing-322.ts",
+      "utils-322.ts"
+    ],
+    "files_deleted": [],
+    "lines_added": 247,
+    "lines_removed": 23
+  }
+}

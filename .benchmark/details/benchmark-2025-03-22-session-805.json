@@ -1,0 +1,26 @@
+{
+  "key_decisions": [
+    "Decision 805-1: Important architectural choice",
+    "Decision 805-2: Performance optimization approach"
+  ],
+  "outcomes": [
+    "Outcome 805-1: Successfully implemented feature",
+    "Outcome 805-2: Improved performance by 99%"
+  ],
+  "learnings": [
+    "Learning 805-1: Best practice discovered",
+    "Learning 805-2: Anti-pattern to avoid"
+  ],
+  "code_changes": {
+    "files_added": [
+      "new-file-805.ts"
+    ],
+    "files_modified": [
+      "existing-805.ts",
+      "utils-805.ts"
+    ],
+    "files_deleted": [],
+    "lines_added": 213,
+    "lines_removed": 46
+  }
+}

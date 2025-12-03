@@ -1,0 +1,26 @@
+{
+  "key_decisions": [
+    "Decision 5-1: Important architectural choice",
+    "Decision 5-2: Performance optimization approach"
+  ],
+  "outcomes": [
+    "Outcome 5-1: Successfully implemented feature",
+    "Outcome 5-2: Improved performance by 62%"
+  ],
+  "learnings": [
+    "Learning 5-1: Best practice discovered",
+    "Learning 5-2: Anti-pattern to avoid"
+  ],
+  "code_changes": {
+    "files_added": [
+      "new-file-5.ts"
+    ],
+    "files_modified": [
+      "existing-5.ts",
+      "utils-5.ts"
+    ],
+    "files_deleted": [],
+    "lines_added": 243,
+    "lines_removed": 43
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "key_decisions": [
+    "Decision 237-1: Important architectural choice",
+    "Decision 237-2: Performance optimization approach"
+  ],
+  "outcomes": [
+    "Outcome 237-1: Successfully implemented feature",
+    "Outcome 237-2: Improved performance by 88%"
+  ],
+  "learnings": [
+    "Learning 237-1: Best practice discovered",
+    "Learning 237-2: Anti-pattern to avoid"
+  ],
+  "code_changes": {
+    "files_added": [
+      "new-file-237.ts"
+    ],
+    "files_modified": [
+      "existing-237.ts",
+      "utils-237.ts"
+    ],
+    "files_deleted": [],
+    "lines_added": 103,
+    "lines_removed": 49
+  }
+}

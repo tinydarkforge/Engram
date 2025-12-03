@@ -1,0 +1,26 @@
+{
+  "key_decisions": [
+    "Decision 504-1: Important architectural choice",
+    "Decision 504-2: Performance optimization approach"
+  ],
+  "outcomes": [
+    "Outcome 504-1: Successfully implemented feature",
+    "Outcome 504-2: Improved performance by 13%"
+  ],
+  "learnings": [
+    "Learning 504-1: Best practice discovered",
+    "Learning 504-2: Anti-pattern to avoid"
+  ],
+  "code_changes": {
+    "files_added": [
+      "new-file-504.ts"
+    ],
+    "files_modified": [
+      "existing-504.ts",
+      "utils-504.ts"
+    ],
+    "files_deleted": [],
+    "lines_added": 79,
+    "lines_removed": 20
+  }
+}

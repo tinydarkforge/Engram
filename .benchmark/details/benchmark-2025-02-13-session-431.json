@@ -1,0 +1,26 @@
+{
+  "key_decisions": [
+    "Decision 431-1: Important architectural choice",
+    "Decision 431-2: Performance optimization approach"
+  ],
+  "outcomes": [
+    "Outcome 431-1: Successfully implemented feature",
+    "Outcome 431-2: Improved performance by 41%"
+  ],
+  "learnings": [
+    "Learning 431-1: Best practice discovered",
+    "Learning 431-2: Anti-pattern to avoid"
+  ],
+  "code_changes": {
+    "files_added": [
+      "new-file-431.ts"
+    ],
+    "files_modified": [
+      "existing-431.ts",
+      "utils-431.ts"
+    ],
+    "files_deleted": [],
+    "lines_added": 198,
+    "lines_removed": 36
+  }
+}

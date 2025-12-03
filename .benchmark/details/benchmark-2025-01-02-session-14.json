@@ -1,0 +1,26 @@
+{
+  "key_decisions": [
+    "Decision 14-1: Important architectural choice",
+    "Decision 14-2: Performance optimization approach"
+  ],
+  "outcomes": [
+    "Outcome 14-1: Successfully implemented feature",
+    "Outcome 14-2: Improved performance by 10%"
+  ],
+  "learnings": [
+    "Learning 14-1: Best practice discovered",
+    "Learning 14-2: Anti-pattern to avoid"
+  ],
+  "code_changes": {
+    "files_added": [
+      "new-file-14.ts"
+    ],
+    "files_modified": [
+      "existing-14.ts",
+      "utils-14.ts"
+    ],
+    "files_deleted": [],
+    "lines_added": 204,
+    "lines_removed": 15
+  }
+}

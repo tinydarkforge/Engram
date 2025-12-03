@@ -1,0 +1,26 @@
+{
+  "key_decisions": [
+    "Decision 671-1: Important architectural choice",
+    "Decision 671-2: Performance optimization approach"
+  ],
+  "outcomes": [
+    "Outcome 671-1: Successfully implemented feature",
+    "Outcome 671-2: Improved performance by 37%"
+  ],
+  "learnings": [
+    "Learning 671-1: Best practice discovered",
+    "Learning 671-2: Anti-pattern to avoid"
+  ],
+  "code_changes": {
+    "files_added": [
+      "new-file-671.ts"
+    ],
+    "files_modified": [
+      "existing-671.ts",
+      "utils-671.ts"
+    ],
+    "files_deleted": [],
+    "lines_added": 188,
+    "lines_removed": 54
+  }
+}

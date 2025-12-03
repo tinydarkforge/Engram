@@ -1,0 +1,26 @@
+{
+  "key_decisions": [
+    "Decision 992-1: Important architectural choice",
+    "Decision 992-2: Performance optimization approach"
+  ],
+  "outcomes": [
+    "Outcome 992-1: Successfully implemented feature",
+    "Outcome 992-2: Improved performance by 39%"
+  ],
+  "learnings": [
+    "Learning 992-1: Best practice discovered",
+    "Learning 992-2: Anti-pattern to avoid"
+  ],
+  "code_changes": {
+    "files_added": [
+      "new-file-992.ts"
+    ],
+    "files_modified": [
+      "existing-992.ts",
+      "utils-992.ts"
+    ],
+    "files_deleted": [],
+    "lines_added": 117,
+    "lines_removed": 35
+  }
+}

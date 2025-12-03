@@ -1,0 +1,26 @@
+{
+  "key_decisions": [
+    "Decision 472-1: Important architectural choice",
+    "Decision 472-2: Performance optimization approach"
+  ],
+  "outcomes": [
+    "Outcome 472-1: Successfully implemented feature",
+    "Outcome 472-2: Improved performance by 25%"
+  ],
+  "learnings": [
+    "Learning 472-1: Best practice discovered",
+    "Learning 472-2: Anti-pattern to avoid"
+  ],
+  "code_changes": {
+    "files_added": [
+      "new-file-472.ts"
+    ],
+    "files_modified": [
+      "existing-472.ts",
+      "utils-472.ts"
+    ],
+    "files_deleted": [],
+    "lines_added": 128,
+    "lines_removed": 34
+  }
+}

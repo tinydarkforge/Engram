@@ -1,0 +1,26 @@
+{
+  "key_decisions": [
+    "Decision 936-1: Important architectural choice",
+    "Decision 936-2: Performance optimization approach"
+  ],
+  "outcomes": [
+    "Outcome 936-1: Successfully implemented feature",
+    "Outcome 936-2: Improved performance by 85%"
+  ],
+  "learnings": [
+    "Learning 936-1: Best practice discovered",
+    "Learning 936-2: Anti-pattern to avoid"
+  ],
+  "code_changes": {
+    "files_added": [
+      "new-file-936.ts"
+    ],
+    "files_modified": [
+      "existing-936.ts",
+      "utils-936.ts"
+    ],
+    "files_deleted": [],
+    "lines_added": 62,
+    "lines_removed": 30
+  }
+}

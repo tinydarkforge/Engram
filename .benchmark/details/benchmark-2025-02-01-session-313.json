@@ -1,0 +1,26 @@
+{
+  "key_decisions": [
+    "Decision 313-1: Important architectural choice",
+    "Decision 313-2: Performance optimization approach"
+  ],
+  "outcomes": [
+    "Outcome 313-1: Successfully implemented feature",
+    "Outcome 313-2: Improved performance by 55%"
+  ],
+  "learnings": [
+    "Learning 313-1: Best practice discovered",
+    "Learning 313-2: Anti-pattern to avoid"
+  ],
+  "code_changes": {
+    "files_added": [
+      "new-file-313.ts"
+    ],
+    "files_modified": [
+      "existing-313.ts",
+      "utils-313.ts"
+    ],
+    "files_deleted": [],
+    "lines_added": 105,
+    "lines_removed": 50
+  }
+}

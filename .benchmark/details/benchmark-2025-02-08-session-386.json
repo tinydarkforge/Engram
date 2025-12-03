@@ -1,0 +1,26 @@
+{
+  "key_decisions": [
+    "Decision 386-1: Important architectural choice",
+    "Decision 386-2: Performance optimization approach"
+  ],
+  "outcomes": [
+    "Outcome 386-1: Successfully implemented feature",
+    "Outcome 386-2: Improved performance by 93%"
+  ],
+  "learnings": [
+    "Learning 386-1: Best practice discovered",
+    "Learning 386-2: Anti-pattern to avoid"
+  ],
+  "code_changes": {
+    "files_added": [
+      "new-file-386.ts"
+    ],
+    "files_modified": [
+      "existing-386.ts",
+      "utils-386.ts"
+    ],
+    "files_deleted": [],
+    "lines_added": 244,
+    "lines_removed": 16
+  }
+}

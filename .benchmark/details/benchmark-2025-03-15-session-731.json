@@ -1,0 +1,26 @@
+{
+  "key_decisions": [
+    "Decision 731-1: Important architectural choice",
+    "Decision 731-2: Performance optimization approach"
+  ],
+  "outcomes": [
+    "Outcome 731-1: Successfully implemented feature",
+    "Outcome 731-2: Improved performance by 42%"
+  ],
+  "learnings": [
+    "Learning 731-1: Best practice discovered",
+    "Learning 731-2: Anti-pattern to avoid"
+  ],
+  "code_changes": {
+    "files_added": [
+      "new-file-731.ts"
+    ],
+    "files_modified": [
+      "existing-731.ts",
+      "utils-731.ts"
+    ],
+    "files_deleted": [],
+    "lines_added": 215,
+    "lines_removed": 38
+  }
+}

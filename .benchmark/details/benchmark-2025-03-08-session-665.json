@@ -1,0 +1,26 @@
+{
+  "key_decisions": [
+    "Decision 665-1: Important architectural choice",
+    "Decision 665-2: Performance optimization approach"
+  ],
+  "outcomes": [
+    "Outcome 665-1: Successfully implemented feature",
+    "Outcome 665-2: Improved performance by 50%"
+  ],
+  "learnings": [
+    "Learning 665-1: Best practice discovered",
+    "Learning 665-2: Anti-pattern to avoid"
+  ],
+  "code_changes": {
+    "files_added": [
+      "new-file-665.ts"
+    ],
+    "files_modified": [
+      "existing-665.ts",
+      "utils-665.ts"
+    ],
+    "files_deleted": [],
+    "lines_added": 73,
+    "lines_removed": 56
+  }
+}

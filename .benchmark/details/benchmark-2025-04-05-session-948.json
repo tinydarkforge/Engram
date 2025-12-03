@@ -1,0 +1,26 @@
+{
+  "key_decisions": [
+    "Decision 948-1: Important architectural choice",
+    "Decision 948-2: Performance optimization approach"
+  ],
+  "outcomes": [
+    "Outcome 948-1: Successfully implemented feature",
+    "Outcome 948-2: Improved performance by 63%"
+  ],
+  "learnings": [
+    "Learning 948-1: Best practice discovered",
+    "Learning 948-2: Anti-pattern to avoid"
+  ],
+  "code_changes": {
+    "files_added": [
+      "new-file-948.ts"
+    ],
+    "files_modified": [
+      "existing-948.ts",
+      "utils-948.ts"
+    ],
+    "files_deleted": [],
+    "lines_added": 211,
+    "lines_removed": 34
+  }
+}

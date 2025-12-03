@@ -1,0 +1,26 @@
+{
+  "key_decisions": [
+    "Decision 700-1: Important architectural choice",
+    "Decision 700-2: Performance optimization approach"
+  ],
+  "outcomes": [
+    "Outcome 700-1: Successfully implemented feature",
+    "Outcome 700-2: Improved performance by 21%"
+  ],
+  "learnings": [
+    "Learning 700-1: Best practice discovered",
+    "Learning 700-2: Anti-pattern to avoid"
+  ],
+  "code_changes": {
+    "files_added": [
+      "new-file-700.ts"
+    ],
+    "files_modified": [
+      "existing-700.ts",
+      "utils-700.ts"
+    ],
+    "files_deleted": [],
+    "lines_added": 79,
+    "lines_removed": 30
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "key_decisions": [
+    "Decision 768-1: Important architectural choice",
+    "Decision 768-2: Performance optimization approach"
+  ],
+  "outcomes": [
+    "Outcome 768-1: Successfully implemented feature",
+    "Outcome 768-2: Improved performance by 93%"
+  ],
+  "learnings": [
+    "Learning 768-1: Best practice discovered",
+    "Learning 768-2: Anti-pattern to avoid"
+  ],
+  "code_changes": {
+    "files_added": [
+      "new-file-768.ts"
+    ],
+    "files_modified": [
+      "existing-768.ts",
+      "utils-768.ts"
+    ],
+    "files_deleted": [],
+    "lines_added": 67,
+    "lines_removed": 26
+  }
+}

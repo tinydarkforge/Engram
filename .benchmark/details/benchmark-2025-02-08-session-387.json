@@ -1,0 +1,26 @@
+{
+  "key_decisions": [
+    "Decision 387-1: Important architectural choice",
+    "Decision 387-2: Performance optimization approach"
+  ],
+  "outcomes": [
+    "Outcome 387-1: Successfully implemented feature",
+    "Outcome 387-2: Improved performance by 90%"
+  ],
+  "learnings": [
+    "Learning 387-1: Best practice discovered",
+    "Learning 387-2: Anti-pattern to avoid"
+  ],
+  "code_changes": {
+    "files_added": [
+      "new-file-387.ts"
+    ],
+    "files_modified": [
+      "existing-387.ts",
+      "utils-387.ts"
+    ],
+    "files_deleted": [],
+    "lines_added": 200,
+    "lines_removed": 47
+  }
+}
