@@ -76,6 +76,16 @@ node ~/code/cirrus/DevOps/Memex/scripts/memex-loader.js quick "commit format"
     ...
   }
 }
+
+# Real-world example - check PR requirements
+node ~/code/cirrus/DevOps/Memex/scripts/memex-loader.js quick "pr"
+
+# Output:
+{
+  "format": "<type>(<scope>): <description>",
+  "checks": ["tests", "self-review", "lint", "typecheck", "build"],
+  "approvals": 1
+}
 ```
 
 ### Search Projects
@@ -166,6 +176,141 @@ source ~/.zshrc
 
 Now you can use:
 
+```bash
+memex startup
+remember "Your work summary" --topics tag1,tag2
+```
+
+---
+
+## Real-World Examples
+
+### Example 1: After Fixing a Bug
+
+```bash
+cd ~/code/cirrus/DemoProject
+
+# You just fixed a Docker deployment bug
+./scripts/remember "Fixed Prisma deployment failure - moved CLI to dependencies" \
+  --topics hotfix,docker,prisma,deployment
+
+# Output:
+# ✅ Session saved: ct-2025-12-03-hotfix
+# ✓ Changes committed to Memex
+# ✓ Pushing to remote (background)...
+```
+
+**Why this helps:** Next time someone encounters Prisma deployment issues, they can search Memex for "prisma deployment" and instantly find your solution.
+
+### Example 2: After Implementing a Feature
+
+```bash
+cd ~/code/cirrus/DemoProject
+
+# You just added OAuth2 authentication
+./scripts/remember --interactive
+
+# Prompts you for:
+# Summary: Implemented OAuth2 authentication with Google provider
+# Topics: auth,oauth,google,security
+# Detailed notes? y
+#
+# Then you can add:
+# - Configured Google Cloud OAuth credentials
+# - Added passport-google-oauth20 strategy
+# - Implemented callback handling in auth controller
+# - Added user profile sync from Google
+# - Tested with 3 different Google accounts
+#
+# ✅ Session saved with full implementation details
+```
+
+**Why this helps:** Future auth work can reference this implementation. Other team members can see exactly how OAuth was set up.
+
+### Example 3: After Performance Optimization
+
+```bash
+# You just optimized Docker builds (10x faster!)
+./scripts/remember "Optimized API Dockerfile with multi-stage build - 10x faster rebuilds" \
+  --topics docker,performance,optimization,dockerfile
+
+# Later, when working on another service:
+memex search "docker optimization"
+
+# Instantly finds your Docker optimization session
+# Shows you the exact techniques you used
+```
+
+### Example 4: Zero-Effort Mode (Auto-Capture)
+
+```bash
+# After making changes, just run:
+./scripts/remember
+
+# It auto-detects everything:
+# 🔍 Auto-detected changes:
+#   Files: 3
+#   Summary: "Updated bloom-filter.js, memex-loader.js +1 more"
+#   Topics: bloom-filter, cache, project-detection
+#
+# ✅ Session saved automatically!
+```
+
+### Example 5: Cross-Project Learning
+
+```bash
+# Working on a new project, need to see how you handled auth before
+cd ~/code/cirrus/NewProject
+
+memex search "authentication"
+
+# Finds all auth implementations across ALL projects:
+# - DemoProject: OAuth2 with Google (12/02/25)
+# - ProjectAuth: JWT refresh tokens (11/15/25)
+# - OldProject: Basic auth migration (10/20/25)
+#
+# Load the most relevant one:
+memex load DemoProject
+# Now you have the full OAuth2 implementation details
+```
+
+### Example 6: Before Creating a PR
+
+```bash
+# Check what our PR standards are
+memex quick "pr"
+
+# Output:
+{
+  "checks": ["tests", "self-review", "lint", "typecheck", "build"],
+  "approvals": 1,
+  "format": "<type>(<scope>): <description>"
+}
+
+# Make sure your PR meets all requirements before submitting
+```
+
+### Example 7: Daily Work Pattern
+
+```bash
+# Morning: See what you were working on
+memex startup
+
+# During work: Need commit format
+memex quick "commit"
+
+# After work: Save what you did
+remember "Implemented rate limiting for API endpoints" \
+  --topics api,rate-limiting,redis,performance
+
+# Result: Perfect memory of all your work, zero effort
+```
+
+---
+
+## Common Patterns
+
+### Pattern 1: Bug Fix Workflow
 ```bash
 memex startup
 memex quick "commit format"
