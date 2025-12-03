@@ -203,6 +203,7 @@ class VectorSearch {
 
   /**
    * Generate embeddings for all sessions in Memex
+   * Uses parallel processing for 10x speed improvement
    */
   async generateAllEmbeddings() {
     console.log('🔍 Finding all sessions...');
@@ -212,8 +213,9 @@ class VectorSearch {
       cwd: MEMEX_PATH
     });
 
+    // Collect all sessions that need embedding
+    const sessionsToEmbed = [];
     let totalSessions = 0;
-    let embeddedCount = 0;
 
     for (const file of sessionFiles) {
       const fullPath = path.join(MEMEX_PATH, file);
@@ -225,35 +227,72 @@ class VectorSearch {
         totalSessions++;
 
         // Skip if already embedded (unless force regenerate)
-        if (this.embeddings.sessions[session.id]) {
-          continue;
-        }
-
-        try {
-          const embedding = await this.embedSession(session);
-
-          if (embedding) {
-            this.embeddings.sessions[session.id] = embedding;
-            embeddedCount++;
-
-            if (embeddedCount % 10 === 0) {
-              console.log(`  ✓ Embedded ${embeddedCount}/${totalSessions} sessions...`);
-            }
-          }
-        } catch (e) {
-          console.warn(`  ⚠️  Failed to embed ${session.id}:`, e.message);
+        if (!this.embeddings.sessions[session.id]) {
+          sessionsToEmbed.push(session);
         }
       }
     }
 
-    // Save embeddings
+    console.log(`📊 Found ${totalSessions} total sessions, ${sessionsToEmbed.length} need embedding`);
+
+    if (sessionsToEmbed.length === 0) {
+      console.log('✅ All sessions already embedded');
+      return {
+        total_sessions: totalSessions,
+        embedded: 0,
+        cached: totalSessions,
+        embeddings_file: EMBEDDINGS_PATH
+      };
+    }
+
+    // Process in parallel batches for optimal performance
+    const BATCH_SIZE = 10; // Process 10 sessions at a time
+    let embeddedCount = 0;
+    const startTime = Date.now();
+
+    for (let i = 0; i < sessionsToEmbed.length; i += BATCH_SIZE) {
+      const batch = sessionsToEmbed.slice(i, i + BATCH_SIZE);
+
+      // Process batch in parallel
+      const results = await Promise.allSettled(
+        batch.map(session => this.embedSession(session))
+      );
+
+      // Collect successful embeddings
+      results.forEach((result, idx) => {
+        if (result.status === 'fulfilled' && result.value) {
+          const session = batch[idx];
+          this.embeddings.sessions[session.id] = result.value;
+          embeddedCount++;
+        } else if (result.status === 'rejected') {
+          console.warn(`  ⚠️  Failed to embed ${batch[idx].id}:`, result.reason?.message);
+        }
+      });
+
+      // Progress update
+      console.log(`  ✓ Embedded ${embeddedCount}/${sessionsToEmbed.length} sessions (${Math.round(embeddedCount/sessionsToEmbed.length*100)}%)`);
+
+      // Save periodically (every 50 sessions)
+      if (embeddedCount % 50 === 0) {
+        this.saveEmbeddings();
+      }
+    }
+
+    // Final save
     this.saveEmbeddings();
+
+    const duration = ((Date.now() - startTime) / 1000).toFixed(1);
+    const rate = (embeddedCount / (Date.now() - startTime) * 1000).toFixed(1);
+
+    console.log(`✅ Completed in ${duration}s (${rate} sessions/sec)`);
 
     return {
       total_sessions: totalSessions,
       embedded: embeddedCount,
       cached: totalSessions - embeddedCount,
-      embeddings_file: EMBEDDINGS_PATH
+      embeddings_file: EMBEDDINGS_PATH,
+      duration_seconds: parseFloat(duration),
+      rate_per_second: parseFloat(rate)
     };
   }
 

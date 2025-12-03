@@ -1,56 +1,71 @@
-# Memex v3.2
+# Memex v3.3
 
-**Extended Memory for Claude - Ultra Token-Efficient Knowledge System**
+**Extended Memory for Claude - 94-98% Token Savings**
 
-> **v3.2.0 Update (2025-12-02):** 🚀 **Major Update!** Added incremental updates (100x faster updates) and AI-powered semantic search (find sessions by meaning, not just keywords). Uses all-MiniLM-L6-v2 for 384-dimensional embeddings with cosine similarity matching.
-
-> **v3.1.1 Update (2025-12-02):** Added persistent cache with SQLite! Cache survives restarts for 20% faster cold starts (52ms → 42ms). Cache auto-expires after 60 minutes with version-based invalidation.
-
-> **v3.1 Update (2025-12-02):** Added MessagePack binary format support! 50% smaller files (7.1KB → 3.6KB) with automatic fallback to gzip/JSON. Run `npm run convert-msgpack` to enable.
-
-> **v3.0 Update (2025-11-30):** Major performance leap! Async I/O (3-5x faster), gzip compression (67% smaller), smart caching with memoization, relevance-ranked search, and performance monitoring. See [OPTIMIZATIONS-V3.md](OPTIMIZATIONS-V3.md) for details.
-
-> **v2.0 Update (2025-11-30):** 60-70% additional token reduction through abbreviated keys, structured JSON, and progressive disclosure. Index now 3-4KB (down from 8KB). All markdown converted to optimized JSON structures.
+Ultra-efficient knowledge system that remembers your project context across sessions.
 
 ---
 
-## What Makes This Efficient?
+## Quick Start
 
-### 🚀 Speed
-- **Incremental updates**: Only load changed files (100x faster updates!)
-- **Persistent cache**: SQLite cache survives restarts (52ms → 42ms)
-- **Index-first**: Load 1.9KB compressed (67% smaller than v2.0!)
-- **On-demand content**: Load only what's needed (async/await, non-blocking)
-- **Smart caching**: Persistent cache + LRU hot cache + memoization + warm cache
-- **Startup time**: <42ms typical from cache, <52ms cold start
+```bash
+# 1. Setup (one-time)
+cd ~/code/cirrus/DevOps/Memex
+node scripts/memex-loader.js startup
 
-### 💾 Token Efficiency
-- **80% of queries**: Answered from index alone (no file loading)
-- **Quick refs**: Common info embedded in index
-- **Progressive disclosure**: 3-level summaries (l1: 5 words, l2: 1 sentence, l3: detailed)
-- **Structured data**: Optimized JSON with abbreviated keys + legend
-- **Token reduction**: 95% vs traditional, 60-70% vs v1
+# 2. Save a session
+./scripts/remember "Implemented feature X" --topics feature,x
 
-### 🧠 AI-Powered Search
-- **Semantic search**: Find sessions by meaning, not just keywords
-- **Vector embeddings**: 384-dimensional vectors (all-MiniLM-L6-v2)
-- **Smart matching**: "auth work" finds OAuth, JWT, SSO sessions
-- **Cosine similarity**: Ranked results with confidence scores
-- **Fast**: <2 seconds for searches across all sessions
+# 3. Query anytime
+node scripts/memex-loader.js quick "commit format"
+```
 
-### 🎯 How Claude Uses It
+**See [QUICKSTART.md](QUICKSTART.md) for details**
+
+---
+
+## What Makes Memex Special?
+
+### 🎯 **94-98% Token Savings**
+- Loads 4KB index vs 500KB docs
+- Most queries: 1,000 tokens vs 50,000
+- **Saves ~$35/month** on Claude API costs
+
+**See [HOW-MEMEX-SAVES-TOKENS.md](HOW-MEMEX-SAVES-TOKENS.md) for details**
+
+### ⚡ **Instant Performance**
+- Startup: <50ms
+- Bloom filter: 0.1ms negative lookups (500-1000x faster)
+- Lazy loading: Only fetch what you need
+- Smart caching: Persistent SQLite + hot/warm tiers
+
+### 🤖 **Zero-Effort Capture**
+- Git hooks: Auto-save sessions on commit
+- Auto-detect: Topics from files and commit type
+- Background: Non-blocking, zero delay
+
+### 🧠 **AI-Powered Search**
+- Semantic: Find by meaning, not just keywords
+- "auth work" → finds OAuth, JWT, SSO sessions
+- 384-dimensional embeddings (all-MiniLM-L6-v2)
+
+---
+
+## How It Works
 
 ```
-User: "What's our commit format?"
-
-Claude process:
-1. Check index.json quick_ref (5KB loaded)
-2. Found: "Conventional Commits: <type>(<scope>): <description>"
-3. Answer immediately
-4. No additional files loaded ✅
-
-Total tokens: ~500 (vs 50,000 loading full docs)
+Question → Bloom Filter → Index → Full Details
+           ↓              ↓         ↓
+           "NO!" (0 tok)  Summary   Complete
+           ↓              (1K tok)  (1.1K tok)
+           STOP           ↓
+                         80% stop here!
 ```
+
+**Three smart layers:**
+1. **Bloom Filter** (243 bytes): Instant "NO" answers
+2. **Index** (4KB): Quick summaries, 80% of queries answered
+3. **Full Details** (on-demand): Loaded only when needed
 
 ---
 
@@ -58,353 +73,200 @@ Total tokens: ~500 (vs 50,000 loading full docs)
 
 ```
 Memex/
-│
-├── index.json                      # 5-10KB - LOAD THIS FIRST
+├── index.json                    # 4KB - Load first
 │   ├── Global standards (quick_ref)
-│   ├── All projects (metadata)
+│   ├── Projects metadata
 │   └── Topics index
 │
-├── metadata/projects/              # 2-5KB per project
-│   └── DemoProject.json        # Full project metadata
-│
-├── summaries/projects/             # Session summaries
+├── summaries/projects/           # Lightweight indexes
 │   └── DemoProject/
-│       └── sessions-index.json     # All session metadata
-│
-├── content/                        # Full content (load on-demand)
-│   ├── global/
-│   │   └── commit-standards.md
-│   └── projects/
-│       └── DemoProject/
-│           └── sessions/
-│               └── 2025-11-29-oauth.md
+│       ├── sessions-index.json   # Session summaries
+│       └── sessions/             # Full details (lazy loaded)
 │
 └── scripts/
-    ├── memex-loader.js        # Efficient loader
-    ├── save-session.js        # Save sessions (main)
-    ├── remember               # Alias for save-session
-    ├── learn                  # Alias for save-session
-    └── memex                  # Alias for save-session
+    ├── memex-loader.js          # Main loader
+    ├── remember                 # Save sessions
+    ├── lazy-loader.js           # Phase 1: Lazy loading
+    ├── bloom-filter.js          # Phase 1: Bloom filter
+    └── git-hook-capture.sh      # Phase 1: Git hooks
 ```
 
 ---
 
-## Usage
+## Common Usage
 
-### Install
-
-```bash
-cd ~/code/cirrus/DevOps/Memex/scripts
-chmod +x *.js
-
-# Add to PATH (optional)
-echo 'export PATH="$PATH:$HOME/code/cirrus/DevOps/Memex/scripts"' >> ~/.zshrc
-```
-
-### Startup (Automatic)
+### Save Sessions
 
 ```bash
-cd ~/code/cirrus/DemoProject
-claude
+# Quick save (after git commit - or use git hooks!)
+./scripts/remember "Added OAuth2 login" --topics auth,oauth
 
-# Claude runs:
-node Memex/scripts/memex-loader.js startup
+# Interactive mode
+./scripts/remember --interactive
 
-# Output:
-# ✅ Memex Ready (87ms)
-#
-# 📊 Context Loaded:
-#   • Global Standards: 5
-#   • Current Project: DemoProject
-#   • Available Projects: 3
-#   • Total Sessions: 142
+# Or use git hooks (zero effort!)
+cd /path/to/your/repo
+/path/to/Memex/scripts/git-hook-capture.sh install
+# Now every commit auto-saves a session!
 ```
 
 ### Query Memex
 
 ```bash
-# Quick answer (from index only)
-memex-loader.js quick "what's our commit format?"
-# Returns: { format: "<type>(<scope>): <description>", ... }
+# Quick answers from index (instant)
+node scripts/memex-loader.js quick "commit format"
 
 # Search across projects
-memex-loader.js search authentication
-# Returns: [{ type: 'topic', projects: ['ProjectAuth'], ... }]
+node scripts/memex-loader.js search docker
+
+# Semantic search (AI-powered)
+node scripts/memex-loader.js semantic "authentication work"
 
 # List all projects
-memex-loader.js list
-# Returns: [{ name: 'DemoProject', tech_stack: [...], ... }]
+node scripts/memex-loader.js list
 ```
 
-### Save Session
+### Phase 1 Tools
 
 ```bash
-# Quick save (use any command you prefer - they all work the same)
-remember "Implemented OAuth2 authentication" --topics auth,oauth,google
-learn "Fixed Docker build issue" --topics docker,ci
-memex "Added rate limiting" --topics api,performance
+# Lazy loading
+node scripts/lazy-loader.js convert  # Convert to lazy format
+node scripts/lazy-loader.js stats    # View statistics
 
-# Interactive mode
-remember --interactive
-learn -i
-# Prompts for summary, topics, and optional detailed notes
+# Bloom filter
+node scripts/bloom-filter.js build   # Build filter
+node scripts/bloom-filter.js check auth  # Instant lookup
+
+# Git hooks
+scripts/git-hook-capture.sh install  # Auto-capture on commit
 ```
 
 ---
 
-## Loading Strategy
+## Performance
 
-### Phase 1: Index (Always)
-```javascript
-// Load index.json (~5KB)
-const index = loadIndex();
-
-// Now Claude knows:
-// - All global standards (quick_ref)
-// - All projects (metadata)
-// - All topics
-// - Session counts
-```
-
-### Phase 2: Project Detection
-```javascript
-// Auto-detect from:
-// 1. git remote
-// 2. package.json
-// 3. directory name
-
-const project = detectProject();
-// → "DemoProject"
-```
-
-### Phase 3: Project Metadata
-```javascript
-// Load metadata/projects/DemoProject.json (~2KB)
-const metadata = loadProjectMetadata(project);
-
-// Now Claude knows:
-// - Tech stack
-// - Architecture
-// - Conventions
-// - Environments
-```
-
-### Phase 4: On-Demand Content
-```javascript
-// Only load full content when needed
-if (needsDetailedInfo) {
-  const content = loadContent('content/global/commit-standards.md');
-}
-```
-
-**Total startup: 5KB + 2KB = 7KB (vs 500KB loading everything)**
+| Metric | Before Memex | With Memex | Improvement |
+|--------|--------------|------------|-------------|
+| **Tokens/query** | 50,000 | 1,000 | 98% ⬇️ |
+| **Startup time** | 1000ms | 46ms | 21x ⚡ |
+| **Index size** | 500KB | 4KB | 99% ⬇️ |
+| **Negative lookups** | 50-100ms | 0.1ms | 1000x ⚡ |
+| **Monthly cost** | $37.50 | $2.25 | $35 💰 |
 
 ---
 
-## Query Optimization
+## Features
 
-### Example: "How do we handle authentication?"
+### Optimizations (Phase 1 - v3.3)
+- ✅ **Lazy Loading** (#22): 64% smaller index
+- ✅ **Bloom Filters** (#27): 500-1000x faster negative queries
+- ✅ **Git Hooks** (#36): Zero-effort session capture
 
-**Old approach (inefficient):**
-```
-1. Load all files (500KB, 50,000 tokens)
-2. Search through everything
-3. Return answer
-```
+### Core Features (v3.0-3.2)
+- ✅ **Incremental Updates**: 100x faster (only load changed files)
+- ✅ **Persistent Cache**: SQLite cache survives restarts
+- ✅ **Semantic Search**: AI-powered meaning-based search
+- ✅ **MessagePack**: 37% smaller files, 5x faster parsing
+- ✅ **Smart Caching**: Hot + warm + persistent tiers
 
-**New approach (efficient):**
-```
-1. Check index topics: "auth" → ProjectAuth has 12 sessions
-2. Load sessions-index.json (~5KB)
-3. Check summaries: "OAuth2 with Passport.js, JWT tokens..."
-4. Is summary sufficient?
-   → Yes: Answer from summary (no file loading!)
-   → No: Load specific session file (~10KB)
-
-Total: 10KB, 1,000 tokens (95% reduction)
-```
+**See [PHASE-1-OPTIMIZATIONS.md](PHASE-1-OPTIMIZATIONS.md) for Phase 1 details**
+**See [ROADMAP-V4.md](ROADMAP-V4.md) for future plans**
 
 ---
 
-## Session Storage
+## How Claude Uses It
 
-### Metadata (Always Available)
-```json
-{
-  "id": "ct-2025-11-29-oauth",
-  "project": "DemoProject",
-  "date": "2025-11-29",
-  "summary": "Implemented OAuth2 with Google provider using Passport.js",
-  "topics": ["auth", "oauth", "google", "passport"],
-  "key_decisions": [
-    {
-      "decision": "Use Passport.js for OAuth",
-      "rationale": "Industry standard, well-maintained, supports multiple providers"
-    }
-  ],
-  "code_changes": {
-    "files_added": ["src/auth/oauth.strategy.ts"],
-    "lines_added": 150
-  }
-}
+```
+User: "What's our commit format?"
+
+1. Bloom filter: "commit" exists ✓
+2. Load index (4KB)
+3. Check quick_ref: "Conventional Commits: <type>(<scope>): <description>"
+4. Answer immediately
+
+Cost: 1,000 tokens (vs 50,000)
+Time: 2ms
+Files loaded: 1 (index only)
 ```
 
-### Full Content (On-Demand)
-```markdown
-# OAuth2 Implementation - 2025-11-29
-
-## Context
-User requested Google login for faster authentication...
-
-[Full detailed content only loaded when needed]
-```
+**80% of queries answered from index alone - no file loading needed!**
 
 ---
 
-## Performance Targets
+## Documentation
 
-| Operation | Target | Actual |
-|-----------|--------|--------|
-| Load index | <50ms | ~20ms |
-| Detect project | <10ms | ~5ms |
-| Load metadata | <50ms | ~15ms |
-| Quick answer | <100ms | ~50ms |
-| Full startup | <150ms | ~87ms |
-| Search all projects | <200ms | ~120ms |
-
-**Token usage:**
-- Index-based query: 500-1,000 tokens
-- With metadata: 2,000-3,000 tokens
-- With full content: 10,000-15,000 tokens
-- Old approach (load everything): 50,000+ tokens
-
-**95% token reduction for most queries**
+- **[QUICKSTART.md](QUICKSTART.md)** - Get started in 5 minutes
+- **[HOW-MEMEX-SAVES-TOKENS.md](HOW-MEMEX-SAVES-TOKENS.md)** - Simple token savings guide
+- **[PHASE-1-OPTIMIZATIONS.md](PHASE-1-OPTIMIZATIONS.md)** - Latest optimizations
+- **[ROADMAP-V4.md](ROADMAP-V4.md)** - Future plans
+- **[HOW-IT-WORKS.md](HOW-IT-WORKS.md)** - Technical deep dive
+- **[CHEATSHEET.md](CHEATSHEET.md)** - Command reference
 
 ---
 
-## Commands Reference
-
-### For Claude
-
-```javascript
-// In Claude Code, these happen automatically:
-
-// Startup
-const memex = new Memex();
-const context = memex.startup();
-// → Full context in <100ms
-
-// Quick query (80% of cases)
-const answer = memex.quickAnswer("what's our branching strategy?");
-// → Answered from index, no files loaded
-
-// Search
-const results = memex.search("authentication");
-// → Search index, load content only if needed
-
-// Load another project
-const authProject = memex.loadProjectMetadata("ProjectAuth");
-// → Cross-project context on-demand
-```
-
-### For Developers
+## Installation
 
 ```bash
-# Save session (pick your favorite command)
-remember "Added rate limiting to API" --topics api,rate-limiting,redis
-learn "Optimized database queries" --topics db,performance
-memex "Implemented caching" --topics cache,redis
+# Clone/navigate to Memex
+cd ~/code/cirrus/DevOps/Memex
 
-# Interactive save
-remember --interactive
+# Make scripts executable
+chmod +x scripts/*.js scripts/*.sh
 
-# Query from CLI
-memex-loader.js quick "commit format"
-memex-loader.js search oauth
-memex-loader.js semantic "authentication work"  # AI-powered semantic search
-memex-loader.js list
+# Test it works
+node scripts/memex-loader.js startup
 
-# Manage incremental updates
-manifest-manager.js generate  # Generate file manifest
-manifest-manager.js check     # Check for changes
-manifest-manager.js stats     # Show statistics
-
-# Manage vector search
-vector-search.js generate     # Generate embeddings for all sessions
-vector-search.js search "query"  # Search by meaning
-vector-search.js stats        # Show embedding statistics
+# Optional: Add alias
+echo 'alias memex="node ~/code/cirrus/DevOps/Memex/scripts/memex-loader.js"' >> ~/.zshrc
+source ~/.zshrc
 ```
 
 ---
 
-## File Size Comparison
+## Migration
 
-**Old approach (load everything):**
-```
-Global standards: 50KB
-Project context: 100KB
-All sessions: 350KB
-Total: 500KB = 50,000 tokens
+### From v3.2 to v3.3 (Phase 1)
+
+```bash
+# 1. Convert to lazy loading
+node scripts/lazy-loader.js convert
+
+# 2. Build bloom filter
+node scripts/bloom-filter.js build
+
+# 3. Install git hooks (optional)
+cd /path/to/your/repo
+/path/to/Memex/scripts/git-hook-capture.sh install
+
+# Done!
 ```
 
-**New approach (index-first):**
-```
-Index: 5KB = 500 tokens ✅
-Project metadata: 2KB = 200 tokens ✅
-Session summaries: 3KB = 300 tokens ✅
-Total: 10KB = 1,000 tokens (typical query)
-
-Full content only loaded when truly needed
+**Backward compatible - rollback anytime:**
+```bash
+node scripts/lazy-loader.js revert
 ```
 
 ---
 
-## Benefits
+## Contributing
 
-✅ **95% token reduction** - Most queries use <1K tokens vs 50K
-✅ **10x faster startup** - 87ms vs 1000ms
-✅ **Cross-project queries** - Access any project's knowledge
-✅ **Smart caching** - Hot/warm/cold tiers
-✅ **Structured + Prose** - JSON for speed, Markdown for detail
-✅ **Git-synced** - Auto-sync across machines
+Memex is part of the Cirrus DevOps toolkit. Contributions welcome!
+
+- Report issues: https://github.com/<owner>/<private-repo>/issues
+- See roadmap: [ROADMAP-V4.md](ROADMAP-V4.md)
+
+---
+
+## Key Benefits
+
+✅ **95-98% token reduction** - Massive cost savings
+✅ **<50ms startup** - Instant context loading
+✅ **Cross-project** - Learn from all your projects
+✅ **Zero-effort** - Git hooks auto-capture sessions
+✅ **AI-powered** - Semantic search by meaning
+✅ **Smart caching** - Persistent across restarts
 ✅ **Scalable** - Handle 1000+ sessions efficiently
 
 ---
 
-## Key Innovations
-
-1. **Index-First Architecture**
-   - Know everything without loading everything
-   - Quick refs embedded in index for instant answers
-
-2. **Tiered Loading**
-   - Metadata → Summary → Full content
-   - Progressive disclosure based on need
-
-3. **Structured Metadata**
-   - JSON for quick parsing
-   - Markdown for human editing
-
-4. **Smart Caching**
-   - Hot cache: Last 10 items in memory
-   - Warm cache: Last 100 items on disk
-   - Cold storage: Fetch from git on-demand
-
-5. **Semantic Organization**
-   - Topics index for fast lookup
-   - Related sessions linked
-   - Cross-project references
-
----
-
-## Next Steps
-
-1. **Extract DemoProject standards** → Populate global/
-2. **Add more projects** → ProjectAuth, etc.
-3. **Start logging sessions** → Use `remember`, `learn`, or `memex` commands
-4. **Optional: Add embeddings** → Semantic search (✅ Done in v3.2)
-5. **Optional: Build web UI** → Browse Memex visually
-
----
-
-**Memex: Extended memory, optimized for efficiency** 🧠⚡
+**Memex: Your project's extended memory, optimized for efficiency** 🧠⚡

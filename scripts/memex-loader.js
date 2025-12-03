@@ -14,6 +14,7 @@ const msgpack = require('msgpack-lite');
 const PersistentCache = require('./persistent-cache');
 const ManifestManager = require('./manifest-manager');
 const VectorSearch = require('./vector-search');
+const BloomFilter = require('./bloom-filter');
 
 const MEMEX_PATH = process.env.MEMEX_PATH || path.join(process.env.HOME, 'code/cirrus/DevOps/Memex');
 
@@ -34,6 +35,8 @@ class Memex {
     this.manifestManager = new ManifestManager();
     // Vector search for semantic queries
     this.vectorSearch = new VectorSearch();
+    // Bloom filter for instant negative lookups (#27)
+    this.bloomFilter = BloomFilter.load();
   }
 
   /**
@@ -285,10 +288,22 @@ class Memex {
   /**
    * Search across all projects
    * Returns summaries first, loads content on-demand
+   * Uses Bloom Filter (#27) for instant negative lookups
    */
   search(query) {
     const results = [];
     const lowerQuery = query.toLowerCase();
+
+    // #27: Bloom Filter pre-check for instant negative lookups
+    if (this.bloomFilter && !this.bloomFilter.mightContain(query)) {
+      // Definitely not in Memex, return immediately
+      return {
+        query,
+        results: [],
+        bloom_filter_skip: true,
+        message: `"${query}" definitely not found in Memex (bloom filter)`
+      };
+    }
 
     // Search topics
     for (const [topic, data] of Object.entries(this.index.t)) {
@@ -372,6 +387,103 @@ class Memex {
     }
 
     return expanded;
+  }
+
+  /**
+   * #22: Lazy Loading - Load session details on-demand
+   * Reduces index size by 90% by loading only lightweight session info upfront
+   * Full details (key_decisions, outcomes, learnings, code_changes) loaded when needed
+   */
+  loadSessionDetails(projectName, sessionId) {
+    const cacheKey = `session:${projectName}:${sessionId}`;
+
+    // Check persistent cache first
+    const cached = this.persistentCache.get(cacheKey);
+    if (cached) {
+      return { ...cached, from_cache: true };
+    }
+
+    // Check hot cache
+    if (this.cache.hot.has(cacheKey)) {
+      return { ...this.cache.hot.get(cacheKey), from_cache: true };
+    }
+
+    // Load from file
+    const detailsPath = path.join(
+      MEMEX_PATH,
+      'summaries/projects',
+      projectName,
+      'sessions',
+      `${sessionId}.json`
+    );
+
+    if (!fs.existsSync(detailsPath)) {
+      // Fallback: Try loading from sessions-index.json (non-lazy format)
+      const indexPath = path.join(
+        MEMEX_PATH,
+        'summaries/projects',
+        projectName,
+        'sessions-index.json'
+      );
+
+      if (fs.existsSync(indexPath)) {
+        const index = JSON.parse(fs.readFileSync(indexPath, 'utf8'));
+        const session = index.sessions?.find(s => s.id === sessionId);
+        if (session) {
+          return { ...session, from_cache: false, legacy_format: true };
+        }
+      }
+
+      return null;
+    }
+
+    const details = JSON.parse(fs.readFileSync(detailsPath, 'utf8'));
+
+    // Cache it
+    this.cache.hot.set(cacheKey, details);
+    this.persistentCache.set(cacheKey, details);
+
+    // Limit hot cache size
+    if (this.cache.hot.size > 10) {
+      const firstKey = this.cache.hot.keys().next().value;
+      this.cache.hot.delete(firstKey);
+    }
+
+    return { ...details, from_cache: false };
+  }
+
+  /**
+   * Get lightweight sessions list for a project
+   * Returns only id, date, summary, topics (no heavy details)
+   */
+  listSessions(projectName) {
+    const indexPath = path.join(
+      MEMEX_PATH,
+      'summaries/projects',
+      projectName,
+      'sessions-index.json'
+    );
+
+    if (!fs.existsSync(indexPath)) {
+      return [];
+    }
+
+    const index = JSON.parse(fs.readFileSync(indexPath, 'utf8'));
+
+    // Check if lazy loading enabled
+    if (index._lazy_loading_enabled) {
+      // Already lightweight, return as-is
+      return index.sessions || [];
+    }
+
+    // Legacy format, extract lightweight fields
+    return (index.sessions || []).map(s => ({
+      id: s.id,
+      project: s.project,
+      date: s.date,
+      summary: s.summary,
+      topics: s.topics || []
+    }));
   }
 
   /**

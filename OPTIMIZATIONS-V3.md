@@ -138,7 +138,7 @@ stats: {
 
 **View stats:**
 ```bash
-node memex-loader-v3.js stats
+node memex-loader.js stats
 ```
 
 ---
@@ -268,18 +268,12 @@ session-full.json.gz    15 KB
 node Memex/scripts/compress-index.js
 ```
 
-**Step 2: Use v3 Loader**
+**Step 2: Use Optimized Loader**
 ```bash
-node Memex/scripts/memex-loader-v3.js startup
+node Memex/scripts/memex-loader.js startup
 ```
 
-**Step 3: (Optional) Switch Default**
-```bash
-mv memex-loader.js memex-loader-v2.js
-mv memex-loader-v3.js memex-loader.js
-```
-
-**Step 4: Verify Performance**
+**Step 3: Verify Performance**
 ```bash
 node memex-loader.js stats
 ```
@@ -290,10 +284,10 @@ node memex-loader.js stats
 
 ```bash
 # Performance statistics
-node memex-loader-v3.js stats
+node memex-loader.js stats
 
 # Preload frequently accessed data
-node memex-loader-v3.js preload
+node memex-loader.js preload
 
 # Compress index
 node compress-index.js

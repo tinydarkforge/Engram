@@ -233,12 +233,22 @@ Memex v4.0 focuses on three key areas:
 
 ## Prioritized Implementation Order
 
-### Phase 1: Foundation (Q1 2026)
-1. **#14: IndexedDB** - Persistent cache (1-2 weeks)
-2. **#21: Incremental Updates** - Fast sync (2-3 weeks)
-3. **#18: Vector Search** - Semantic search (2-3 weeks)
+### Phase 1: Quick Wins (✅ COMPLETE - Dec 2025)
+1. **#22: Lazy Loading** - 64% index reduction ✅
+2. **#27: Bloom Filters** - 500-1000x faster negative queries ✅
+3. **#36: Git Hook Integration** - Zero-effort session capture ✅
 
-**Total:** 5-8 weeks
+**Total:** 1 week
+**Impact:** 64% smaller index + instant negative lookups + automated capture
+
+See [PHASE-1-OPTIMIZATIONS.md](PHASE-1-OPTIMIZATIONS.md) for details.
+
+### Phase 1b: Foundation (Q1 2026)
+1. **#14: IndexedDB** - Persistent cache (1-2 weeks) *(partially done: SQLite cache implemented)*
+2. **#21: Incremental Updates** - Fast sync (2-3 weeks) ✅ *(COMPLETE)*
+3. **#18: Vector Search** - Semantic search (2-3 weeks) ✅ *(COMPLETE)*
+
+**Total:** 1-2 weeks remaining
 **Impact:** Instant startup + 100x faster updates + AI search
 
 ---
