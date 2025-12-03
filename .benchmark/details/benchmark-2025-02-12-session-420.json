@@ -1,0 +1,26 @@
+{
+  "key_decisions": [
+    "Decision 420-1: Important architectural choice",
+    "Decision 420-2: Performance optimization approach"
+  ],
+  "outcomes": [
+    "Outcome 420-1: Successfully implemented feature",
+    "Outcome 420-2: Improved performance by 70%"
+  ],
+  "learnings": [
+    "Learning 420-1: Best practice discovered",
+    "Learning 420-2: Anti-pattern to avoid"
+  ],
+  "code_changes": {
+    "files_added": [
+      "new-file-420.ts"
+    ],
+    "files_modified": [
+      "existing-420.ts",
+      "utils-420.ts"
+    ],
+    "files_deleted": [],
+    "lines_added": 114,
+    "lines_removed": 53
+  }
+}

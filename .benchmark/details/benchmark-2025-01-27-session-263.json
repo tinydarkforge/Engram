@@ -1,0 +1,26 @@
+{
+  "key_decisions": [
+    "Decision 263-1: Important architectural choice",
+    "Decision 263-2: Performance optimization approach"
+  ],
+  "outcomes": [
+    "Outcome 263-1: Successfully implemented feature",
+    "Outcome 263-2: Improved performance by 15%"
+  ],
+  "learnings": [
+    "Learning 263-1: Best practice discovered",
+    "Learning 263-2: Anti-pattern to avoid"
+  ],
+  "code_changes": {
+    "files_added": [
+      "new-file-263.ts"
+    ],
+    "files_modified": [
+      "existing-263.ts",
+      "utils-263.ts"
+    ],
+    "files_deleted": [],
+    "lines_added": 132,
+    "lines_removed": 23
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "key_decisions": [
+    "Decision 286-1: Important architectural choice",
+    "Decision 286-2: Performance optimization approach"
+  ],
+  "outcomes": [
+    "Outcome 286-1: Successfully implemented feature",
+    "Outcome 286-2: Improved performance by 75%"
+  ],
+  "learnings": [
+    "Learning 286-1: Best practice discovered",
+    "Learning 286-2: Anti-pattern to avoid"
+  ],
+  "code_changes": {
+    "files_added": [
+      "new-file-286.ts"
+    ],
+    "files_modified": [
+      "existing-286.ts",
+      "utils-286.ts"
+    ],
+    "files_deleted": [],
+    "lines_added": 69,
+    "lines_removed": 15
+  }
+}

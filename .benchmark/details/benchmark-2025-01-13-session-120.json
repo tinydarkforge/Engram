@@ -1,0 +1,26 @@
+{
+  "key_decisions": [
+    "Decision 120-1: Important architectural choice",
+    "Decision 120-2: Performance optimization approach"
+  ],
+  "outcomes": [
+    "Outcome 120-1: Successfully implemented feature",
+    "Outcome 120-2: Improved performance by 15%"
+  ],
+  "learnings": [
+    "Learning 120-1: Best practice discovered",
+    "Learning 120-2: Anti-pattern to avoid"
+  ],
+  "code_changes": {
+    "files_added": [
+      "new-file-120.ts"
+    ],
+    "files_modified": [
+      "existing-120.ts",
+      "utils-120.ts"
+    ],
+    "files_deleted": [],
+    "lines_added": 57,
+    "lines_removed": 49
+  }
+}

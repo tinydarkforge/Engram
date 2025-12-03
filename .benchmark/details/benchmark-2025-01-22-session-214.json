@@ -1,0 +1,26 @@
+{
+  "key_decisions": [
+    "Decision 214-1: Important architectural choice",
+    "Decision 214-2: Performance optimization approach"
+  ],
+  "outcomes": [
+    "Outcome 214-1: Successfully implemented feature",
+    "Outcome 214-2: Improved performance by 45%"
+  ],
+  "learnings": [
+    "Learning 214-1: Best practice discovered",
+    "Learning 214-2: Anti-pattern to avoid"
+  ],
+  "code_changes": {
+    "files_added": [
+      "new-file-214.ts"
+    ],
+    "files_modified": [
+      "existing-214.ts",
+      "utils-214.ts"
+    ],
+    "files_deleted": [],
+    "lines_added": 76,
+    "lines_removed": 40
+  }
+}

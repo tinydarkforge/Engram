@@ -1,0 +1,26 @@
+{
+  "key_decisions": [
+    "Decision 445-1: Important architectural choice",
+    "Decision 445-2: Performance optimization approach"
+  ],
+  "outcomes": [
+    "Outcome 445-1: Successfully implemented feature",
+    "Outcome 445-2: Improved performance by 91%"
+  ],
+  "learnings": [
+    "Learning 445-1: Best practice discovered",
+    "Learning 445-2: Anti-pattern to avoid"
+  ],
+  "code_changes": {
+    "files_added": [
+      "new-file-445.ts"
+    ],
+    "files_modified": [
+      "existing-445.ts",
+      "utils-445.ts"
+    ],
+    "files_deleted": [],
+    "lines_added": 239,
+    "lines_removed": 53
+  }
+}

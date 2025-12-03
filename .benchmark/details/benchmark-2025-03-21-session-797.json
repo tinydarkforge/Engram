@@ -1,0 +1,26 @@
+{
+  "key_decisions": [
+    "Decision 797-1: Important architectural choice",
+    "Decision 797-2: Performance optimization approach"
+  ],
+  "outcomes": [
+    "Outcome 797-1: Successfully implemented feature",
+    "Outcome 797-2: Improved performance by 41%"
+  ],
+  "learnings": [
+    "Learning 797-1: Best practice discovered",
+    "Learning 797-2: Anti-pattern to avoid"
+  ],
+  "code_changes": {
+    "files_added": [
+      "new-file-797.ts"
+    ],
+    "files_modified": [
+      "existing-797.ts",
+      "utils-797.ts"
+    ],
+    "files_deleted": [],
+    "lines_added": 174,
+    "lines_removed": 10
+  }
+}

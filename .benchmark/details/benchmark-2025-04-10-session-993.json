@@ -1,0 +1,26 @@
+{
+  "key_decisions": [
+    "Decision 993-1: Important architectural choice",
+    "Decision 993-2: Performance optimization approach"
+  ],
+  "outcomes": [
+    "Outcome 993-1: Successfully implemented feature",
+    "Outcome 993-2: Improved performance by 72%"
+  ],
+  "learnings": [
+    "Learning 993-1: Best practice discovered",
+    "Learning 993-2: Anti-pattern to avoid"
+  ],
+  "code_changes": {
+    "files_added": [
+      "new-file-993.ts"
+    ],
+    "files_modified": [
+      "existing-993.ts",
+      "utils-993.ts"
+    ],
+    "files_deleted": [],
+    "lines_added": 92,
+    "lines_removed": 24
+  }
+}

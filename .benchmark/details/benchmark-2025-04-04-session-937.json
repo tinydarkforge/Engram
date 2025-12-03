@@ -1,0 +1,26 @@
+{
+  "key_decisions": [
+    "Decision 937-1: Important architectural choice",
+    "Decision 937-2: Performance optimization approach"
+  ],
+  "outcomes": [
+    "Outcome 937-1: Successfully implemented feature",
+    "Outcome 937-2: Improved performance by 62%"
+  ],
+  "learnings": [
+    "Learning 937-1: Best practice discovered",
+    "Learning 937-2: Anti-pattern to avoid"
+  ],
+  "code_changes": {
+    "files_added": [
+      "new-file-937.ts"
+    ],
+    "files_modified": [
+      "existing-937.ts",
+      "utils-937.ts"
+    ],
+    "files_deleted": [],
+    "lines_added": 59,
+    "lines_removed": 34
+  }
+}

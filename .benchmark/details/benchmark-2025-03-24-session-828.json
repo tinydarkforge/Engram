@@ -1,0 +1,26 @@
+{
+  "key_decisions": [
+    "Decision 828-1: Important architectural choice",
+    "Decision 828-2: Performance optimization approach"
+  ],
+  "outcomes": [
+    "Outcome 828-1: Successfully implemented feature",
+    "Outcome 828-2: Improved performance by 15%"
+  ],
+  "learnings": [
+    "Learning 828-1: Best practice discovered",
+    "Learning 828-2: Anti-pattern to avoid"
+  ],
+  "code_changes": {
+    "files_added": [
+      "new-file-828.ts"
+    ],
+    "files_modified": [
+      "existing-828.ts",
+      "utils-828.ts"
+    ],
+    "files_deleted": [],
+    "lines_added": 135,
+    "lines_removed": 55
+  }
+}

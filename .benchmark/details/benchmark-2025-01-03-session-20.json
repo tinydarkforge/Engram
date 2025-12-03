@@ -1,0 +1,26 @@
+{
+  "key_decisions": [
+    "Decision 20-1: Important architectural choice",
+    "Decision 20-2: Performance optimization approach"
+  ],
+  "outcomes": [
+    "Outcome 20-1: Successfully implemented feature",
+    "Outcome 20-2: Improved performance by 59%"
+  ],
+  "learnings": [
+    "Learning 20-1: Best practice discovered",
+    "Learning 20-2: Anti-pattern to avoid"
+  ],
+  "code_changes": {
+    "files_added": [
+      "new-file-20.ts"
+    ],
+    "files_modified": [
+      "existing-20.ts",
+      "utils-20.ts"
+    ],
+    "files_deleted": [],
+    "lines_added": 168,
+    "lines_removed": 37
+  }
+}

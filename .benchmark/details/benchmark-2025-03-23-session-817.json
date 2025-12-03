@@ -1,0 +1,26 @@
+{
+  "key_decisions": [
+    "Decision 817-1: Important architectural choice",
+    "Decision 817-2: Performance optimization approach"
+  ],
+  "outcomes": [
+    "Outcome 817-1: Successfully implemented feature",
+    "Outcome 817-2: Improved performance by 10%"
+  ],
+  "learnings": [
+    "Learning 817-1: Best practice discovered",
+    "Learning 817-2: Anti-pattern to avoid"
+  ],
+  "code_changes": {
+    "files_added": [
+      "new-file-817.ts"
+    ],
+    "files_modified": [
+      "existing-817.ts",
+      "utils-817.ts"
+    ],
+    "files_deleted": [],
+    "lines_added": 175,
+    "lines_removed": 18
+  }
+}

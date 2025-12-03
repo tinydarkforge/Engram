@@ -1,0 +1,26 @@
+{
+  "key_decisions": [
+    "Decision 300-1: Important architectural choice",
+    "Decision 300-2: Performance optimization approach"
+  ],
+  "outcomes": [
+    "Outcome 300-1: Successfully implemented feature",
+    "Outcome 300-2: Improved performance by 55%"
+  ],
+  "learnings": [
+    "Learning 300-1: Best practice discovered",
+    "Learning 300-2: Anti-pattern to avoid"
+  ],
+  "code_changes": {
+    "files_added": [
+      "new-file-300.ts"
+    ],
+    "files_modified": [
+      "existing-300.ts",
+      "utils-300.ts"
+    ],
+    "files_deleted": [],
+    "lines_added": 105,
+    "lines_removed": 19
+  }
+}

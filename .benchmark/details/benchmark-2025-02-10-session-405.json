@@ -1,0 +1,26 @@
+{
+  "key_decisions": [
+    "Decision 405-1: Important architectural choice",
+    "Decision 405-2: Performance optimization approach"
+  ],
+  "outcomes": [
+    "Outcome 405-1: Successfully implemented feature",
+    "Outcome 405-2: Improved performance by 31%"
+  ],
+  "learnings": [
+    "Learning 405-1: Best practice discovered",
+    "Learning 405-2: Anti-pattern to avoid"
+  ],
+  "code_changes": {
+    "files_added": [
+      "new-file-405.ts"
+    ],
+    "files_modified": [
+      "existing-405.ts",
+      "utils-405.ts"
+    ],
+    "files_deleted": [],
+    "lines_added": 107,
+    "lines_removed": 21
+  }
+}

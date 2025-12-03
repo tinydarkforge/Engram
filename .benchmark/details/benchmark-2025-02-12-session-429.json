@@ -1,0 +1,26 @@
+{
+  "key_decisions": [
+    "Decision 429-1: Important architectural choice",
+    "Decision 429-2: Performance optimization approach"
+  ],
+  "outcomes": [
+    "Outcome 429-1: Successfully implemented feature",
+    "Outcome 429-2: Improved performance by 17%"
+  ],
+  "learnings": [
+    "Learning 429-1: Best practice discovered",
+    "Learning 429-2: Anti-pattern to avoid"
+  ],
+  "code_changes": {
+    "files_added": [
+      "new-file-429.ts"
+    ],
+    "files_modified": [
+      "existing-429.ts",
+      "utils-429.ts"
+    ],
+    "files_deleted": [],
+    "lines_added": 175,
+    "lines_removed": 43
+  }
+}

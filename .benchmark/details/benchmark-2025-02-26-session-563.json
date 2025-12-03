@@ -1,0 +1,26 @@
+{
+  "key_decisions": [
+    "Decision 563-1: Important architectural choice",
+    "Decision 563-2: Performance optimization approach"
+  ],
+  "outcomes": [
+    "Outcome 563-1: Successfully implemented feature",
+    "Outcome 563-2: Improved performance by 78%"
+  ],
+  "learnings": [
+    "Learning 563-1: Best practice discovered",
+    "Learning 563-2: Anti-pattern to avoid"
+  ],
+  "code_changes": {
+    "files_added": [
+      "new-file-563.ts"
+    ],
+    "files_modified": [
+      "existing-563.ts",
+      "utils-563.ts"
+    ],
+    "files_deleted": [],
+    "lines_added": 104,
+    "lines_removed": 36
+  }
+}
