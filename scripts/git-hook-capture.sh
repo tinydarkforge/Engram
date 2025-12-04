@@ -26,7 +26,10 @@ set -e
 
 # Get script directory (works even when called as symlink)
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-MEMEX_PATH="${MEMEX_PATH:-$(dirname $(dirname "$SCRIPT_DIR"))/Memex}"
+# Try to get MEMEX_PATH from: 1) env var, 2) git config, 3) relative to script
+GIT_CONFIG_PATH=$(git config --get memex.path 2>/dev/null || echo "")
+DEFAULT_PATH="$(dirname $(dirname "$SCRIPT_DIR"))/Memex"
+MEMEX_PATH="${MEMEX_PATH:-${GIT_CONFIG_PATH:-$DEFAULT_PATH}}"
 REMEMBER_SCRIPT="$MEMEX_PATH/scripts/remember"
 
 # Configuration
