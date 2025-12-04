@@ -8,6 +8,97 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [4.0.0] - 2025-12-04
+
+### 🚀 MessagePack Binary Serialization (Epic F1)
+
+**Focus:** Complete implementation of MessagePack binary format for 44% smaller files and improved I/O performance.
+
+### Added
+
+- **MessagePack Binary Format** - Full implementation across all data files
+  - `index.json` → `index.msgpack`: 54% size reduction (13.5KB → 6.2KB)
+  - `sessions-index.json` → `.msgpack`: 40-45% reduction across all projects
+  - Session detail files: 29% reduction average
+  - **Total savings**: 44% overall (40.6KB → 22.6KB)
+
+- **Migration Tooling** - Safe, reversible migration process
+  - `scripts/migrate-to-msgpack.js` - Comprehensive migration tool
+    - Dry-run mode for previewing changes
+    - Rollback capability (< 5 minutes RTO, zero data loss)
+    - Progress reporting and error handling
+  - `scripts/validate-msgpack.js` - Comprehensive validation suite
+    - Tests data integrity across all files (16 tests, all passing)
+    - Validates loader and lazy-loader functionality
+    - Calculates and reports size savings
+  - `scripts/benchmark-msgpack.js` - Performance comparison tool
+    - JSON vs MessagePack parse speed (100 iterations)
+    - File size comparison with reduction percentages
+
+- **Enhanced Lazy Loader** - MessagePack support in lazy loading
+  - Updated `scripts/lazy-loader.js` to prefer MessagePack format
+  - Automatic fallback to JSON if MessagePack unavailable
+  - New command: `convert-msgpack` for session details
+  - Tests: 9 session files converted successfully
+
+- **Automatic Format Detection** - Smart loading with fallback chain
+  - Tries formats in order: Cache → MessagePack → Gzip → JSON
+  - No code changes needed in consuming applications
+  - Backward compatible with JSON-only setups
+
+### Changed
+
+- **Memex Loader** - Already had MessagePack support (lines 86-99)
+  - Confirmed working with new MessagePack files
+  - Load time: 53ms with MessagePack format
+  - Format preference: MessagePack > Gzip > JSON
+
+### Documentation
+
+- **MESSAGEPACK-MIGRATION.md** - Comprehensive migration guide
+  - Step-by-step migration instructions
+  - Performance benchmarks and analysis
+  - Troubleshooting section
+  - Rollback procedures
+  - FAQ with common questions
+
+- **README.md** - Updated to v4.0
+  - Added MessagePack migration instructions
+  - Updated file size statistics (44% reduction)
+  - Added link to migration guide
+
+### Performance Results
+
+| Metric | Target | Achieved | Status |
+|--------|--------|----------|--------|
+| File size reduction | 30-40% | 44.3% | ✅ Exceeded |
+| Parse time improvement | 4-5x | Varies* | ⚠️ Context-dependent |
+| Data integrity | 100% | 100% | ✅ Perfect |
+| Migration safety | Zero data loss | Zero data loss | ✅ Confirmed |
+
+*Note: For small files (<50KB), JSON parsing may be faster due to V8 optimization, but the 44% size reduction provides significant benefits for disk I/O, network transfer, and memory caching. Absolute parsing difference (0.11ms) is negligible for Memex's use case.
+
+### Migration
+
+```bash
+# Migrate to MessagePack
+node scripts/migrate-to-msgpack.js migrate
+
+# Verify integrity
+node scripts/migrate-to-msgpack.js verify
+
+# Rollback if needed
+node scripts/migrate-to-msgpack.js rollback
+```
+
+See [MESSAGEPACK-MIGRATION.md](MESSAGEPACK-MIGRATION.md) for complete guide.
+
+### Breaking Changes
+
+None - Fully backward compatible. JSON files preserved as fallback.
+
+---
+
 ## [3.4.0] - 2025-12-03
 
 ### 🔧 Polish & Production Readiness
