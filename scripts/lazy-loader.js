@@ -16,6 +16,7 @@
 const fs = require('fs');
 const path = require('path');
 const { glob } = require('glob');
+const msgpack = require('msgpack-lite');
 
 const MEMEX_PATH = process.env.MEMEX_PATH || path.join(process.env.HOME, 'code/cirrus/DevOps/Memex');
 
@@ -120,21 +121,31 @@ class LazyLoader {
 
   /**
    * Load session details on-demand
+   * Supports MessagePack (preferred) and JSON (fallback)
    */
   loadSessionDetails(projectName, sessionId) {
-    const detailsPath = path.join(
+    const basePath = path.join(
       MEMEX_PATH,
       'summaries/projects',
       projectName,
       'sessions',
-      `${sessionId}.json`
+      sessionId
     );
 
-    if (!fs.existsSync(detailsPath)) {
-      return null;
+    // Try MessagePack first (faster + smaller)
+    const msgpackPath = `${basePath}.msgpack`;
+    if (fs.existsSync(msgpackPath)) {
+      const buffer = fs.readFileSync(msgpackPath);
+      return msgpack.decode(buffer);
     }
 
-    return JSON.parse(fs.readFileSync(detailsPath, 'utf8'));
+    // Fallback to JSON
+    const jsonPath = `${basePath}.json`;
+    if (fs.existsSync(jsonPath)) {
+      return JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
+    }
+
+    return null;
   }
 
   /**
@@ -175,6 +186,74 @@ class LazyLoader {
     stats.avg_session_full_bytes = Math.round(totalFullBytes / stats.total_sessions);
 
     return stats;
+  }
+
+  /**
+   * Convert session detail files to MessagePack format
+   * Creates .msgpack files alongside .json files (keeps JSON as fallback)
+   */
+  async convertSessionDetailsToMessagePack() {
+    console.log('🔄 Converting session details to MessagePack...');
+
+    const projectDirs = fs.readdirSync(path.join(MEMEX_PATH, 'summaries/projects'))
+      .filter(dir => {
+        const sessionsDir = path.join(MEMEX_PATH, 'summaries/projects', dir, 'sessions');
+        return fs.existsSync(sessionsDir);
+      });
+
+    let totalFiles = 0;
+    let totalSizeBefore = 0;
+    let totalSizeAfter = 0;
+
+    for (const projectDir of projectDirs) {
+      const sessionsDir = path.join(MEMEX_PATH, 'summaries/projects', projectDir, 'sessions');
+      const sessionFiles = fs.readdirSync(sessionsDir).filter(f => f.endsWith('.json'));
+
+      for (const sessionFile of sessionFiles) {
+        const jsonPath = path.join(sessionsDir, sessionFile);
+        const msgpackPath = jsonPath.replace(/\.json$/, '.msgpack');
+
+        // Skip if msgpack already exists
+        if (fs.existsSync(msgpackPath)) {
+          continue;
+        }
+
+        // Read JSON and convert to MessagePack
+        const json = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
+        const msgpackBuffer = msgpack.encode(json);
+
+        // Write MessagePack file
+        fs.writeFileSync(msgpackPath, msgpackBuffer);
+
+        const jsonSize = fs.statSync(jsonPath).size;
+        const msgpackSize = msgpackBuffer.length;
+
+        totalFiles++;
+        totalSizeBefore += jsonSize;
+        totalSizeAfter += msgpackSize;
+      }
+
+      if (sessionFiles.length > 0) {
+        console.log(`  ✓ ${projectDir}: ${sessionFiles.length} sessions converted`);
+      }
+    }
+
+    const reduction = totalSizeBefore > 0
+      ? ((totalSizeBefore - totalSizeAfter) / totalSizeBefore * 100).toFixed(1)
+      : 0;
+
+    console.log(`\n✅ Conversion complete`);
+    console.log(`   • Files: ${totalFiles}`);
+    console.log(`   • Before: ${(totalSizeBefore / 1024).toFixed(2)} KB`);
+    console.log(`   • After: ${(totalSizeAfter / 1024).toFixed(2)} KB`);
+    console.log(`   • Saved: ${((totalSizeBefore - totalSizeAfter) / 1024).toFixed(2)} KB (${reduction}%)`);
+
+    return {
+      total_files: totalFiles,
+      size_before_kb: totalSizeBefore / 1024,
+      size_after_kb: totalSizeAfter / 1024,
+      reduction_percent: parseFloat(reduction)
+    };
   }
 
   /**
@@ -244,6 +323,10 @@ if (require.main === module) {
           await lazyLoader.convertToLazyFormat();
           break;
 
+        case 'convert-msgpack':
+          await lazyLoader.convertSessionDetailsToMessagePack();
+          break;
+
         case 'revert':
           await lazyLoader.revertToFullFormat();
           break;
@@ -282,12 +365,14 @@ if (require.main === module) {
           console.log('');
           console.log('Commands:');
           console.log('  convert              - Convert to lazy-loading format');
+          console.log('  convert-msgpack      - Convert session details to MessagePack');
           console.log('  revert               - Revert to full format');
           console.log('  stats                - Show lazy loading statistics');
           console.log('  load <proj> <id>     - Load session details');
           console.log('');
           console.log('Example:');
           console.log('  lazy-loader.js convert');
+          console.log('  lazy-loader.js convert-msgpack');
           console.log('  lazy-loader.js load DemoProject ci-2025-12-03-hotfix');
       }
     } catch (error) {
