@@ -226,6 +226,28 @@ source ~/.zshrc
 
 ## Migration
 
+### From v3.x to v4.0 (MessagePack)
+
+```bash
+# 1. Migrate to MessagePack (44% smaller files)
+node scripts/migrate-to-msgpack.js migrate
+
+# 2. Verify migration
+node scripts/migrate-to-msgpack.js verify
+
+# 3. Test loader
+node scripts/memex-loader.js startup
+
+# Done!
+```
+
+**Backward compatible - rollback anytime:**
+```bash
+node scripts/migrate-to-msgpack.js rollback
+```
+
+**See [MESSAGEPACK-MIGRATION.md](MESSAGEPACK-MIGRATION.md) for detailed guide**
+
 ### From v3.2 to v3.3 (Phase 1)
 
 ```bash
@@ -240,11 +262,6 @@ cd /path/to/your/repo
 /path/to/Memex/scripts/git-hook-capture.sh install
 
 # Done!
-```
-
-**Backward compatible - rollback anytime:**
-```bash
-node scripts/lazy-loader.js revert
 ```
 
 ---
