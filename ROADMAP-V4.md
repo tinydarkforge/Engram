@@ -17,7 +17,69 @@ Memex v4.0 focuses on three key areas:
 
 ## Future Optimizations (10 Ideas)
 
-### High Priority (Must Have)
+### Foundation (Must Implement First)
+
+#### 📦 #15: MessagePack Binary Format 🚀 IN PROGRESS
+**Priority:** P0 (Critical Foundation)
+**Impact:** 37% smaller, 5x faster parsing
+**Complexity:** Medium
+**Estimated Time:** 1-2 weeks
+**Status:** 🚀 **IMPLEMENTING NOW** (Epic F1)
+
+**Benefits:**
+- 1.9KB → 1.2KB index (37% smaller)
+- 30ms → 6ms parse time (5x faster)
+- Benefits ALL other optimizations
+- Foundation for "Local Brain First"
+
+**Implementation:**
+- Convert index.json → index.msgpack
+- Convert session files → .msgpack
+- JSON fallback maintained
+- Migration tooling
+
+**Why Foundation:**
+- **Every optimization builds on this**
+- Makes all other epics faster
+- Must implement before other features
+- Low risk, high reward
+
+**Epic:** See `TASKS/EPICS/F1-messagepack.md` for detailed tasks
+
+---
+
+#### 🔄 #13: Worker Threads 📋 NEXT
+**Priority:** P0 (Critical Foundation)
+**Impact:** 3-5x faster bulk operations, non-blocking
+**Complexity:** High
+**Estimated Time:** 2-3 weeks
+**Status:** 📋 Planned (After F1)
+
+**Benefits:**
+- Non-blocking Memex lookups
+- Parallel session loading (60ms → 15ms)
+- Background indexing
+- Multi-core utilization
+- **Required for T0 (Query Interceptor)**
+- **Required for T2 (Relevance Scoring)**
+
+**Implementation:**
+- Worker pool (4-8 workers)
+- Message passing for results
+- Graceful error handling
+- Background embedding generation
+
+**Why Foundation:**
+- **Enables non-blocking T0 (Query Interceptor)**
+- **Enables parallel T2 (Relevance Scoring)**
+- Critical for "Local Brain First"
+- Must implement before T0 and T2
+
+**Epic:** See `TASKS/EPICS/F2-worker-threads.md` for detailed tasks
+
+---
+
+### High Priority (Intelligence Layer)
 
 #### 🔍 #18: Vector Search with Semantic Embeddings
 **Impact:** Revolutionary search capabilities
@@ -43,27 +105,21 @@ Memex v4.0 focuses on three key areas:
 
 ---
 
-#### 💾 #14: IndexedDB Persistent Cache
-**Impact:** 6x faster cold starts
-**Complexity:** Medium
-**Estimated Time:** 1-2 weeks
-
-**Benefits:**
-- Cache survives restarts (instant startup)
-- 30ms → 5ms cold start
-- Offline access to cached data
-- 98% cache hit rate
+#### 💾 #14: Persistent Cache ✅ DONE
+**Status:** ✅ **COMPLETE - SQLite Implementation**
+**Completed:** Dec 2025
 
 **Implementation:**
-- IndexedDB or SQLite for storage
-- TTL-based invalidation
-- Version-based cache busting
-- Background sync
+- SQLite persistent cache implemented in v3.3
+- TTL-based invalidation ✅
+- Version-based cache busting ✅
+- 60ms → 5ms cold start ✅
 
-**Why High Priority:**
-- Eliminates cold start penalty
-- Essential for production use
-- Better UX
+**Why Closed:**
+- SQLite cache already implemented (see `persistent-cache.js`)
+- SQLite is superior for Node.js/CLI use case
+- IndexedDB only needed for browser apps (not applicable)
+- **No further action required**
 
 ---
 
@@ -93,69 +149,20 @@ Memex v4.0 focuses on three key areas:
 
 ### Medium Priority (Should Have)
 
-#### 🚀 #12: WebAssembly JSON Parser
-**Impact:** 2-3x faster parsing
-**Complexity:** High
-**Estimated Time:** 2-4 weeks
+#### 🚀 #12: WebAssembly JSON Parser ❌ WON'T IMPLEMENT (NOW)
+**Status:** ❌ **Closed - Diminishing Returns**
+**Decision Date:** Dec 2025
 
-**Benefits:**
-- 30ms → 10ms load time
-- Better for large files
-- Lower memory usage
+**Why Closed:**
+- MessagePack (#15) already provides 5x parsing improvement
+- WebAssembly would only add 2-3x on top of that (going from 6ms to 3ms)
+- Diminishing returns for high complexity (2-4 weeks)
+- Fallback (MessagePack) is sufficient
 
-**Implementation:**
-- simdjson-wasm or sonic-rs
-- Fallback to native JSON.parse()
-- Benchmark-driven optimization
-
-**Why Medium Priority:**
-- Significant but not critical
-- Requires WASM expertise
-- Fallback available
-
----
-
-#### 🔄 #13: Worker Threads
-**Impact:** 3-5x faster bulk operations
-**Complexity:** High
-**Estimated Time:** 2-3 weeks
-
-**Benefits:**
-- Parallel session loading
-- Non-blocking search
-- Background indexing
-- Multi-core utilization
-
-**Implementation:**
-- Worker pool (4-8 workers)
-- Message passing for results
-- Background embedding generation
-
-**Why Medium Priority:**
-- Great for large datasets
-- Complements other optimizations
-- Adds complexity
-
----
-
-#### 📦 #15: MessagePack Binary Format
-**Impact:** 37% smaller, 5x faster parsing
-**Complexity:** Medium
-**Estimated Time:** 1-2 weeks
-
-**Benefits:**
-- 1.9KB → 1.2KB index
-- Faster parsing than JSON
-- Type-safe schemas
-
-**Trade-off:**
-- Not human-readable
-- Requires tooling
-
-**Why Medium Priority:**
-- Good ROI for effort
-- Maintains JSON fallback
-- Easy to implement
+**Revisit If:**
+- Profiling shows JSON/MessagePack parsing is still a bottleneck
+- After implementing all other optimizations
+- User demand for additional 2x improvement
 
 ---
 
