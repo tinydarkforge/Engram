@@ -121,6 +121,10 @@ class Recuerda {
     let sessionsIndex;
     if (fs.existsSync(indexPath)) {
       sessionsIndex = JSON.parse(fs.readFileSync(indexPath, 'utf8'));
+      // Ensure topics_index exists (backward compatibility)
+      if (!sessionsIndex.topics_index) {
+        sessionsIndex.topics_index = {};
+      }
     } else {
       sessionsIndex = {
         project: this.currentProject,
