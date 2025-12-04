@@ -1,4 +1,4 @@
-# Memex v3.3
+# Memex v4.0
 
 **Extended Memory for Claude - 94-98% Token Savings**
 
@@ -166,7 +166,7 @@ scripts/git-hook-capture.sh install  # Auto-capture on commit
 - ✅ **Incremental Updates**: 100x faster (only load changed files)
 - ✅ **Persistent Cache**: SQLite cache survives restarts
 - ✅ **Semantic Search**: AI-powered meaning-based search
-- ✅ **MessagePack**: 37% smaller files, 5x faster parsing
+- ✅ **MessagePack**: 44% smaller files, improved I/O (see [MESSAGEPACK-MIGRATION.md](MESSAGEPACK-MIGRATION.md))
 - ✅ **Smart Caching**: Hot + warm + persistent tiers
 
 **See [PHASE-1-OPTIMIZATIONS.md](PHASE-1-OPTIMIZATIONS.md) for Phase 1 details**
@@ -197,6 +197,7 @@ Files loaded: 1 (index only)
 
 - **[QUICKSTART.md](QUICKSTART.md)** - Get started in 5 minutes
 - **[HOW-MEMEX-SAVES-TOKENS.md](HOW-MEMEX-SAVES-TOKENS.md)** - Simple token savings guide
+- **[MESSAGEPACK-MIGRATION.md](MESSAGEPACK-MIGRATION.md)** - MessagePack migration guide
 - **[PHASE-1-OPTIMIZATIONS.md](PHASE-1-OPTIMIZATIONS.md)** - Latest optimizations
 - **[ROADMAP-V4.md](ROADMAP-V4.md)** - Future plans
 - **[HOW-IT-WORKS.md](HOW-IT-WORKS.md)** - Technical deep dive
