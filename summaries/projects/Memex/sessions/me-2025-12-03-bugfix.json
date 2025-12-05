@@ -1,0 +1,30 @@
+{
+  "id": "me-2025-12-03-bugfix",
+  "project": "Memex",
+  "date": "2025-12-03",
+  "summary": "Fix",
+  "topics": [
+    "bugfix",
+    "cache",
+    "project-detection"
+  ],
+  "key_decisions": [],
+  "outcomes": {
+    "completed": []
+  },
+  "learnings": [],
+  "code_changes": {
+    "files_added": [],
+    "files_modified": [
+      "index.msgpack",
+      "scripts/memex-loader.js",
+      "summaries/projects/Memex/sessions-index.json"
+    ],
+    "files_deleted": [],
+    "lines_added": 10,
+    "lines_removed": 2
+  },
+  "_lazy_loaded": true,
+  "_index_size_bytes": 131,
+  "_full_size_bytes": 389
+}

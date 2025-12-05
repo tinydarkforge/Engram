@@ -1,0 +1,28 @@
+{
+  "id": "me-2025-12-03-docs",
+  "project": "Memex",
+  "date": "2025-12-03",
+  "summary": "Add",
+  "topics": [
+    "docs",
+    "examples",
+    "quickstart"
+  ],
+  "key_decisions": [],
+  "outcomes": {
+    "completed": []
+  },
+  "learnings": [],
+  "code_changes": {
+    "files_added": [],
+    "files_modified": [
+      "QUICKSTART.md"
+    ],
+    "files_deleted": [],
+    "lines_added": 145,
+    "lines_removed": 0
+  },
+  "_lazy_loaded": true,
+  "_index_size_bytes": 123,
+  "_full_size_bytes": 309
+}

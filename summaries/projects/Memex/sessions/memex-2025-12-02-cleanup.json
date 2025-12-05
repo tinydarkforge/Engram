@@ -1,0 +1,28 @@
+{
+  "id": "memex-2025-12-02-cleanup",
+  "project": "Memex",
+  "date": "2025-12-02",
+  "summary": "Repository cleanup and bloom filter security review",
+  "topics": [
+    "cleanup",
+    "docs",
+    "bloom-filter",
+    "security",
+    "maintenance"
+  ],
+  "key_decisions": [
+    "Removed 8 obsolete documentation files (2,278 lines)",
+    "Updated .gitignore to exclude generated cache files",
+    "Kept compress-index.js for gzip fallback format",
+    "Bloom filter confirmed safe - no security risks"
+  ],
+  "outcomes": [
+    "Streamlined documentation: 7 core files remaining",
+    "Cleaner repository structure",
+    "Bloom filter analysis: 243 bytes, 0.03% false positive rate",
+    "No sensitive data in bloom filter (hashed bit patterns only)"
+  ],
+  "_lazy_loaded": true,
+  "_index_size_bytes": 203,
+  "_full_size_bytes": 651
+}
