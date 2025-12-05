@@ -12,36 +12,25 @@
 
 ## Deploy to Staging (from develop)
 
-⚠️ **Branch Protection**: The `staging` branch requires 1 approving review before merge.
-
-### Method 1: GitHub PR (Required due to branch protection)
+### Method 1: Force Reset (Recommended)
 
 ```bash
 # From DemoProject directory
-gh pr create --base staging --head develop --title "chore: deploy develop to staging"
-# Then approve and merge via GitHub UI or get teammate approval
+git fetch origin
+git checkout staging
+git reset --hard origin/develop
+git push --force origin staging
 ```
 
-1. Create PR: `develop` → `staging`
-2. Get 1 approval from teammate (or merge via GitHub web UI with bypass)
-3. DO auto-deploys on merge
+This overwrites staging with develop and triggers DO auto-deploy.
 
-### Method 2: Direct Merge (Only if branch protection disabled)
+### Method 2: Git Merge
 
 ```bash
 git fetch origin
 git checkout staging
 git merge origin/develop
 git push origin staging
-```
-
-### Method 3: Force Reset (Caution - requires branch protection bypass)
-
-```bash
-# WARNING: Overwrites staging history
-git checkout staging
-git reset --hard origin/develop
-git push --force origin staging
 ```
 
 ---
