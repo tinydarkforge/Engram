@@ -20,7 +20,7 @@
 - 2025-12-02: Repository cleanup and bloom filter security review
 
 ## Key Concepts
-memex, docs, automation, deployment, digitalocean
+memex, docs, project-management, security, automation
 
 ## Deep Queries
 ```bash
