@@ -1,10 +1,10 @@
 {
   "$schema": "./schemas/index.schema.json",
   "v": "2.0.0",
-  "u": "2025-12-06T12:16:37.176Z",
+  "u": "2025-12-08T10:16:07.873Z",
   "m": {
     "tp": 4,
-    "ts": 90,
+    "ts": 92,
     "gs": 5
   },
   "g": {
@@ -127,8 +127,8 @@
         "Python"
       ],
       "a": "monorepo",
-      "sc": 12,
-      "u": "2025-12-03",
+      "sc": 14,
+      "u": "2025-12-08",
       "mf": "metadata/projects/CirrusTranslate.json",
       "tp": [
         "auth",
@@ -320,7 +320,7 @@
         "DevOps",
         "CirrusTranslate"
       ],
-      "sc": 1
+      "sc": 4
     },
     "architecture": {
       "p": [
@@ -364,7 +364,7 @@
         "CirrusTranslate",
         "DevOps"
       ],
-      "sc": 1
+      "sc": 2
     },
     "integration": {
       "p": [
@@ -443,7 +443,7 @@
       "p": [
         "CirrusTranslate"
       ],
-      "sc": 1
+      "sc": 2
     },
     "pr-227": {
       "p": [
@@ -728,6 +728,36 @@
         "translate.hellocirrus"
       ],
       "sc": 6
+    },
+    "typescript": {
+      "p": [
+        "CirrusTranslate"
+      ],
+      "sc": 1
+    },
+    "frontend": {
+      "p": [
+        "CirrusTranslate"
+      ],
+      "sc": 1
+    },
+    "type-safety": {
+      "p": [
+        "CirrusTranslate"
+      ],
+      "sc": 1
+    },
+    "issue-299": {
+      "p": [
+        "CirrusTranslate"
+      ],
+      "sc": 1
+    },
+    "pr-301": {
+      "p": [
+        "CirrusTranslate"
+      ],
+      "sc": 1
     }
   },
   "cc": {
