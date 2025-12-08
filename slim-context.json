@@ -26,7 +26,7 @@
     "CirrusTranslate": {
       "desc": "ASL translation platform with automated quoting and workflow orchestration",
       "tech": "React, TypeScript, NestJS",
-      "sessions": 15,
+      "sessions": 16,
       "deploy": {
         "stg": "git fetch origin && git checkout staging && git reset --hard origin/develop && git push --force origin staging",
         "prd": "git checkout main && git merge origin/staging && git push origin main"
@@ -40,7 +40,7 @@
     "DevOps": {
       "desc": "DevOps tools, configurations, and Memex knowledge base",
       "tech": "Bash, KeePass",
-      "sessions": 6
+      "sessions": 7
     },
     "Memex": {
       "desc": "Extended memory system for Claude - token-optimized knowledge base",
@@ -50,7 +50,7 @@
     "translate.hellocirrus": {
       "desc": "Marketing website for CirrusTranslate with multilingual support",
       "tech": "Vite, JavaScript, i18next",
-      "sessions": 69
+      "sessions": 70
     },
     "MIRAGE": {
       "desc": "Background removal service using BriarMBG model",
@@ -96,6 +96,14 @@
     "DevOps": [
       {
         "d": "2025-12-08",
+        "s": "feat(memex): update CLAUDE.md with Neural Memory v2.0",
+        "t": [
+          "docs",
+          "feat"
+        ]
+      },
+      {
+        "d": "2025-12-08",
         "s": "feat(memex): add Neural Memory v1.0 with auto-deployment",
         "t": [
           "docs",
@@ -106,14 +114,6 @@
         "d": "2025-12-04",
         "s": "feat(memex): complete Epic F1 - MessagePack Binary Serialization v4.0",
         "t": [
-          "feat"
-        ]
-      },
-      {
-        "d": "2025-12-04",
-        "s": "feat(memex): complete epic planning for Local",
-        "t": [
-          "docs",
           "feat"
         ]
       }
@@ -132,6 +132,14 @@
     "translate.hellocirrus": [
       {
         "d": "2025-12-08",
+        "s": "feat(memex): update CLAUDE.md with Neural Memory v2.0",
+        "t": [
+          "docs",
+          "feat"
+        ]
+      },
+      {
+        "d": "2025-12-08",
         "s": "feat(memex): add Neural Memory CLAUDE.md context",
         "t": [
           "docs",
@@ -141,13 +149,6 @@
       {
         "d": "2025-12-06",
         "s": "chore: migrate to ESLint 9 and stylelint-config-standard 39",
-        "t": [
-          "dependencies"
-        ]
-      },
-      {
-        "d": "2025-12-06",
-        "s": "security: add SRI hashes and update packages",
         "t": [
           "dependencies"
         ]
