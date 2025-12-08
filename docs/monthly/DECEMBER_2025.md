@@ -5,7 +5,7 @@
 **Total Versions Released:** 6 (v3.1.0, v3.1.1, v3.2.0, v3.3.0, v3.4.0, v4.0.0)
 **Total Epics Completed:** 2 (Phase 1 Optimizations, Epic F1)
 **Total Tasks Completed:** 40+
-**Last Updated:** December 4, 2025
+**Last Updated:** December 8, 2025
 
 ---
 
@@ -24,6 +24,38 @@ December 2025 was an **exceptionally productive month** with **6 major releases*
 - **94% Index Size Reduction** (40.6KB → 2.4KB effective)
 - **1000x Faster** negative queries (bloom filter)
 - **$35/month Savings** per developer
+
+---
+
+## CirrusTranslate Updates
+
+### December 8, 2025
+
+**Upload Bug Fix & Testing Infrastructure**
+
+| Category | Tasks | Status |
+|----------|-------|--------|
+| **Bug Fix** | Jobs/Board file upload 500 error | ✅ Fixed |
+| **Root Cause** | `DO_SPACES_BUCKET` env var had `https://` prefix | ✅ Identified |
+| **Defensive Fix** | Added `normalizeEndpoint()` for S3 endpoint | ✅ PR #462 merged |
+| **Validation** | Added bucket name validation (fails loudly if contains http/https) | ✅ PR #464 |
+| **Cleanup** | Removed ~50 lines of debug console.logs from upload client | ✅ PR #464 |
+| **E2E Testing** | Playwright E2E tests for auth flows (8 tests) | ✅ PR #459 merged |
+| **Epic Closed** | #321 Comprehensive Testing & QA Pipeline | ✅ Complete |
+
+**Technical Details:**
+- **Issue:** `/v2/uploads/url` returning 500 Internal Server Error
+- **Root Cause:** `DO_SPACES_BUCKET=https://cirrus-translate-dev` (bucket name had URL protocol)
+- **Why Projects Worked:** `DigitalOceanStorageService` auto-adds `https://` to endpoint; `UnifiedUploadService` didn't
+- **Fix:** Corrected env var + added validation to catch this misconfiguration at startup
+
+**Issues/PRs:**
+- Issue #461: Upload fix tracking
+- PR #459: Playwright E2E tests
+- PR #460: S3 env var fallbacks
+- PR #462: Endpoint normalization
+- PR #464: Debug log cleanup + bucket validation
+- Issue #463: Deploy time optimization (backlog)
 
 ---
 
