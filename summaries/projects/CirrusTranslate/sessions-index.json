@@ -1,8 +1,32 @@
 {
   "project": "CirrusTranslate",
-  "total_sessions": 15,
+  "total_sessions": 16,
   "last_updated": "2025-12-08",
   "sessions": [
+    {
+      "id": "ci-2025-12-08-deployment",
+      "project": "CirrusTranslate",
+      "date": "2025-12-08",
+      "summary": "Fixed",
+      "topics": [
+        "deployment",
+        "digitalocean",
+        "roles",
+        "documentation"
+      ],
+      "key_decisions": [],
+      "outcomes": {
+        "completed": []
+      },
+      "learnings": [],
+      "code_changes": {
+        "files_added": [],
+        "files_modified": [],
+        "files_deleted": [],
+        "lines_added": 0,
+        "lines_removed": 0
+      }
+    },
     {
       "id": "ci-2025-12-08-session",
       "project": "CirrusTranslate",
@@ -182,5 +206,18 @@
   ],
   "_lazy_loading_enabled": true,
   "_session_details_path": "sessions/{id}.json",
-  "topics_index": {}
+  "topics_index": {
+    "deployment": [
+      "ci-2025-12-08-deployment"
+    ],
+    "digitalocean": [
+      "ci-2025-12-08-deployment"
+    ],
+    "roles": [
+      "ci-2025-12-08-deployment"
+    ],
+    "documentation": [
+      "ci-2025-12-08-deployment"
+    ]
+  }
 }
