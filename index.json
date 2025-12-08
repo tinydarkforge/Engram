@@ -3,7 +3,7 @@
   "v": "2.0.0",
   "u": "2025-12-08T15:50:55.851Z",
   "m": {
-    "tp": 4,
+    "tp": 6,
     "ts": 95,
     "gs": 5
   },
@@ -275,6 +275,54 @@
           "translate": "npm run translate",
           "validate": "npm run validate:translations"
         }
+      }
+    },
+    "MIRAGE": {
+      "n": "MIRAGE",
+      "r": "git@github.com:Cirrus-Inc/MIRAGE.git",
+      "d": "Background removal service using BriarMBG model",
+      "ts": [
+        "Python",
+        "Docker",
+        "Flask"
+      ],
+      "a": "microservice",
+      "sc": 1,
+      "u": "2025-12-08",
+      "mf": "metadata/projects/MIRAGE.json",
+      "tp": [
+        "mirage",
+        "python",
+        "docker",
+        "ml"
+      ],
+      "qr": {
+        "run": "docker build -t mirage . && docker run -p 5000:5000 mirage",
+        "tech": "BriarMBG background removal"
+      }
+    },
+    "Aither": {
+      "n": "Aither",
+      "r": "git@github.com:Cirrus-Inc/Aither.git",
+      "d": "Business management platform with billing and documentation",
+      "ts": [
+        "HTML",
+        "JavaScript",
+        "CSS"
+      ],
+      "a": "web-app",
+      "sc": 1,
+      "u": "2025-12-08",
+      "mf": "metadata/projects/Aither.json",
+      "tp": [
+        "aither",
+        "billing",
+        "admin",
+        "web"
+      ],
+      "qr": {
+        "docs": "See DOCUMENTATION_INDEX.md",
+        "billing": "See BILLING_ANALYSIS.md"
       }
     }
   },
