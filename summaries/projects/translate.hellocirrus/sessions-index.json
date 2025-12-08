@@ -1,8 +1,35 @@
 {
   "project": "translate.hellocirrus",
   "last_updated": "2025-12-08",
-  "total_sessions": 69,
+  "total_sessions": 70,
   "sessions": [
+    {
+      "id": "tr-2025-12-08-session",
+      "project": "translate.hellocirrus",
+      "date": "2025-12-08",
+      "summary": "feat(memex): update CLAUDE.md with Neural Memory v2.0",
+      "topics": [
+        "",
+        "docs",
+        "feat"
+      ],
+      "key_decisions": [],
+      "outcomes": {
+        "completed": []
+      },
+      "learnings": [],
+      "code_changes": {
+        "files_added": [],
+        "files_modified": [
+          ".claude/settings.local.json",
+          "docs/chatbot/knowledge-es.txt",
+          "translation-quality-report.json"
+        ],
+        "files_deleted": [],
+        "lines_added": 9,
+        "lines_removed": 3
+      }
+    },
     {
       "id": "tr-2025-12-08-session",
       "project": "translate.hellocirrus",
@@ -540,12 +567,15 @@
   "_session_details_path": "sessions/{id}.json",
   "topics_index": {
     "": [
+      "tr-2025-12-08-session",
       "tr-2025-12-08-session"
     ],
     "docs": [
+      "tr-2025-12-08-session",
       "tr-2025-12-08-session"
     ],
     "feat": [
+      "tr-2025-12-08-session",
       "tr-2025-12-08-session"
     ]
   }
