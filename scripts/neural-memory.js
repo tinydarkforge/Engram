@@ -837,6 +837,12 @@ const neural = new NeuralMemory();
         });
         break;
 
+      case 'viz':
+        console.log('🎨 Generating graph visualization...');
+        const { execSync } = require('child_process');
+        execSync('node ' + path.join(MEMEX_PATH, 'scripts/graph-viz.js'), { stdio: 'inherit' });
+        break;
+
       default:
         console.log(`
 Neural Memory v2.0 - AI-Native Knowledge Storage
@@ -852,6 +858,7 @@ Phase 2 - Knowledge Graph:
   node neural-memory.js path <from> <to>      How are two concepts connected?
   node neural-memory.js learn <concept>       What did we learn about this?
   node neural-memory.js concepts              List all concepts in graph
+  node neural-memory.js viz                   Open interactive graph visualization
 
 Examples:
   node neural-memory.js relates docker
