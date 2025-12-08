@@ -286,10 +286,12 @@ if (args.includes('--list')) {
 Deploy Neural Memory to all Claude instances
 
 Usage:
-  node deploy-neural.js           Deploy to all repositories
-  node deploy-neural.js --list    List target repositories
-  node deploy-neural.js --dry-run Show what would be deployed
-  node deploy-neural.js --hooks   Setup auto-refresh hooks
+  node deploy-neural.js                    Deploy to all repositories
+  node deploy-neural.js --project <name>   Deploy to single project
+  node deploy-neural.js --list             List target repositories
+  node deploy-neural.js --dry-run          Show what would be deployed
+  node deploy-neural.js --hooks            Setup auto-refresh hooks
+  node deploy-neural.js --quiet            Suppress output (for hooks)
 
 This deploys CLAUDE.md files containing:
 - Quick refs (commit format, PR requirements)
@@ -297,12 +299,44 @@ This deploys CLAUDE.md files containing:
 - Recent sessions and key concepts
 - Commands for deep queries
 `);
+} else if (args.includes('--project')) {
+  const projectIdx = args.indexOf('--project');
+  const projectName = args[projectIdx + 1];
+  const quiet = args.includes('--quiet');
+
+  if (!projectName) {
+    console.error('Usage: deploy-neural.js --project <name>');
+    process.exit(1);
+  }
+
+  deployer.load();
+  const repoPath = REPO_MAP[projectName];
+
+  if (!repoPath) {
+    if (!quiet) console.error(`Unknown project: ${projectName}`);
+    process.exit(1);
+  }
+
+  const content = deployer.bundles[projectName]
+    ? deployer.generateClaudeMd(projectName, repoPath)
+    : deployer.generateGenericClaudeMd(projectName);
+
+  const claudeDir = path.join(repoPath, '.claude');
+  const claudeMdPath = path.join(claudeDir, 'CLAUDE.md');
+
+  if (!fs.existsSync(claudeDir)) {
+    fs.mkdirSync(claudeDir, { recursive: true });
+  }
+
+  fs.writeFileSync(claudeMdPath, content);
+  if (!quiet) console.log(`✅ ${projectName}: ${claudeMdPath} (${content.length} bytes)`);
 } else {
-  console.log('🚀 Deploying Neural Memory to all repositories...\n');
-  const results = deployer.deploy();
+  const quiet = args.includes('--quiet');
+  if (!quiet) console.log('🚀 Deploying Neural Memory to all repositories...\n');
+  const results = deployer.deploy({ verbose: !quiet });
 
   const deployed = results.filter(r => r.status === 'deployed').length;
   const skipped = results.filter(r => r.status === 'skipped').length;
 
-  console.log(`\n✅ Deployed: ${deployed} | Skipped: ${skipped}`);
+  if (!quiet) console.log(`\n✅ Deployed: ${deployed} | Skipped: ${skipped}`);
 }
