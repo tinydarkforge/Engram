@@ -441,6 +441,264 @@ class NeuralMemory {
 
     return lines.join('\n');
   }
+
+  // ============================================
+  // PHASE 2: Knowledge Graph Queries
+  // ============================================
+
+  /**
+   * Find what relates to a concept
+   * "What relates to docker?" → optimization, deployment, build...
+   */
+  async relates(concept) {
+    await this.loadStructures();
+
+    if (!this.graph) {
+      return { error: 'Graph not built. Run: node neural-memory.js build' };
+    }
+
+    const normalized = concept.toLowerCase();
+    const node = this.graph.nodes[normalized];
+    const edges = this.graph.edges[normalized] || [];
+
+    if (!node) {
+      // Try fuzzy match
+      const similar = Object.keys(this.graph.nodes)
+        .filter(k => k.includes(normalized) || normalized.includes(k))
+        .slice(0, 5);
+
+      return {
+        concept: normalized,
+        found: false,
+        similar: similar.length > 0 ? similar : null,
+        message: `Concept "${concept}" not found in graph`
+      };
+    }
+
+    // Get sessions for this concept
+    const sessions = node.s || [];
+
+    // Get related concepts with strength
+    const related = edges.map(e => ({
+      concept: e.c,
+      strength: e.w,
+      shared_sessions: e.w
+    }));
+
+    // Find second-degree connections (related to related)
+    const secondDegree = [];
+    for (const edge of edges.slice(0, 3)) {
+      const subEdges = this.graph.edges[edge.c] || [];
+      for (const sub of subEdges.slice(0, 3)) {
+        if (sub.c !== normalized && !related.find(r => r.concept === sub.c)) {
+          secondDegree.push({
+            concept: sub.c,
+            via: edge.c,
+            strength: sub.w
+          });
+        }
+      }
+    }
+
+    return {
+      concept: normalized,
+      found: true,
+      weight: node.w,
+      sessions: sessions.slice(0, 5),
+      directly_related: related,
+      second_degree: [...new Map(secondDegree.map(d => [d.concept, d])).values()].slice(0, 5)
+    };
+  }
+
+  /**
+   * Find path between two concepts
+   * "How are docker and typescript connected?"
+   */
+  async path(from, to) {
+    await this.loadStructures();
+
+    if (!this.graph) {
+      return { error: 'Graph not built. Run: node neural-memory.js build' };
+    }
+
+    const fromNorm = from.toLowerCase();
+    const toNorm = to.toLowerCase();
+
+    if (!this.graph.nodes[fromNorm]) {
+      return { error: `Concept "${from}" not found` };
+    }
+    if (!this.graph.nodes[toNorm]) {
+      return { error: `Concept "${to}" not found` };
+    }
+
+    // BFS to find shortest path
+    const visited = new Set();
+    const queue = [[fromNorm]];
+    const maxDepth = 4;
+
+    while (queue.length > 0) {
+      const path = queue.shift();
+      const current = path[path.length - 1];
+
+      if (current === toNorm) {
+        return {
+          from: fromNorm,
+          to: toNorm,
+          connected: true,
+          path: path,
+          distance: path.length - 1,
+          explanation: this.explainPath(path)
+        };
+      }
+
+      if (path.length >= maxDepth) continue;
+      if (visited.has(current)) continue;
+      visited.add(current);
+
+      const edges = this.graph.edges[current] || [];
+      for (const edge of edges) {
+        if (!visited.has(edge.c)) {
+          queue.push([...path, edge.c]);
+        }
+      }
+    }
+
+    return {
+      from: fromNorm,
+      to: toNorm,
+      connected: false,
+      message: `No path found between "${from}" and "${to}" within ${maxDepth} hops`
+    };
+  }
+
+  /**
+   * Explain a path between concepts
+   */
+  explainPath(path) {
+    if (path.length < 2) return '';
+
+    const parts = [];
+    for (let i = 0; i < path.length - 1; i++) {
+      const from = path[i];
+      const to = path[i + 1];
+      const edges = this.graph.edges[from] || [];
+      const edge = edges.find(e => e.c === to);
+      const strength = edge ? edge.w : 0;
+
+      parts.push(`${from} → ${to} (${strength} shared)`);
+    }
+
+    return parts.join(' → ');
+  }
+
+  /**
+   * Learn about a concept - get sessions, decisions, and context
+   * "What did we learn about authentication?"
+   */
+  async learn(concept) {
+    await this.loadStructures();
+
+    if (!this.graph) {
+      return { error: 'Graph not built. Run: node neural-memory.js build' };
+    }
+
+    const normalized = concept.toLowerCase();
+    const node = this.graph.nodes[normalized];
+
+    if (!node) {
+      return { error: `Concept "${concept}" not found` };
+    }
+
+    // Get all sessions for this concept
+    const sessionIds = node.s || [];
+
+    // Load session details from sessions-index files
+    const sessionsDetails = [];
+    const projectsDir = path.join(MEMEX_PATH, 'summaries/projects');
+
+    if (fs.existsSync(projectsDir)) {
+      for (const project of fs.readdirSync(projectsDir)) {
+        const indexPath = path.join(projectsDir, project, 'sessions-index.json');
+        if (!fs.existsSync(indexPath)) continue;
+
+        try {
+          const data = JSON.parse(fs.readFileSync(indexPath, 'utf8'));
+          for (const session of data.sessions || []) {
+            if (sessionIds.includes(session.id)) {
+              sessionsDetails.push({
+                id: session.id,
+                project: project,
+                date: session.date,
+                summary: session.summary,
+                topics: session.topics || []
+              });
+            }
+          }
+        } catch (e) {
+          // Skip on error
+        }
+      }
+    }
+
+    // Sort by date (newest first)
+    sessionsDetails.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    // Get related concepts for context
+    const related = (this.graph.edges[normalized] || [])
+      .slice(0, 5)
+      .map(e => e.c);
+
+    return {
+      concept: normalized,
+      total_sessions: node.w,
+      sessions: sessionsDetails.slice(0, 10),
+      related_concepts: related,
+      summary: this.summarizeLearnings(sessionsDetails)
+    };
+  }
+
+  /**
+   * Summarize learnings from sessions
+   */
+  summarizeLearnings(sessions) {
+    if (sessions.length === 0) return 'No sessions found';
+
+    const projects = [...new Set(sessions.map(s => s.project))];
+    const dateRange = sessions.length > 1
+      ? `${sessions[sessions.length - 1].date} to ${sessions[0].date}`
+      : sessions[0].date;
+
+    return `${sessions.length} sessions across ${projects.join(', ')} (${dateRange})`;
+  }
+
+  /**
+   * List all concepts in the graph
+   */
+  async concepts(options = {}) {
+    await this.loadStructures();
+
+    if (!this.graph) {
+      return { error: 'Graph not built. Run: node neural-memory.js build' };
+    }
+
+    const { minWeight = 1, limit = 20 } = options;
+
+    const concepts = Object.entries(this.graph.nodes)
+      .filter(([_, v]) => v.w >= minWeight)
+      .sort((a, b) => b[1].w - a[1].w)
+      .slice(0, limit)
+      .map(([k, v]) => ({
+        concept: k,
+        sessions: v.w,
+        related: (this.graph.edges[k] || []).length
+      }));
+
+    return {
+      total: Object.keys(this.graph.nodes).length,
+      showing: concepts.length,
+      concepts
+    };
+  }
 }
 
 // CLI
@@ -495,15 +753,110 @@ const neural = new NeuralMemory();
         console.log(JSON.stringify(stats, null, 2));
         break;
 
+      // ============================================
+      // PHASE 2: Knowledge Graph Commands
+      // ============================================
+
+      case 'relates':
+        const relatesConcept = process.argv[3];
+        if (!relatesConcept) {
+          console.error('Usage: neural-memory.js relates <concept>');
+          console.error('Example: neural-memory.js relates docker');
+          process.exit(1);
+        }
+        console.log(`🔗 What relates to "${relatesConcept}"?\n`);
+        const relatesResult = await neural.relates(relatesConcept);
+        if (relatesResult.found) {
+          console.log(`Concept: ${relatesResult.concept} (${relatesResult.weight} sessions)\n`);
+          console.log('Directly related:');
+          relatesResult.directly_related.forEach(r => {
+            console.log(`  ${r.concept} (${r.strength} shared sessions)`);
+          });
+          if (relatesResult.second_degree.length > 0) {
+            console.log('\nSecond-degree (related to related):');
+            relatesResult.second_degree.forEach(r => {
+              console.log(`  ${r.concept} (via ${r.via})`);
+            });
+          }
+          console.log('\nSample sessions:', relatesResult.sessions.slice(0, 3).join(', '));
+        } else {
+          console.log(relatesResult.message);
+          if (relatesResult.similar) {
+            console.log('Did you mean:', relatesResult.similar.join(', '));
+          }
+        }
+        break;
+
+      case 'path':
+        const pathFrom = process.argv[3];
+        const pathTo = process.argv[4];
+        if (!pathFrom || !pathTo) {
+          console.error('Usage: neural-memory.js path <from> <to>');
+          console.error('Example: neural-memory.js path docker typescript');
+          process.exit(1);
+        }
+        console.log(`🛤️  Path from "${pathFrom}" to "${pathTo}":\n`);
+        const pathResult = await neural.path(pathFrom, pathTo);
+        if (pathResult.connected) {
+          console.log(`Connected! Distance: ${pathResult.distance} hops\n`);
+          console.log(`Path: ${pathResult.path.join(' → ')}`);
+          console.log(`\nExplanation: ${pathResult.explanation}`);
+        } else {
+          console.log(pathResult.message || pathResult.error);
+        }
+        break;
+
+      case 'learn':
+        const learnConcept = process.argv[3];
+        if (!learnConcept) {
+          console.error('Usage: neural-memory.js learn <concept>');
+          console.error('Example: neural-memory.js learn docker');
+          process.exit(1);
+        }
+        console.log(`📚 Learning about "${learnConcept}":\n`);
+        const learnResult = await neural.learn(learnConcept);
+        if (learnResult.error) {
+          console.log(learnResult.error);
+        } else {
+          console.log(`Summary: ${learnResult.summary}\n`);
+          console.log('Related concepts:', learnResult.related_concepts.join(', '));
+          console.log('\nSessions:');
+          learnResult.sessions.forEach(s => {
+            console.log(`  [${s.date}] ${s.project}: ${s.summary.slice(0, 60)}...`);
+          });
+        }
+        break;
+
+      case 'concepts':
+        console.log('📊 All concepts in graph:\n');
+        const conceptsResult = await neural.concepts({ limit: 30 });
+        console.log(`Total: ${conceptsResult.total} concepts\n`);
+        console.log('Top concepts by session count:');
+        conceptsResult.concepts.forEach(c => {
+          console.log(`  ${c.concept.padEnd(20)} ${c.sessions} sessions, ${c.related} related`);
+        });
+        break;
+
       default:
         console.log(`
-Neural Memory v1.0 - AI-Native Knowledge Storage
+Neural Memory v2.0 - AI-Native Knowledge Storage
 
 Usage:
   node neural-memory.js build           Build all neural structures
   node neural-memory.js query <text>    Semantic query with graph enrichment
   node neural-memory.js bundle [project] Get instant context bundle
   node neural-memory.js stats           Show neural memory statistics
+
+Phase 2 - Knowledge Graph:
+  node neural-memory.js relates <concept>     What relates to this concept?
+  node neural-memory.js path <from> <to>      How are two concepts connected?
+  node neural-memory.js learn <concept>       What did we learn about this?
+  node neural-memory.js concepts              List all concepts in graph
+
+Examples:
+  node neural-memory.js relates docker
+  node neural-memory.js path docker typescript
+  node neural-memory.js learn memex
 
 This creates:
   .neural/embeddings.msgpack   Binary embeddings (50% smaller)
