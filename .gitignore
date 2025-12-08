@@ -6,3 +6,7 @@ package-lock.json
 .memex-manifest.json
 *.db
 *.db-journal
+.archive/
+
+# Neural memory (regenerate with: node scripts/neural-memory.js build)
+.neural/
