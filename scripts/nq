@@ -1,0 +1,16 @@
+#!/bin/bash
+# nq - Neural Query (fast CLI for daemon)
+# Usage: nq relates docker | nq path docker memex | nq learn typescript
+
+SOCKET="/Users/doceno/code/cirrus/DevOps/Memex/.neural/daemon.sock"
+
+if [ ! -S "$SOCKET" ]; then
+  echo "Daemon not running. Start with: node neural-daemon.js start"
+  exit 1
+fi
+
+CMD=$1
+shift
+ARGS=$(printf '"%s",' "$@" | sed 's/,$//')
+
+echo "{\"cmd\":\"$CMD\",\"args\":[$ARGS]}" | nc -U "$SOCKET" 2>/dev/null
