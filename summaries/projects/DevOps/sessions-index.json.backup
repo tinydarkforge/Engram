@@ -5,6 +5,7 @@
   "sessions": [
     {
       "id": "de-2025-12-04-session",
+      "project": "DevOps",
       "date": "2025-12-04",
       "summary": "feat(memex): complete Epic F1 - MessagePack Binary Serialization v4.0",
       "topics": [
@@ -14,6 +15,7 @@
     },
     {
       "id": "de-2025-12-04-session",
+      "project": "DevOps",
       "date": "2025-12-04",
       "summary": "feat(memex): complete epic planning for Local",
       "topics": [
@@ -24,6 +26,7 @@
     },
     {
       "id": "de-2025-12-04-memex",
+      "project": "DevOps",
       "date": "2025-12-04",
       "summary": "--project",
       "topics": [
@@ -38,6 +41,7 @@
     },
     {
       "id": "de-2025-12-04-session",
+      "project": "DevOps",
       "date": "2025-12-04",
       "summary": "chore(memex): remove test file after successful hook verification",
       "topics": [
@@ -48,6 +52,7 @@
     },
     {
       "id": "de-2025-12-04-docs",
+      "project": "DevOps",
       "date": "2025-12-04",
       "summary": "test(memex): verify automated session capture [memex: testing, git-hooks]",
       "topics": [
@@ -58,6 +63,53 @@
       ]
     }
   ],
+  "topics_index": {
+    "docs": [
+      "de-2025-12-04-docs",
+      "de-2025-12-04-session",
+      "de-2025-12-04-session"
+    ],
+    "git-hooks": [
+      "de-2025-12-04-docs",
+      "de-2025-12-04-memex"
+    ],
+    "test": [
+      "de-2025-12-04-docs"
+    ],
+    "testing": [
+      "de-2025-12-04-docs"
+    ],
+    "": [
+      "de-2025-12-04-session",
+      "de-2025-12-04-session",
+      "de-2025-12-04-session"
+    ],
+    "chore": [
+      "de-2025-12-04-session"
+    ],
+    "memex": [
+      "de-2025-12-04-memex"
+    ],
+    "devops": [
+      "de-2025-12-04-memex"
+    ],
+    "automation": [
+      "de-2025-12-04-memex"
+    ],
+    "cross-project": [
+      "de-2025-12-04-memex"
+    ],
+    "knowledge-base": [
+      "de-2025-12-04-memex"
+    ],
+    "implementation": [
+      "de-2025-12-04-memex"
+    ],
+    "feat": [
+      "de-2025-12-04-session",
+      "de-2025-12-04-session"
+    ]
+  },
   "_lazy_loading_enabled": true,
   "_session_details_path": "sessions/{id}.json"
 }

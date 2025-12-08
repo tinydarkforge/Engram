@@ -1,0 +1,146 @@
+{
+  "v": "1.0",
+  "ts": "2025-12-08",
+  "qr": {
+    "commit": {
+      "fmt": "<type>(<scope>): <description>",
+      "types": "feat|fix|docs|style|refactor|test|chore|perf|ci",
+      "ex": "feat(auth): add OAuth2 login"
+    },
+    "pr": [
+      "tests",
+      "self-review",
+      "lint",
+      "typecheck",
+      "build",
+      "1 approval"
+    ],
+    "branch": {
+      "main": "prod",
+      "staging": "QA",
+      "develop": "dev",
+      "feature/*": "features"
+    }
+  },
+  "projects": {
+    "CirrusTranslate": {
+      "desc": "ASL translation platform with automated quoting and workflow orchestration",
+      "tech": "React, TypeScript, NestJS",
+      "sessions": 14,
+      "deploy": {
+        "stg": "git fetch origin && git checkout staging && git reset --hard origin/develop && git push --force origin staging",
+        "prd": "git checkout main && git merge origin/staging && git push origin main"
+      },
+      "env": {
+        "dev": "https://dev.cirrustranslate.com",
+        "stg": "https://staging.cirrustranslate.com",
+        "prd": "https://cirrustranslate.com"
+      }
+    },
+    "DevOps": {
+      "desc": "DevOps tools, configurations, and Memex knowledge base",
+      "tech": "Bash, KeePass",
+      "sessions": 5
+    },
+    "Memex": {
+      "desc": "Extended memory system for Claude - token-optimized knowledge base",
+      "tech": "Node.js, JavaScript",
+      "sessions": 5
+    },
+    "translate.hellocirrus": {
+      "desc": "Marketing website for CirrusTranslate with multilingual support",
+      "tech": "Vite, JavaScript, i18next",
+      "sessions": 68
+    }
+  },
+  "recent": {
+    "CirrusTranslate": [
+      {
+        "d": "2025-12-05",
+        "s": "Fixed all remaining TypeScript errors (76+ to 0) including UI component types, p",
+        "t": [
+          "typescript",
+          "bug-fix",
+          "frontend"
+        ]
+      },
+      {
+        "d": "2025-12-03",
+        "s": "HOTFIX: Fixed deployment failure by moving Prisma CLI to dependencies for produc",
+        "t": [
+          "hotfix",
+          "docker",
+          "prisma"
+        ]
+      },
+      {
+        "d": "2025-12-02",
+        "s": "Added Memex auto-update on startup - automatically stays in sync with Cirrus-Inc",
+        "t": [
+          "memex",
+          "automation",
+          "hooks"
+        ]
+      }
+    ],
+    "DevOps": [
+      {
+        "d": "2025-12-04",
+        "s": "feat(memex): complete Epic F1 - MessagePack Binary Serialization v4.0",
+        "t": [
+          "feat"
+        ]
+      },
+      {
+        "d": "2025-12-04",
+        "s": "feat(memex): complete epic planning for Local",
+        "t": [
+          "docs",
+          "feat"
+        ]
+      },
+      {
+        "d": "2025-12-04",
+        "s": "chore(memex): remove test file after successful hook verification",
+        "t": [
+          "chore",
+          "docs"
+        ]
+      }
+    ],
+    "Memex": [
+      {
+        "d": "2025-12-02",
+        "s": "Repository cleanup and bloom filter security review",
+        "t": [
+          "cleanup",
+          "docs",
+          "bloom-filter"
+        ]
+      }
+    ],
+    "translate.hellocirrus": [
+      {
+        "d": "2025-12-06",
+        "s": "chore: migrate to ESLint 9 and stylelint-config-standard 39",
+        "t": [
+          "dependencies"
+        ]
+      },
+      {
+        "d": "2025-12-06",
+        "s": "security: add SRI hashes and update packages",
+        "t": [
+          "dependencies"
+        ]
+      },
+      {
+        "d": "2025-12-06",
+        "s": "docs: add December 6 tasks to monthly report",
+        "t": [
+          "docs"
+        ]
+      }
+    ]
+  }
+}

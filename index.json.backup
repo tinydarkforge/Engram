@@ -159,13 +159,6 @@
           "guide": "docs/deployment-guide.md",
           "note": "DO auto-deploy may need manual trigger"
         },
-        "database": {
-          "seed_local": "cd apps/api && npx prisma db seed",
-          "seed_prod": "npm run seed:prod (in DO console)",
-          "seed_remote": "DATABASE_URL='<url>' npx prisma db seed",
-          "migrate": "npx prisma migrate deploy",
-          "reset_dev": "npm run dev:reset"
-        },
         "branch_naming": {
           "pattern": "^(feature|fix|hotfix|release|chore)/[a-z0-9._-]+",
           "prefixes": [
@@ -279,6 +272,49 @@
     }
   },
   "t": {
+    "auth": {
+      "p": [
+        "CirrusTranslate"
+      ],
+      "sc": 0
+    },
+    "translation": {
+      "p": [
+        "CirrusTranslate",
+        "translate.hellocirrus"
+      ],
+      "sc": 0
+    },
+    "i18n": {
+      "p": [
+        "translate.hellocirrus"
+      ],
+      "sc": 0
+    },
+    "marketing": {
+      "p": [
+        "translate.hellocirrus"
+      ],
+      "sc": 0
+    },
+    "website": {
+      "p": [
+        "translate.hellocirrus"
+      ],
+      "sc": 0
+    },
+    "video": {
+      "p": [
+        "CirrusTranslate"
+      ],
+      "sc": 0
+    },
+    "api": {
+      "p": [
+        "CirrusTranslate"
+      ],
+      "sc": 0
+    },
     "memex": {
       "p": [
         "DevOps",
@@ -409,11 +445,17 @@
       ],
       "sc": 2
     },
-    "pr-reviews": {
+    "pr-227": {
       "p": [
         "CirrusTranslate"
       ],
-      "sc": 6
+      "sc": 1
+    },
+    "pr-228": {
+      "p": [
+        "CirrusTranslate"
+      ],
+      "sc": 1
     },
     "project-management": {
       "p": [
@@ -421,7 +463,7 @@
       ],
       "sc": 1
     },
-    "epics": {
+    "epic-204": {
       "p": [
         "CirrusTranslate"
       ],
@@ -433,11 +475,11 @@
       ],
       "sc": 1
     },
-    "issues": {
+    "issue-tracking": {
       "p": [
         "CirrusTranslate"
       ],
-      "sc": 3
+      "sc": 1
     },
     "dockerfile": {
       "p": [
@@ -462,6 +504,18 @@
         "CirrusTranslate"
       ],
       "sc": 2
+    },
+    "pr-231": {
+      "p": [
+        "CirrusTranslate"
+      ],
+      "sc": 1
+    },
+    "issue-200": {
+      "p": [
+        "CirrusTranslate"
+      ],
+      "sc": 1
     },
     "automation": {
       "p": [
@@ -488,6 +542,12 @@
       ],
       "sc": 1
     },
+    "pr-232": {
+      "p": [
+        "CirrusTranslate"
+      ],
+      "sc": 1
+    },
     "hotfix": {
       "p": [
         "CirrusTranslate"
@@ -504,6 +564,12 @@
       "p": [
         "CirrusTranslate",
         "Memex"
+      ],
+      "sc": 1
+    },
+    "pr-233": {
+      "p": [
+        "CirrusTranslate"
       ],
       "sc": 1
     },
@@ -614,6 +680,13 @@
       ],
       "sc": 1
     },
+    "": {
+      "p": [
+        "translate.hellocirrus",
+        "DevOps"
+      ],
+      "sc": 20
+    },
     "git-hooks": {
       "p": [
         "DevOps"
@@ -669,6 +742,18 @@
       "sc": 1
     },
     "type-safety": {
+      "p": [
+        "CirrusTranslate"
+      ],
+      "sc": 1
+    },
+    "issue-299": {
+      "p": [
+        "CirrusTranslate"
+      ],
+      "sc": 1
+    },
+    "pr-301": {
       "p": [
         "CirrusTranslate"
       ],

@@ -1,10 +1,70 @@
 {
+  "$schema": "../../../schemas/session.schema.json",
   "project": "Memex",
   "total_sessions": 5,
   "last_updated": "2025-12-03",
+  "topics_index": {
+    "cleanup": [
+      "memex-2025-12-02-cleanup"
+    ],
+    "docs": [
+      "memex-2025-12-02-cleanup",
+      "me-2025-12-03-docs",
+      "me-2025-12-03-testing"
+    ],
+    "bloom-filter": [
+      "memex-2025-12-02-cleanup"
+    ],
+    "security": [
+      "memex-2025-12-02-cleanup"
+    ],
+    "maintenance": [
+      "memex-2025-12-02-cleanup"
+    ],
+    "bugfix": [
+      "me-2025-12-03-bugfix"
+    ],
+    "cache": [
+      "me-2025-12-03-bugfix"
+    ],
+    "project-detection": [
+      "me-2025-12-03-bugfix"
+    ],
+    "examples": [
+      "me-2025-12-03-docs"
+    ],
+    "quickstart": [
+      "me-2025-12-03-docs"
+    ],
+    "testing": [
+      "me-2025-12-03-testing"
+    ],
+    "benchmarks": [
+      "me-2025-12-03-testing"
+    ],
+    "polish": [
+      "me-2025-12-03-testing"
+    ],
+    "memex-v3.4": [
+      "me-2025-12-03-testing"
+    ],
+    "release": [
+      "me-2025-12-03-release"
+    ],
+    "v3.4.0": [
+      "me-2025-12-03-release"
+    ],
+    "production": [
+      "me-2025-12-03-release"
+    ],
+    "milestone": [
+      "me-2025-12-03-release"
+    ]
+  },
   "sessions": [
     {
       "id": "me-2025-12-03-release",
+      "project": "Memex",
       "date": "2025-12-03",
       "summary": "Release",
       "topics": [
@@ -16,6 +76,7 @@
     },
     {
       "id": "me-2025-12-03-testing",
+      "project": "Memex",
       "date": "2025-12-03",
       "summary": "Complete",
       "topics": [
@@ -28,6 +89,7 @@
     },
     {
       "id": "me-2025-12-03-docs",
+      "project": "Memex",
       "date": "2025-12-03",
       "summary": "Add",
       "topics": [
@@ -38,6 +100,7 @@
     },
     {
       "id": "me-2025-12-03-bugfix",
+      "project": "Memex",
       "date": "2025-12-03",
       "summary": "Fix",
       "topics": [
@@ -48,6 +111,7 @@
     },
     {
       "id": "memex-2025-12-02-cleanup",
+      "project": "Memex",
       "date": "2025-12-02",
       "summary": "Repository cleanup and bloom filter security review",
       "topics": [
