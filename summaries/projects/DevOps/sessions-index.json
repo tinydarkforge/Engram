@@ -1,8 +1,31 @@
 {
   "project": "DevOps",
-  "total_sessions": 5,
-  "last_updated": "2025-12-04",
+  "total_sessions": 6,
+  "last_updated": "2025-12-08",
   "sessions": [
+    {
+      "id": "de-2025-12-08-session",
+      "project": "DevOps",
+      "date": "2025-12-08",
+      "summary": "feat(memex): add Neural Memory v1.0 with auto-deployment",
+      "topics": [
+        "",
+        "docs",
+        "feat"
+      ],
+      "key_decisions": [],
+      "outcomes": {
+        "completed": []
+      },
+      "learnings": [],
+      "code_changes": {
+        "files_added": [],
+        "files_modified": [],
+        "files_deleted": [],
+        "lines_added": 0,
+        "lines_removed": 0
+      }
+    },
     {
       "id": "de-2025-12-04-session",
       "date": "2025-12-04",
@@ -59,5 +82,16 @@
     }
   ],
   "_lazy_loading_enabled": true,
-  "_session_details_path": "sessions/{id}.json"
+  "_session_details_path": "sessions/{id}.json",
+  "topics_index": {
+    "": [
+      "de-2025-12-08-session"
+    ],
+    "docs": [
+      "de-2025-12-08-session"
+    ],
+    "feat": [
+      "de-2025-12-08-session"
+    ]
+  }
 }
