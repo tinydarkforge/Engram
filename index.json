@@ -1,10 +1,10 @@
 {
   "$schema": "./schemas/index.schema.json",
   "v": "2.0.0",
-  "u": "2025-12-08T16:59:29.385Z",
+  "u": "2025-12-08T17:01:57.045Z",
   "m": {
     "tp": 6,
-    "ts": 100,
+    "ts": 101,
     "gs": 5
   },
   "g": {
@@ -127,7 +127,7 @@
         "Python"
       ],
       "a": "monorepo",
-      "sc": 16,
+      "sc": 17,
       "u": "2025-12-08",
       "mf": "metadata/projects/CirrusTranslate.json",
       "tp": [
@@ -577,7 +577,8 @@
     },
     "security": {
       "p": [
-        "Memex"
+        "Memex",
+        "CirrusTranslate"
       ],
       "sc": 1
     },
@@ -743,6 +744,12 @@
       "sc": 1
     },
     "documentation": {
+      "p": [
+        "CirrusTranslate"
+      ],
+      "sc": 1
+    },
+    "board-audit": {
       "p": [
         "CirrusTranslate"
       ],
