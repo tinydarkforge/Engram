@@ -1,0 +1,529 @@
+#!/usr/bin/env node
+
+/**
+ * Memory Explorer - Interactive TUI for Neural Memory
+ *
+ * Navigate concepts, sessions, and relationships visually.
+ *
+ * Usage:
+ *   explore              # Start interactive explorer
+ *   explore concepts     # Jump to concepts view
+ *   explore search       # Jump to search mode
+ */
+
+const fs = require('fs');
+const path = require('path');
+const readline = require('readline');
+const msgpack = require('msgpack-lite');
+const cli = require('./cli-utils');
+const chalk = cli.chalk;
+
+const MEMEX_PATH = process.env.MEMEX_PATH || path.join(process.env.HOME, 'code/cirrus/DevOps/Memex');
+const NEURAL_PATH = path.join(MEMEX_PATH, '.neural');
+
+class MemoryExplorer {
+  constructor() {
+    this.graph = null;
+    this.sessions = [];
+    this.currentView = 'home';
+    this.selectedIndex = 0;
+    this.viewStack = [];
+    this.searchQuery = '';
+    this.searchResults = [];
+    this.rl = null;
+  }
+
+  /**
+   * Load neural structures
+   */
+  async load() {
+    // Load graph
+    const graphPath = path.join(NEURAL_PATH, 'graph.msgpack');
+    if (fs.existsSync(graphPath)) {
+      this.graph = msgpack.decode(fs.readFileSync(graphPath));
+    }
+
+    // Load all sessions
+    const projectsDir = path.join(MEMEX_PATH, 'summaries/projects');
+    if (fs.existsSync(projectsDir)) {
+      for (const project of fs.readdirSync(projectsDir)) {
+        const indexPath = path.join(projectsDir, project, 'sessions-index.json');
+        if (!fs.existsSync(indexPath)) continue;
+
+        try {
+          const data = JSON.parse(fs.readFileSync(indexPath, 'utf8'));
+          for (const session of data.sessions || []) {
+            this.sessions.push({ ...session, project });
+          }
+        } catch (e) {
+          // Skip
+        }
+      }
+    }
+
+    // Sort sessions by date
+    this.sessions.sort((a, b) => b.date.localeCompare(a.date));
+  }
+
+  /**
+   * Clear screen and move cursor to top
+   */
+  clear() {
+    process.stdout.write('\x1B[2J\x1B[0f');
+  }
+
+  /**
+   * Render the current view
+   */
+  render() {
+    this.clear();
+
+    // Header
+    console.log(chalk.bold.hex('#58a6ff')('🧠 Memory Explorer'));
+    console.log(cli.colors.muted('─'.repeat(60)));
+    console.log();
+
+    switch (this.currentView) {
+      case 'home':
+        this.renderHome();
+        break;
+      case 'concepts':
+        this.renderConcepts();
+        break;
+      case 'concept-detail':
+        this.renderConceptDetail();
+        break;
+      case 'sessions':
+        this.renderSessions();
+        break;
+      case 'session-detail':
+        this.renderSessionDetail();
+        break;
+      case 'search':
+        this.renderSearch();
+        break;
+      case 'graph':
+        this.renderGraph();
+        break;
+    }
+
+    // Footer
+    console.log();
+    console.log(cli.colors.muted('─'.repeat(60)));
+    this.renderControls();
+  }
+
+  /**
+   * Render home view
+   */
+  renderHome() {
+    const menuItems = [
+      { key: '1', label: 'Concepts', desc: `Browse ${Object.keys(this.graph?.nodes || {}).length} concepts`, view: 'concepts' },
+      { key: '2', label: 'Sessions', desc: `Browse ${this.sessions.length} sessions`, view: 'sessions' },
+      { key: '3', label: 'Search', desc: 'Semantic search memories', view: 'search' },
+      { key: '4', label: 'Graph', desc: 'Visualize connections', view: 'graph' },
+    ];
+
+    console.log(chalk.bold('  Navigation\n'));
+
+    menuItems.forEach((item, i) => {
+      const selected = i === this.selectedIndex;
+      const prefix = selected ? cli.colors.primary('▶ ') : '  ';
+      const label = selected ? chalk.bold(item.label) : item.label;
+      console.log(`${prefix}${cli.colors.primary(`[${item.key}]`)} ${label}`);
+      console.log(`     ${cli.colors.muted(item.desc)}`);
+    });
+
+    // Stats
+    console.log();
+    console.log(chalk.bold('  Quick Stats'));
+    console.log(`   ${cli.colors.muted('Sessions:')} ${this.sessions.length}`);
+    console.log(`   ${cli.colors.muted('Concepts:')} ${Object.keys(this.graph?.nodes || {}).length}`);
+    console.log(`   ${cli.colors.muted('Relationships:')} ${Object.keys(this.graph?.edges || {}).length}`);
+  }
+
+  /**
+   * Render concepts list
+   */
+  renderConcepts() {
+    console.log(chalk.bold('  Concepts') + cli.colors.muted(' (sorted by frequency)\n'));
+
+    const concepts = Object.entries(this.graph?.nodes || {})
+      .sort((a, b) => b[1].w - a[1].w)
+      .slice(0, 15);
+
+    concepts.forEach(([name, data], i) => {
+      const selected = i === this.selectedIndex;
+      const prefix = selected ? cli.colors.primary('▶ ') : '  ';
+
+      // Heat color based on frequency
+      let color;
+      if (data.w >= 10) color = cli.colors.hot;
+      else if (data.w >= 5) color = cli.colors.warm;
+      else if (data.w >= 3) color = cli.colors.normal;
+      else color = cli.colors.cold;
+
+      const label = selected ? chalk.bold(color(name)) : color(name);
+      const count = cli.colors.muted(`(${data.w} sessions)`);
+      const related = (this.graph.edges[name] || []).slice(0, 3).map(e => e.c).join(', ');
+
+      console.log(`${prefix}${label} ${count}`);
+      if (related) {
+        console.log(`     ${cli.colors.muted('→ ' + related)}`);
+      }
+    });
+  }
+
+  /**
+   * Render concept detail view
+   */
+  renderConceptDetail() {
+    const concepts = Object.entries(this.graph?.nodes || {})
+      .sort((a, b) => b[1].w - a[1].w);
+    const [conceptName, conceptData] = concepts[this.viewStack[this.viewStack.length - 1]?.index || 0];
+
+    console.log(chalk.bold(`  Concept: ${cli.colors.primary(conceptName)}\n`));
+    console.log(`  ${cli.colors.muted('Sessions:')} ${conceptData.w}`);
+
+    // Related concepts
+    const related = this.graph.edges[conceptName] || [];
+    if (related.length > 0) {
+      console.log();
+      console.log(chalk.bold('  Related Concepts'));
+      related.forEach(r => {
+        console.log(`   ${cli.icons.arrow} ${r.c} ${cli.colors.muted(`(${r.w} shared)`)}`);
+      });
+    }
+
+    // Sessions with this concept
+    const sessionIds = conceptData.s || [];
+    const matchingSessions = this.sessions.filter(s =>
+      (s.topics || []).includes(conceptName)
+    ).slice(0, 5);
+
+    if (matchingSessions.length > 0) {
+      console.log();
+      console.log(chalk.bold('  Recent Sessions'));
+      matchingSessions.forEach(s => {
+        console.log(`   ${cli.colors.muted(s.date)} ${(s.summary || '').slice(0, 40)}`);
+      });
+    }
+  }
+
+  /**
+   * Render sessions list
+   */
+  renderSessions() {
+    console.log(chalk.bold('  Sessions') + cli.colors.muted(' (recent first)\n'));
+
+    const displaySessions = this.sessions.slice(0, 12);
+
+    displaySessions.forEach((session, i) => {
+      const selected = i === this.selectedIndex;
+      const prefix = selected ? cli.colors.primary('▶ ') : '  ';
+      const date = cli.colors.muted(session.date);
+      const project = cli.colors.primary(session.project);
+      const summary = (session.summary || '').slice(0, 35);
+      const label = selected ? chalk.bold(summary) : summary;
+
+      console.log(`${prefix}${date} ${project}`);
+      console.log(`     ${label}`);
+    });
+
+    if (this.sessions.length > 12) {
+      console.log(cli.colors.muted(`\n  ... and ${this.sessions.length - 12} more`));
+    }
+  }
+
+  /**
+   * Render session detail
+   */
+  renderSessionDetail() {
+    const session = this.sessions[this.viewStack[this.viewStack.length - 1]?.index || 0];
+
+    console.log(chalk.bold(`  Session: ${cli.colors.primary(session.id)}\n`));
+    console.log(`  ${cli.colors.muted('Date:')} ${session.date}`);
+    console.log(`  ${cli.colors.muted('Project:')} ${session.project}`);
+    console.log();
+    console.log(chalk.bold('  Summary'));
+    console.log(`  ${session.summary || '(none)'}`);
+
+    if (session.topics && session.topics.length > 0) {
+      console.log();
+      console.log(chalk.bold('  Topics'));
+      console.log(`  ${session.topics.map(t => cli.colors.primary(t)).join(', ')}`);
+    }
+  }
+
+  /**
+   * Render search view
+   */
+  renderSearch() {
+    console.log(chalk.bold('  Search\n'));
+    console.log(`  ${cli.colors.muted('Query:')} ${this.searchQuery || '(type to search)'}`);
+    console.log();
+
+    if (this.searchResults.length > 0) {
+      console.log(chalk.bold(`  Results (${this.searchResults.length})\n`));
+
+      this.searchResults.slice(0, 8).forEach((r, i) => {
+        const selected = i === this.selectedIndex;
+        const prefix = selected ? cli.colors.primary('▶ ') : '  ';
+        const score = cli.colors.primary(`${(r.score * 100).toFixed(0)}%`);
+        const preview = (r.text_preview || r.session_id || '').slice(0, 45);
+
+        console.log(`${prefix}${score} ${preview}`);
+      });
+    } else if (this.searchQuery) {
+      console.log(cli.colors.muted('  No results. Try different keywords.'));
+    }
+  }
+
+  /**
+   * Render graph visualization (ASCII art)
+   */
+  renderGraph() {
+    console.log(chalk.bold('  Concept Graph\n'));
+
+    // Get top concepts
+    const topConcepts = Object.entries(this.graph?.nodes || {})
+      .sort((a, b) => b[1].w - a[1].w)
+      .slice(0, 7)
+      .map(([name]) => name);
+
+    // ASCII graph visualization
+    const center = topConcepts[0];
+    const others = topConcepts.slice(1);
+
+    console.log('                    ┌─────────────┐');
+    console.log(`                    │ ${cli.colors.primary(center.padEnd(11))} │`);
+    console.log('                    └──────┬──────┘');
+    console.log('           ┌───────────────┼───────────────┐');
+
+    // First row
+    if (others[0]) {
+      const l = others[0] || '';
+      const m = others[1] || '';
+      const r = others[2] || '';
+      console.log(`     ┌─────┴─────┐   ┌─────┴─────┐   ┌─────┴─────┐`);
+      console.log(`     │ ${cli.colors.warm(l.slice(0, 9).padEnd(9))} │   │ ${cli.colors.warm(m.slice(0, 9).padEnd(9))} │   │ ${cli.colors.warm(r.slice(0, 9).padEnd(9))} │`);
+      console.log(`     └───────────┘   └───────────┘   └───────────┘`);
+    }
+
+    // Second row
+    if (others[3]) {
+      console.log('           │                               │');
+      const l = others[3] || '';
+      const r = others[4] || '';
+      console.log(`     ┌─────┴─────┐                   ┌─────┴─────┐`);
+      console.log(`     │ ${cli.colors.normal(l.slice(0, 9).padEnd(9))} │                   │ ${cli.colors.normal(r.slice(0, 9).padEnd(9))} │`);
+      console.log(`     └───────────┘                   └───────────┘`);
+    }
+
+    console.log();
+    console.log(cli.colors.muted('  Node size represents frequency. Colors show heat.'));
+  }
+
+  /**
+   * Render control hints
+   */
+  renderControls() {
+    const controls = [];
+
+    if (this.currentView === 'home') {
+      controls.push('[↑↓] Navigate', '[Enter] Select', '[q] Quit');
+    } else if (this.currentView === 'search') {
+      controls.push('[type] Search', '[↑↓] Results', '[Enter] View', '[Esc] Back');
+    } else {
+      controls.push('[↑↓] Navigate', '[Enter] Select', '[Esc] Back', '[q] Quit');
+    }
+
+    console.log(cli.colors.muted(controls.join('  ')));
+  }
+
+  /**
+   * Handle keyboard input
+   */
+  handleKey(key) {
+    // Global keys
+    if (key === 'q' || key === '\u0003') { // q or Ctrl+C
+      this.cleanup();
+      process.exit(0);
+    }
+
+    // Search mode special handling
+    if (this.currentView === 'search') {
+      if (key === '\u001B') { // Escape
+        this.currentView = 'home';
+        this.searchQuery = '';
+        this.searchResults = [];
+        this.selectedIndex = 0;
+      } else if (key === '\u007F') { // Backspace
+        this.searchQuery = this.searchQuery.slice(0, -1);
+        this.performSearch();
+      } else if (key === '\r') { // Enter
+        // View selected result
+      } else if (key.match(/^[a-zA-Z0-9 ]$/)) {
+        this.searchQuery += key;
+        this.performSearch();
+      }
+      return;
+    }
+
+    // Navigation
+    if (key === '\u001B[A') { // Up arrow
+      this.selectedIndex = Math.max(0, this.selectedIndex - 1);
+    } else if (key === '\u001B[B') { // Down arrow
+      const maxIndex = this.getMaxIndex();
+      this.selectedIndex = Math.min(maxIndex, this.selectedIndex + 1);
+    } else if (key === '\r') { // Enter
+      this.selectItem();
+    } else if (key === '\u001B' || key === 'b') { // Escape or b for back
+      this.goBack();
+    } else if (key >= '1' && key <= '4' && this.currentView === 'home') {
+      // Quick navigation from home
+      const views = ['concepts', 'sessions', 'search', 'graph'];
+      this.currentView = views[parseInt(key) - 1];
+      this.selectedIndex = 0;
+    }
+  }
+
+  /**
+   * Get max selectable index for current view
+   */
+  getMaxIndex() {
+    switch (this.currentView) {
+      case 'home': return 3;
+      case 'concepts': return Math.min(14, Object.keys(this.graph?.nodes || {}).length - 1);
+      case 'sessions': return Math.min(11, this.sessions.length - 1);
+      case 'search': return Math.min(7, this.searchResults.length - 1);
+      default: return 0;
+    }
+  }
+
+  /**
+   * Select current item
+   */
+  selectItem() {
+    switch (this.currentView) {
+      case 'home':
+        const views = ['concepts', 'sessions', 'search', 'graph'];
+        this.currentView = views[this.selectedIndex];
+        this.selectedIndex = 0;
+        break;
+
+      case 'concepts':
+        this.viewStack.push({ view: 'concepts', index: this.selectedIndex });
+        this.currentView = 'concept-detail';
+        break;
+
+      case 'sessions':
+        this.viewStack.push({ view: 'sessions', index: this.selectedIndex });
+        this.currentView = 'session-detail';
+        break;
+    }
+  }
+
+  /**
+   * Go back to previous view
+   */
+  goBack() {
+    if (this.viewStack.length > 0) {
+      const prev = this.viewStack.pop();
+      this.currentView = prev.view;
+      this.selectedIndex = prev.index;
+    } else if (this.currentView !== 'home') {
+      this.currentView = 'home';
+      this.selectedIndex = 0;
+    }
+  }
+
+  /**
+   * Perform search (sync for now)
+   */
+  async performSearch() {
+    if (!this.searchQuery || this.searchQuery.length < 2) {
+      this.searchResults = [];
+      return;
+    }
+
+    // Simple keyword search in sessions
+    const query = this.searchQuery.toLowerCase();
+    this.searchResults = this.sessions
+      .filter(s => {
+        const text = `${s.summary || ''} ${(s.topics || []).join(' ')}`.toLowerCase();
+        return text.includes(query);
+      })
+      .slice(0, 20)
+      .map(s => ({
+        session_id: s.id,
+        text_preview: s.summary,
+        score: 0.5,
+        ...s
+      }));
+
+    this.selectedIndex = 0;
+  }
+
+  /**
+   * Setup terminal for raw input
+   */
+  setupTerminal() {
+    readline.emitKeypressEvents(process.stdin);
+    if (process.stdin.isTTY) {
+      process.stdin.setRawMode(true);
+    }
+    process.stdin.resume();
+
+    process.stdin.on('keypress', (str, key) => {
+      if (key) {
+        let keyStr = str || '';
+        if (key.name === 'up') keyStr = '\u001B[A';
+        if (key.name === 'down') keyStr = '\u001B[B';
+        if (key.name === 'return') keyStr = '\r';
+        if (key.name === 'escape') keyStr = '\u001B';
+        if (key.name === 'backspace') keyStr = '\u007F';
+
+        this.handleKey(keyStr);
+        this.render();
+      }
+    });
+  }
+
+  /**
+   * Cleanup terminal
+   */
+  cleanup() {
+    if (process.stdin.isTTY) {
+      process.stdin.setRawMode(false);
+    }
+    process.stdin.pause();
+    this.clear();
+    console.log(cli.colors.muted('Goodbye! 👋'));
+  }
+
+  /**
+   * Start the explorer
+   */
+  async start(initialView = 'home') {
+    await this.load();
+    this.currentView = initialView;
+    this.setupTerminal();
+    this.render();
+  }
+}
+
+// CLI
+const explorer = new MemoryExplorer();
+const initialView = process.argv[2] || 'home';
+
+// Handle process exit
+process.on('SIGINT', () => {
+  explorer.cleanup();
+  process.exit(0);
+});
+
+explorer.start(initialView).catch(err => {
+  console.error('Error:', err.message);
+  process.exit(1);
+});
