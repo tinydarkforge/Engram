@@ -15,6 +15,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const cli = require('./cli-utils');
 
 const MEMEX_PATH = process.env.MEMEX_PATH || path.join(process.env.HOME, 'code/cirrus/DevOps/Memex');
 
@@ -229,27 +230,33 @@ class SmartTopics {
   analyze() {
     this.loadCorpus();
 
-    console.log('📊 Corpus Statistics\n');
-    console.log(`Total sessions: ${this.totalDocuments}`);
-    console.log(`Unique terms: ${this.documentFrequency.size}`);
-    console.log('');
+    cli.header('Corpus Statistics', cli.icons.stats);
+    cli.stats({
+      'Total sessions': this.totalDocuments,
+      'Unique terms': this.documentFrequency.size
+    });
 
     // Top terms by document frequency
     const sorted = [...this.documentFrequency.entries()]
       .sort((a, b) => b[1] - a[1]);
 
-    console.log('Most common terms (appear in most sessions):');
-    sorted.slice(0, 15).forEach(([term, count]) => {
-      const pct = Math.round(count / this.totalDocuments * 100);
-      console.log(`  ${term.padEnd(20)} ${count} sessions (${pct}%)`);
-    });
+    cli.section('Most Common Terms');
+    const commonData = sorted.slice(0, 15).map(([term, count]) => ({
+      term: cli.topicTag(term, count),
+      count,
+      pct: `${Math.round(count / this.totalDocuments * 100)}%`
+    }));
+    cli.table(commonData, [
+      { key: 'term', label: 'Term', width: 22 },
+      { key: 'count', label: 'Sessions', width: 10, align: 'right' },
+      { key: 'pct', label: '%', width: 6, align: 'right' }
+    ]);
 
-    console.log('\nRarest terms (high IDF value):');
-    sorted.slice(-10).reverse().forEach(([term, count]) => {
-      if (count === 1) {
-        const idf = Math.log((this.totalDocuments + 1) / 2) + 1;
-        console.log(`  ${term.padEnd(20)} ${count} session (IDF: ${idf.toFixed(2)})`);
-      }
+    cli.section('Rarest Terms (High IDF)');
+    const rareTerms = sorted.slice(-10).reverse().filter(([, count]) => count === 1);
+    rareTerms.forEach(([term]) => {
+      const idf = Math.log((this.totalDocuments + 1) / 2) + 1;
+      cli.indent(`${cli.colors.cold(term)} ${cli.colors.muted(`(IDF: ${idf.toFixed(2)})`)}`);
     });
   }
 }
@@ -263,14 +270,15 @@ if (require.main === module) {
     case 'extract': {
       const text = process.argv.slice(3).join(' ');
       if (!text) {
-        console.log('Usage: node smart-topics.js extract "your text here"');
+        cli.error('Usage: node smart-topics.js extract "your text here"');
         process.exit(1);
       }
       const results = topics.extract(text);
-      console.log('Extracted topics:');
-      results.forEach(({ term, score }) => {
-        console.log(`  ${term.padEnd(20)} (score: ${score.toFixed(3)})`);
-      });
+      cli.header('Extracted Topics', cli.icons.search);
+      cli.table(results, [
+        { key: 'term', label: 'Topic', width: 22 },
+        { key: 'score', label: 'Score', width: 10, align: 'right' }
+      ]);
       break;
     }
 
@@ -279,7 +287,7 @@ if (require.main === module) {
       break;
 
     case 'test': {
-      console.log('🧪 Testing TF-IDF extraction\n');
+      cli.header('TF-IDF Extraction Test');
 
       const testCases = [
         'Implemented OAuth2 authentication with Google SSO',
@@ -289,23 +297,23 @@ if (require.main === module) {
       ];
 
       for (const text of testCases) {
-        console.log(`Input: "${text}"`);
+        console.log();
+        cli.keyValue('Input', cli.colors.muted(`"${text}"`));
         const results = topics.extract(text, { limit: 5 });
-        console.log(`Topics: ${results.map(r => r.term).join(', ') || '(none extracted)'}`);
-        console.log('');
+        const topicStr = results.map(r => cli.topicTag(r.term, 3)).join(', ');
+        cli.keyValue('Topics', topicStr || cli.colors.muted('(none)'));
       }
       break;
     }
 
     default:
-      console.log(`
-Smart Topic Extraction (TF-IDF)
-
-Usage:
-  node smart-topics.js extract "text"   Extract topics from text
-  node smart-topics.js analyze          Show corpus statistics
-  node smart-topics.js test             Run test cases
-`);
+      cli.header('Smart Topics (TF-IDF)');
+      console.log(cli.colors.muted('Statistical topic extraction\n'));
+      cli.simpleTable([
+        ['extract "text"', 'Extract topics from text'],
+        ['analyze', 'Show corpus statistics'],
+        ['test', 'Run test cases']
+      ], 18);
   }
 }
 
