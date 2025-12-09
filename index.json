@@ -1,10 +1,10 @@
 {
   "$schema": "./schemas/index.schema.json",
   "v": "2.0.0",
-  "u": "2025-12-09T14:49:02.068Z",
+  "u": "2025-12-09T14:49:03.185Z",
   "m": {
     "tp": 6,
-    "ts": 4053,
+    "ts": 4054,
     "gs": 5
   },
   "g": {
@@ -224,7 +224,7 @@
         "JavaScript"
       ],
       "a": "library",
-      "sc": 3947,
+      "sc": 3948,
       "u": "2025-12-09",
       "mf": "metadata/projects/Memex.json",
       "tp": [
@@ -779,6 +779,12 @@
       "sc": 1
     },
     "aither": {
+      "p": [
+        "Memex"
+      ],
+      "sc": 1
+    },
+    "help": {
       "p": [
         "Memex"
       ],

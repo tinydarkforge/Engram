@@ -1,8 +1,29 @@
 {
   "project": "Memex",
-  "total_sessions": 3947,
+  "total_sessions": 3948,
   "last_updated": "2025-12-09",
   "sessions": [
+    {
+      "id": "me-2025-12-09-help",
+      "project": "Memex",
+      "date": "2025-12-09",
+      "summary": "--help",
+      "topics": [
+        "help"
+      ],
+      "key_decisions": [],
+      "outcomes": {
+        "completed": []
+      },
+      "learnings": [],
+      "code_changes": {
+        "files_added": [],
+        "files_modified": [],
+        "files_deleted": [],
+        "lines_added": 0,
+        "lines_removed": 0
+      }
+    },
     {
       "id": "me-2025-12-09-session",
       "project": "Memex",
@@ -94711,6 +94732,9 @@
     ],
     "docs": [
       "me-2025-12-09-session"
+    ],
+    "help": [
+      "me-2025-12-09-help"
     ]
   }
 }
