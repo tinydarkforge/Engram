@@ -176,6 +176,50 @@ class VectorSearch {
   }
 
   /**
+   * Calculate keyword match score for hybrid search
+   * Returns a score between 0 and 1 based on keyword overlap
+   *
+   * @param {string} query - The search query
+   * @param {string} text - The text to search in
+   * @returns {number} Score between 0 and 1
+   */
+  keywordScore(query, text) {
+    if (!query || !text) return 0;
+
+    const queryLower = query.toLowerCase();
+    const textLower = text.toLowerCase();
+
+    // Extract meaningful words (3+ chars, no common stop words)
+    const stopWords = new Set(['the', 'and', 'for', 'with', 'this', 'that', 'from', 'have', 'was', 'are', 'been']);
+    const queryWords = queryLower
+      .split(/\s+/)
+      .filter(w => w.length >= 3 && !stopWords.has(w));
+
+    if (queryWords.length === 0) return 0;
+
+    let matchCount = 0;
+    let exactPhraseBonus = 0;
+
+    // Check for exact phrase match (big bonus)
+    if (textLower.includes(queryLower)) {
+      exactPhraseBonus = 0.3;
+    }
+
+    // Check individual word matches
+    for (const word of queryWords) {
+      if (textLower.includes(word)) {
+        matchCount++;
+      }
+    }
+
+    // Base score is ratio of matched words
+    const baseScore = matchCount / queryWords.length;
+
+    // Combine: base score + exact phrase bonus, capped at 1
+    return Math.min(1, baseScore + exactPhraseBonus);
+  }
+
+  /**
    * Search sessions by semantic similarity
    * Returns ranked results with similarity scores
    *
@@ -186,6 +230,8 @@ class VectorSearch {
    * @param {boolean} options.useDecay - Apply time decay (default true)
    * @param {number} options.decayRate - Daily decay rate (default 0.98)
    * @param {number} options.halfLifeDays - Half-life in days (overrides decayRate)
+   * @param {boolean} options.hybrid - Enable hybrid search (default true)
+   * @param {number} options.keywordWeight - Weight for keyword score (default 0.3)
    */
   async search(query, options = {}) {
     const {
@@ -194,7 +240,9 @@ class VectorSearch {
       includeScores = true,
       useDecay = true,
       decayRate = 0.98,
-      halfLifeDays = null
+      halfLifeDays = null,
+      hybrid = true,
+      keywordWeight = 0.3
     } = options;
 
     // Load embeddings if not already loaded
@@ -219,21 +267,32 @@ class VectorSearch {
     for (const [sessionId, sessionData] of Object.entries(this.embeddings.sessions)) {
       if (!sessionData.embedding) continue;
 
-      const rawSimilarity = this.cosineSimilarity(queryEmbedding, sessionData.embedding);
+      const semanticScore = this.cosineSimilarity(queryEmbedding, sessionData.embedding);
+
+      // Hybrid: combine semantic + keyword scores
+      let combinedScore = semanticScore;
+      let keywordScoreVal = 0;
+
+      if (hybrid && sessionData.text_preview) {
+        keywordScoreVal = this.keywordScore(query, sessionData.text_preview);
+        // Weighted combination: (1-w)*semantic + w*keyword
+        combinedScore = (1 - keywordWeight) * semanticScore + keywordWeight * keywordScoreVal;
+      }
 
       // Apply time decay if enabled
-      let finalScore = rawSimilarity;
+      let finalScore = combinedScore;
       let decayFactor = 1.0;
 
       if (useDecay) {
         decayFactor = this.calculateDecay(sessionId, { decayRate, halfLifeDays });
-        finalScore = rawSimilarity * decayFactor;
+        finalScore = combinedScore * decayFactor;
       }
 
       if (finalScore >= minSimilarity) {
         results.push({
           session_id: sessionId,
-          similarity: Math.round(rawSimilarity * 100) / 100,
+          similarity: Math.round(semanticScore * 100) / 100,
+          keyword: hybrid ? Math.round(keywordScoreVal * 100) / 100 : undefined,
           score: Math.round(finalScore * 100) / 100,
           decay: Math.round(decayFactor * 100) / 100,
           text_preview: sessionData.text_preview
@@ -252,7 +311,8 @@ class VectorSearch {
       results: limitedResults,
       total_matches: results.length,
       showing: limitedResults.length,
-      decay_enabled: useDecay
+      decay_enabled: useDecay,
+      hybrid_enabled: hybrid
     };
   }
 
