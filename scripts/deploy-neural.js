@@ -30,7 +30,9 @@ const REPO_MAP = {
   'DevOps': path.join(REDACTED_PATH, 'DevOps'),
   'Memex': path.join(REDACTED_PATH, 'DevOps/Memex'),
   'REDACTED': path.join(REDACTED_PATH, 'REDACTED'),
-  'ProjectB': path.join(REDACTED_PATH, 'ProjectB')
+  'ProjectB': path.join(REDACTED_PATH, 'ProjectB'),
+  'REDACTED': path.join(REDACTED_PATH, 'REDACTED'),
+  'REDACTED': path.join(REDACTED_PATH, 'REDACTED')
 };
 
 class NeuralDeployer {
