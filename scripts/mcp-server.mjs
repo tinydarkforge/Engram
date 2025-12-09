@@ -210,6 +210,17 @@ function queryConcept(concept) {
   };
 }
 
+async function crossProjectSearch(query, limit = 20) {
+  try {
+    const NeuralMemory = require('./neural-memory.js');
+    const neural = new NeuralMemory();
+    const result = await neural.crossProject(query, { limit, groupByProject: true });
+    return result;
+  } catch (e) {
+    return { error: e.message };
+  }
+}
+
 // ─────────────────────────────────────────────────────────────
 // MCP Server Setup
 // ─────────────────────────────────────────────────────────────
@@ -318,6 +329,25 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           },
           required: ['concept']
         }
+      },
+      {
+        name: 'cross_project_search',
+        description: 'Search across ALL projects semantically. Groups results by project with relevance scores. Great for finding related work across the entire codebase.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            query: {
+              type: 'string',
+              description: 'The search query (searches by semantic meaning across all projects)'
+            },
+            limit: {
+              type: 'number',
+              description: 'Maximum total results across all projects (default: 20)',
+              default: 20
+            }
+          },
+          required: ['query']
+        }
       }
     ]
   };
@@ -352,6 +382,10 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
     case 'query_concept':
       result = queryConcept(args.concept);
+      break;
+
+    case 'cross_project_search':
+      result = await crossProjectSearch(args.query, args.limit || 20);
       break;
 
     default:
