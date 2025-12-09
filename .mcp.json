@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "memex": {
+      "command": "node",
+      "args": ["/Users/doceno/code/cirrus/DevOps/Memex/scripts/mcp-server.mjs"]
+    }
+  }
+}
