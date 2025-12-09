@@ -58,6 +58,28 @@ function loadSessionProjects() {
 }
 
 /**
+ * Get list of projects that have concepts in the graph
+ */
+function getProjectsWithConcepts(graph, sessionToProject) {
+  const projectConcepts = {};
+
+  for (const [concept, data] of Object.entries(graph.nodes)) {
+    for (const sessionId of (data.s || [])) {
+      const project = sessionToProject[sessionId];
+      if (project) {
+        if (!projectConcepts[project]) projectConcepts[project] = new Set();
+        projectConcepts[project].add(concept);
+      }
+    }
+  }
+
+  // Return projects sorted by concept count (descending)
+  return Object.entries(projectConcepts)
+    .map(([name, concepts]) => ({ name, conceptCount: concepts.size }))
+    .sort((a, b) => b.conceptCount - a.conceptCount);
+}
+
+/**
  * Filter graph to only include concepts from a specific project
  */
 function filterGraphByProject(graph, projectName, sessionToProject) {
@@ -120,12 +142,17 @@ function generateVisualization(options = {}) {
     process.exit(1);
   }
 
-  let graph = msgpack.decode(fs.readFileSync(GRAPH_PATH));
+  const fullGraph = msgpack.decode(fs.readFileSync(GRAPH_PATH));
+  const sessionToProject = loadSessionProjects();
+
+  // Get all projects with their concept counts (for the selector)
+  const projectsList = getProjectsWithConcepts(fullGraph, sessionToProject);
+
+  let graph = fullGraph;
 
   // Filter by project if specified
   if (projectFilter) {
-    const sessionToProject = loadSessionProjects();
-    graph = filterGraphByProject(graph, projectFilter, sessionToProject);
+    graph = filterGraphByProject(fullGraph, projectFilter, sessionToProject);
 
     if (Object.keys(graph.nodes).length === 0) {
       console.error(`No concepts found for project: ${projectFilter}`);
@@ -193,6 +220,20 @@ function generateVisualization(options = {}) {
   console.log(`  Nodes: ${nodes.length}`);
   console.log(`  Edges: ${edges.length}`);
 
+  // Build concept-to-projects mapping for client-side filtering
+  const conceptProjects = {};
+  for (const [concept, data] of Object.entries(fullGraph.nodes)) {
+    conceptProjects[concept] = [...new Set(
+      (data.s || []).map(sid => sessionToProject[sid]).filter(Boolean)
+    )];
+  }
+
+  // Map node IDs to concepts for filtering
+  const nodeIdToConcept = {};
+  for (const node of nodes) {
+    nodeIdToConcept[node.id] = node.label;
+  }
+
   // Determine output path
   const finalOutputPath = outputPath || path.join(MEMEX_PATH, projectFilter ? `graph-${projectFilter.toLowerCase()}.html` : 'graph.html');
 
@@ -215,14 +256,36 @@ function generateVisualization(options = {}) {
       display: flex;
       justify-content: space-between;
       align-items: center;
+      gap: 20px;
     }
     #header h1 {
       font-size: 18px;
       font-weight: 500;
     }
+    #header .controls {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
     #header .stats {
       font-size: 13px;
       color: #888;
+    }
+    #projectSelector {
+      background: #1a1a2e;
+      border: 1px solid #333;
+      color: #eee;
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    #projectSelector:focus {
+      outline: none;
+      border-color: #3498db;
+    }
+    #projectSelector option {
+      background: #1a1a2e;
     }
     #graph {
       width: 100%;
@@ -272,8 +335,14 @@ function generateVisualization(options = {}) {
 </head>
 <body>
   <div id="header">
-    <h1>🧠 Neural Memory - ${title}</h1>
-    <div class="stats">${nodes.length} concepts · ${edges.length} connections</div>
+    <h1>🧠 Neural Memory</h1>
+    <div class="controls">
+      <select id="projectSelector">
+        <option value="">All Projects</option>
+        ${projectsList.map(p => `<option value="${p.name}">${p.name} (${p.conceptCount})</option>`).join('\n        ')}
+      </select>
+      <div class="stats" id="stats">${nodes.length} concepts · ${edges.length} connections</div>
+    </div>
   </div>
   <div id="graph"></div>
   <div id="legend">
@@ -287,11 +356,18 @@ function generateVisualization(options = {}) {
   </div>
 
   <script>
-    const nodes = new vis.DataSet(${JSON.stringify(nodes)});
-    const edges = new vis.DataSet(${JSON.stringify(edges.map(e => ({ from: e.from, to: e.to, value: e.value, title: e.title })))});
+    // Full data
+    const allNodes = ${JSON.stringify(nodes)};
+    const allEdges = ${JSON.stringify(edges.map(e => ({ from: e.from, to: e.to, value: e.value, title: e.title })))};
+    const conceptProjects = ${JSON.stringify(conceptProjects)};
+    const nodeIdToConcept = ${JSON.stringify(nodeIdToConcept)};
+
+    // Current filtered data
+    let nodes = new vis.DataSet(allNodes);
+    let edges = new vis.DataSet(allEdges);
 
     const container = document.getElementById('graph');
-    const data = { nodes, edges };
+    let data = { nodes, edges };
 
     const options = {
       nodes: {
@@ -325,13 +401,44 @@ function generateVisualization(options = {}) {
       }
     };
 
-    const network = new vis.Network(container, data, options);
+    let network = new vis.Network(container, data, options);
+
+    // TODO(human): Implement filterByProject function
+    // This function should filter nodes and edges to show only concepts
+    // belonging to the selected project, then rebuild the network.
+    //
+    // Parameters:
+    //   projectName: string (empty string means "All Projects")
+    //
+    // Available data:
+    //   - allNodes: array of {id, label, value, size, color, title}
+    //   - allEdges: array of {from, to, value, title}
+    //   - conceptProjects: { conceptName: [project1, project2, ...] }
+    //   - nodeIdToConcept: { nodeId: conceptName }
+    //
+    // Steps to implement:
+    //   1. If projectName is empty, show all nodes/edges
+    //   2. Otherwise, filter allNodes to keep only those where
+    //      conceptProjects[label].includes(projectName)
+    //   3. Filter allEdges to keep only those where both from/to
+    //      nodes are in the filtered set
+    //   4. Update the stats display with new counts
+    //   5. Rebuild the network with filtered data
+    function filterByProject(projectName) {
+      // Your implementation here
+      console.log('Filter by project:', projectName || 'All');
+    }
+
+    // Project selector
+    document.getElementById('projectSelector').addEventListener('change', function(e) {
+      filterByProject(e.target.value);
+    });
 
     // Search functionality
     document.getElementById('searchInput').addEventListener('input', function(e) {
       const query = e.target.value.toLowerCase();
       if (!query) {
-        nodes.forEach(node => nodes.update({ id: node.id, opacity: 1 }));
+        nodes.forEach(node => nodes.update({ id: node.id, opacity: 1, font: { color: '#eee' } }));
         return;
       }
 
