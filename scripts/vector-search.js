@@ -373,6 +373,110 @@ class VectorSearch {
       cache_path: EMBEDDINGS_PATH
     };
   }
+
+  /**
+   * Find duplicate/similar sessions across all embeddings
+   * Compares every session pair and returns those above threshold
+   *
+   * @param {object} options
+   * @param {number} options.threshold - Minimum similarity to consider duplicate (default 0.85)
+   * @param {number} options.limit - Max pairs to return (default 20)
+   * @returns {Array<{session1, session2, similarity}>}
+   */
+  findDuplicates(options = {}) {
+    const { threshold = 0.85, limit = 20 } = options;
+
+    if (!this.embeddings) {
+      this.loadEmbeddings();
+    }
+
+    const sessionIds = Object.keys(this.embeddings.sessions);
+    const duplicates = [];
+
+    // Compare all pairs (O(n²) but n is small)
+    for (let i = 0; i < sessionIds.length; i++) {
+      for (let j = i + 1; j < sessionIds.length; j++) {
+        const id1 = sessionIds[i];
+        const id2 = sessionIds[j];
+
+        const emb1 = this.embeddings.sessions[id1]?.embedding;
+        const emb2 = this.embeddings.sessions[id2]?.embedding;
+
+        if (!emb1 || !emb2) continue;
+
+        const similarity = this.cosineSimilarity(emb1, emb2);
+
+        if (similarity >= threshold) {
+          duplicates.push({
+            session1: {
+              id: id1,
+              preview: this.embeddings.sessions[id1].text_preview
+            },
+            session2: {
+              id: id2,
+              preview: this.embeddings.sessions[id2].text_preview
+            },
+            similarity: Math.round(similarity * 100) / 100
+          });
+        }
+      }
+    }
+
+    // Sort by similarity descending
+    duplicates.sort((a, b) => b.similarity - a.similarity);
+
+    return {
+      threshold,
+      total_pairs_checked: (sessionIds.length * (sessionIds.length - 1)) / 2,
+      duplicates_found: duplicates.length,
+      duplicates: duplicates.slice(0, limit)
+    };
+  }
+
+  /**
+   * Find sessions similar to a specific session
+   *
+   * @param {string} sessionId - The session to find similar ones for
+   * @param {object} options
+   * @param {number} options.limit - Max results (default 5)
+   * @param {number} options.minSimilarity - Minimum similarity (default 0.5)
+   */
+  findSimilarTo(sessionId, options = {}) {
+    const { limit = 5, minSimilarity = 0.5 } = options;
+
+    if (!this.embeddings) {
+      this.loadEmbeddings();
+    }
+
+    const targetSession = this.embeddings.sessions[sessionId];
+    if (!targetSession?.embedding) {
+      return { error: `Session ${sessionId} not found or has no embedding` };
+    }
+
+    const results = [];
+
+    for (const [id, data] of Object.entries(this.embeddings.sessions)) {
+      if (id === sessionId || !data.embedding) continue;
+
+      const similarity = this.cosineSimilarity(targetSession.embedding, data.embedding);
+
+      if (similarity >= minSimilarity) {
+        results.push({
+          session_id: id,
+          similarity: Math.round(similarity * 100) / 100,
+          text_preview: data.text_preview
+        });
+      }
+    }
+
+    results.sort((a, b) => b.similarity - a.similarity);
+
+    return {
+      source_session: sessionId,
+      source_preview: targetSession.text_preview,
+      similar_sessions: results.slice(0, limit)
+    };
+  }
 }
 
 // CLI Usage
