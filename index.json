@@ -1,10 +1,10 @@
 {
   "$schema": "./schemas/index.schema.json",
   "v": "2.0.0",
-  "u": "2025-12-09T12:24:59.148Z",
+  "u": "2025-12-09T14:29:42.346Z",
   "m": {
     "tp": 6,
-    "ts": 2938,
+    "ts": 2939,
     "gs": 5
   },
   "g": {
@@ -224,7 +224,7 @@
         "JavaScript"
       ],
       "a": "library",
-      "sc": 2832,
+      "sc": 2833,
       "u": "2025-12-09",
       "mf": "metadata/projects/Memex.json",
       "tp": [
@@ -330,9 +330,10 @@
     "memex": {
       "p": [
         "DevOps",
-        "CirrusTranslate"
+        "CirrusTranslate",
+        "Memex"
       ],
-      "sc": 4
+      "sc": 1
     },
     "architecture": {
       "p": [
@@ -762,6 +763,24 @@
     "cirrus-editor": {
       "p": [
         "CirrusTranslate"
+      ],
+      "sc": 1
+    },
+    "neural-memory": {
+      "p": [
+        "Memex"
+      ],
+      "sc": 1
+    },
+    "mirage": {
+      "p": [
+        "Memex"
+      ],
+      "sc": 1
+    },
+    "aither": {
+      "p": [
+        "Memex"
       ],
       "sc": 1
     }

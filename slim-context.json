@@ -53,14 +53,39 @@
       "sessions": 70
     },
     "MIRAGE": {
-      "desc": "Background removal service using BriarMBG model",
-      "tech": "Python, Docker, Flask",
-      "sessions": 1
+      "desc": "AI-powered video/image background removal service using RMBG-2.0 model with GPU acceleration",
+      "tech": "Python, Flask, PyTorch, HuggingFace Transformers, DigitalOcean Spaces",
+      "sessions": 1,
+      "features": [
+        "Real-time video background removal",
+        "Batch processing with configurable batch size",
+        "S3-compatible storage (DO Spaces)",
+        "GPU/CUDA acceleration with DataParallel",
+        "ngrok tunneling for webhook callbacks",
+        "TensorRT/TorchScript optimization options"
+      ],
+      "env": {
+        "api": "Dynamic (ngrok tunnel)"
+      },
+      "concepts": ["background-removal", "video-processing", "ai-ml", "gpu", "flask-api"]
     },
     "Aither": {
-      "desc": "Business management platform with billing and documentation",
-      "tech": "HTML, JavaScript, CSS",
-      "sessions": 1
+      "desc": "QR-code video presentation platform with organization management and role-based access",
+      "tech": "HTML, JavaScript, CSS, Vite, Firebase",
+      "sessions": 1,
+      "features": [
+        "Superadmin/Organization Admin/Viewer roles",
+        "QR code generation for video collections",
+        "Bulk collection generation",
+        "Mobile-optimized video player",
+        "Organization management dashboard"
+      ],
+      "docs": [
+        "USER_GUIDE.md (880 lines)",
+        "SECURITY.md",
+        "SECURITY_ANALYSIS.md"
+      ],
+      "concepts": ["qr-codes", "video-player", "role-based-access", "organization-management"]
     }
   },
   "recent": {
