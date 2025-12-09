@@ -30,7 +30,9 @@ const REPO_MAP = {
   'DevOps': path.join(CIRRUS_PATH, 'DevOps'),
   'Memex': path.join(CIRRUS_PATH, 'DevOps/Memex'),
   'PROJECT_C': path.join(CIRRUS_PATH, 'PROJECT_C'),
-  'ProjectB': path.join(CIRRUS_PATH, 'ProjectB')
+  'ProjectB': path.join(CIRRUS_PATH, 'ProjectB'),
+  'CLEAR-Render': path.join(CIRRUS_PATH, 'CLEAR-Render'),
+  'FORGE': path.join(CIRRUS_PATH, 'FORGE')
 };
 
 class NeuralDeployer {
