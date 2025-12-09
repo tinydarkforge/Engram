@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Neural Memory - All Projects</title>
+  <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #1a1a2e;
+      color: #eee;
+    }
+    #header {
+      padding: 15px 20px;
+      background: #16213e;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    #header h1 {
+      font-size: 18px;
+      font-weight: 500;
+    }
+    #header .stats {
+      font-size: 13px;
+      color: #888;
+    }
+    #graph {
+      width: 100%;
+      height: calc(100vh - 60px);
+    }
+    #legend {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      background: rgba(22, 33, 62, 0.9);
+      padding: 15px;
+      border-radius: 8px;
+      font-size: 12px;
+    }
+    #legend div {
+      display: flex;
+      align-items: center;
+      margin: 5px 0;
+    }
+    #legend span {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      margin-right: 8px;
+    }
+    #search {
+      position: absolute;
+      top: 70px;
+      right: 20px;
+      background: rgba(22, 33, 62, 0.9);
+      padding: 10px;
+      border-radius: 8px;
+    }
+    #search input {
+      background: #1a1a2e;
+      border: 1px solid #333;
+      color: #eee;
+      padding: 8px 12px;
+      border-radius: 4px;
+      width: 200px;
+    }
+    #search input:focus {
+      outline: none;
+      border-color: #3498db;
+    }
+  </style>
+</head>
+<body>
+  <div id="header">
+    <h1>🧠 Neural Memory - All Projects</h1>
+    <div class="stats">86 concepts · 239 connections</div>
+  </div>
+  <div id="graph"></div>
+  <div id="legend">
+    <div><span style="background:#e74c3c"></span> Hot (5+ sessions)</div>
+    <div><span style="background:#f39c12"></span> Warm (3-4 sessions)</div>
+    <div><span style="background:#3498db"></span> Normal (2 sessions)</div>
+    <div><span style="background:#95a5a6"></span> Cold (1 session)</div>
+  </div>
+  <div id="search">
+    <input type="text" id="searchInput" placeholder="Search concept..." />
+  </div>
+
+  <script>
+    const nodes = new vis.DataSet([{"id":1,"label":"docker","value":6,"size":28,"color":"#e74c3c","title":"docker\n6 sessions"},{"id":2,"label":"deployment","value":4,"size":22,"color":"#f39c12","title":"deployment\n4 sessions"},{"id":3,"label":"bug-fix","value":3,"size":19,"color":"#f39c12","title":"bug-fix\n3 sessions"},{"id":4,"label":"cirrus-editor","value":1,"size":13,"color":"#95a5a6","title":"cirrus-editor\n1 sessions"},{"id":5,"label":"fix","value":35,"size":50,"color":"#e74c3c","title":"fix\n35 sessions"},{"id":6,"label":"project-management","value":2,"size":16,"color":"#3498db","title":"project-management\n2 sessions"},{"id":7,"label":"board-audit","value":1,"size":13,"color":"#95a5a6","title":"board-audit\n1 sessions"},{"id":8,"label":"security","value":2,"size":16,"color":"#3498db","title":"security\n2 sessions"},{"id":9,"label":"digitalocean","value":1,"size":13,"color":"#95a5a6","title":"digitalocean\n1 sessions"},{"id":10,"label":"roles","value":1,"size":13,"color":"#95a5a6","title":"roles\n1 sessions"},{"id":11,"label":"documentation","value":1,"size":13,"color":"#95a5a6","title":"documentation\n1 sessions"},{"id":12,"label":"typescript","value":1,"size":13,"color":"#95a5a6","title":"typescript\n1 sessions"},{"id":13,"label":"frontend","value":1,"size":13,"color":"#95a5a6","title":"frontend\n1 sessions"},{"id":14,"label":"type-safety","value":1,"size":13,"color":"#95a5a6","title":"type-safety\n1 sessions"},{"id":15,"label":"issue-299","value":1,"size":13,"color":"#95a5a6","title":"issue-299\n1 sessions"},{"id":16,"label":"pr-301","value":1,"size":13,"color":"#95a5a6","title":"pr-301\n1 sessions"},{"id":17,"label":"error","value":2,"size":16,"color":"#3498db","title":"error\n2 sessions"},{"id":18,"label":"hotfix","value":1,"size":13,"color":"#95a5a6","title":"hotfix\n1 sessions"},{"id":19,"label":"prisma","value":1,"size":13,"color":"#95a5a6","title":"prisma\n1 sessions"},{"id":20,"label":"production","value":2,"size":16,"color":"#3498db","title":"production\n2 sessions"},{"id":21,"label":"pr-233","value":1,"size":13,"color":"#95a5a6","title":"pr-233\n1 sessions"},{"id":22,"label":"deploy","value":5,"size":25,"color":"#e74c3c","title":"deploy\n5 sessions"},{"id":23,"label":"memex","value":6,"size":28,"color":"#e74c3c","title":"memex\n6 sessions"},{"id":24,"label":"automation","value":2,"size":16,"color":"#3498db","title":"automation\n2 sessions"},{"id":25,"label":"hooks","value":1,"size":13,"color":"#95a5a6","title":"hooks\n1 sessions"},{"id":26,"label":"git","value":1,"size":13,"color":"#95a5a6","title":"git\n1 sessions"},{"id":27,"label":"auto-update","value":1,"size":13,"color":"#95a5a6","title":"auto-update\n1 sessions"},{"id":28,"label":"pr-232","value":1,"size":13,"color":"#95a5a6","title":"pr-232\n1 sessions"},{"id":29,"label":"performance","value":2,"size":16,"color":"#3498db","title":"performance\n2 sessions"},{"id":30,"label":"optimization","value":5,"size":25,"color":"#e74c3c","title":"optimization\n5 sessions"},{"id":31,"label":"dockerfile","value":1,"size":13,"color":"#95a5a6","title":"dockerfile\n1 sessions"},{"id":32,"label":"alpine","value":1,"size":13,"color":"#95a5a6","title":"alpine\n1 sessions"},{"id":33,"label":"multi-stage","value":1,"size":13,"color":"#95a5a6","title":"multi-stage\n1 sessions"},{"id":34,"label":"pr-231","value":1,"size":13,"color":"#95a5a6","title":"pr-231\n1 sessions"},{"id":35,"label":"issue-200","value":1,"size":13,"color":"#95a5a6","title":"issue-200\n1 sessions"},{"id":36,"label":"api","value":1,"size":13,"color":"#95a5a6","title":"api\n1 sessions"},{"id":37,"label":"epic-204","value":1,"size":13,"color":"#95a5a6","title":"epic-204\n1 sessions"},{"id":38,"label":"clear-rendering","value":1,"size":13,"color":"#95a5a6","title":"clear-rendering\n1 sessions"},{"id":39,"label":"issue-tracking","value":1,"size":13,"color":"#95a5a6","title":"issue-tracking\n1 sessions"},{"id":40,"label":"nextjs","value":1,"size":13,"color":"#95a5a6","title":"nextjs\n1 sessions"},{"id":41,"label":"react","value":1,"size":13,"color":"#95a5a6","title":"react\n1 sessions"},{"id":42,"label":"login","value":1,"size":13,"color":"#95a5a6","title":"login\n1 sessions"},{"id":43,"label":"suspense","value":1,"size":13,"color":"#95a5a6","title":"suspense\n1 sessions"},{"id":44,"label":"pr-227","value":1,"size":13,"color":"#95a5a6","title":"pr-227\n1 sessions"},{"id":45,"label":"pr-228","value":1,"size":13,"color":"#95a5a6","title":"pr-228\n1 sessions"},{"id":46,"label":"test","value":12,"size":46,"color":"#e74c3c","title":"test\n12 sessions"},{"id":47,"label":"cli","value":1,"size":13,"color":"#95a5a6","title":"cli\n1 sessions"},{"id":48,"label":"msgpack","value":1,"size":13,"color":"#95a5a6","title":"msgpack\n1 sessions"},{"id":49,"label":"cicd","value":2,"size":16,"color":"#3498db","title":"cicd\n2 sessions"},{"id":50,"label":"build","value":2,"size":16,"color":"#3498db","title":"build\n2 sessions"},{"id":51,"label":"search","value":1,"size":13,"color":"#95a5a6","title":"search\n1 sessions"},{"id":52,"label":"topics","value":1,"size":13,"color":"#95a5a6","title":"topics\n1 sessions"},{"id":53,"label":"integration","value":1,"size":13,"color":"#95a5a6","title":"integration\n1 sessions"},{"id":54,"label":"devops","value":2,"size":16,"color":"#3498db","title":"devops\n2 sessions"},{"id":55,"label":"architecture","value":1,"size":13,"color":"#95a5a6","title":"architecture\n1 sessions"},{"id":56,"label":"memory-system","value":1,"size":13,"color":"#95a5a6","title":"memory-system\n1 sessions"},{"id":57,"label":"docs","value":34,"size":50,"color":"#e74c3c","title":"docs\n34 sessions"},{"id":58,"label":"feat","value":10,"size":40,"color":"#e74c3c","title":"feat\n10 sessions"},{"id":59,"label":"chore","value":5482,"size":50,"color":"#e74c3c","title":"chore\n5482 sessions"},{"id":60,"label":"git-hooks","value":2,"size":16,"color":"#3498db","title":"git-hooks\n2 sessions"},{"id":61,"label":"cross-project","value":1,"size":13,"color":"#95a5a6","title":"cross-project\n1 sessions"},{"id":62,"label":"knowledge-base","value":1,"size":13,"color":"#95a5a6","title":"knowledge-base\n1 sessions"},{"id":63,"label":"implementation","value":1,"size":13,"color":"#95a5a6","title":"implementation\n1 sessions"},{"id":64,"label":"testing","value":3,"size":19,"color":"#f39c12","title":"testing\n3 sessions"},{"id":65,"label":"help","value":1,"size":13,"color":"#95a5a6","title":"help\n1 sessions"},{"id":66,"label":"neural-memory","value":1,"size":13,"color":"#95a5a6","title":"neural-memory\n1 sessions"},{"id":67,"label":"mirage","value":1,"size":13,"color":"#95a5a6","title":"mirage\n1 sessions"},{"id":68,"label":"aither","value":1,"size":13,"color":"#95a5a6","title":"aither\n1 sessions"},{"id":69,"label":"release","value":1,"size":13,"color":"#95a5a6","title":"release\n1 sessions"},{"id":70,"label":"v3.4.0","value":1,"size":13,"color":"#95a5a6","title":"v3.4.0\n1 sessions"},{"id":71,"label":"milestone","value":1,"size":13,"color":"#95a5a6","title":"milestone\n1 sessions"},{"id":72,"label":"benchmarks","value":1,"size":13,"color":"#95a5a6","title":"benchmarks\n1 sessions"},{"id":73,"label":"polish","value":1,"size":13,"color":"#95a5a6","title":"polish\n1 sessions"},{"id":74,"label":"memex-v3.4","value":1,"size":13,"color":"#95a5a6","title":"memex-v3.4\n1 sessions"},{"id":75,"label":"examples","value":1,"size":13,"color":"#95a5a6","title":"examples\n1 sessions"},{"id":76,"label":"quickstart","value":1,"size":13,"color":"#95a5a6","title":"quickstart\n1 sessions"},{"id":77,"label":"bugfix","value":2,"size":16,"color":"#3498db","title":"bugfix\n2 sessions"},{"id":78,"label":"cache","value":1,"size":13,"color":"#95a5a6","title":"cache\n1 sessions"},{"id":79,"label":"project-detection","value":1,"size":13,"color":"#95a5a6","title":"project-detection\n1 sessions"},{"id":80,"label":"cleanup","value":1,"size":13,"color":"#95a5a6","title":"cleanup\n1 sessions"},{"id":81,"label":"bloom-filter","value":1,"size":13,"color":"#95a5a6","title":"bloom-filter\n1 sessions"},{"id":82,"label":"maintenance","value":1,"size":13,"color":"#95a5a6","title":"maintenance\n1 sessions"},{"id":83,"label":"dependencies","value":6,"size":28,"color":"#e74c3c","title":"dependencies\n6 sessions"},{"id":84,"label":"bug","value":3,"size":19,"color":"#f39c12","title":"bug\n3 sessions"},{"id":85,"label":"debug","value":1,"size":13,"color":"#95a5a6","title":"debug\n1 sessions"},{"id":86,"label":"logging","value":1,"size":13,"color":"#95a5a6","title":"logging\n1 sessions"}]);
+    const edges = new vis.DataSet([{"from":1,"to":2,"value":3,"title":"3 shared sessions"},{"from":1,"to":30,"value":3,"title":"3 shared sessions"},{"from":1,"to":5,"value":2,"title":"2 shared sessions"},{"from":1,"to":22,"value":2,"title":"2 shared sessions"},{"from":1,"to":50,"value":2,"title":"2 shared sessions"},{"from":2,"to":5,"value":3,"title":"3 shared sessions"},{"from":2,"to":22,"value":2,"title":"2 shared sessions"},{"from":2,"to":3,"value":1,"title":"1 shared sessions"},{"from":2,"to":4,"value":1,"title":"1 shared sessions"},{"from":3,"to":5,"value":3,"title":"3 shared sessions"},{"from":3,"to":17,"value":2,"title":"2 shared sessions"},{"from":3,"to":1,"value":1,"title":"1 shared sessions"},{"from":3,"to":4,"value":1,"title":"1 shared sessions"},{"from":4,"to":1,"value":1,"title":"1 shared sessions"},{"from":4,"to":5,"value":1,"title":"1 shared sessions"},{"from":5,"to":17,"value":2,"title":"2 shared sessions"},{"from":5,"to":22,"value":2,"title":"2 shared sessions"},{"from":6,"to":7,"value":1,"title":"1 shared sessions"},{"from":6,"to":8,"value":1,"title":"1 shared sessions"},{"from":6,"to":37,"value":1,"title":"1 shared sessions"},{"from":6,"to":38,"value":1,"title":"1 shared sessions"},{"from":6,"to":39,"value":1,"title":"1 shared sessions"},{"from":7,"to":8,"value":1,"title":"1 shared sessions"},{"from":8,"to":80,"value":1,"title":"1 shared sessions"},{"from":8,"to":57,"value":1,"title":"1 shared sessions"},{"from":8,"to":81,"value":1,"title":"1 shared sessions"},{"from":9,"to":2,"value":1,"title":"1 shared sessions"},{"from":9,"to":10,"value":1,"title":"1 shared sessions"},{"from":9,"to":11,"value":1,"title":"1 shared sessions"},{"from":9,"to":5,"value":1,"title":"1 shared sessions"},{"from":10,"to":2,"value":1,"title":"1 shared sessions"},{"from":10,"to":11,"value":1,"title":"1 shared sessions"},{"from":10,"to":5,"value":1,"title":"1 shared sessions"},{"from":11,"to":2,"value":1,"title":"1 shared sessions"},{"from":11,"to":5,"value":1,"title":"1 shared sessions"},{"from":12,"to":3,"value":1,"title":"1 shared sessions"},{"from":12,"to":13,"value":1,"title":"1 shared sessions"},{"from":12,"to":14,"value":1,"title":"1 shared sessions"},{"from":12,"to":15,"value":1,"title":"1 shared sessions"},{"from":12,"to":16,"value":1,"title":"1 shared sessions"},{"from":13,"to":3,"value":1,"title":"1 shared sessions"},{"from":13,"to":14,"value":1,"title":"1 shared sessions"},{"from":13,"to":15,"value":1,"title":"1 shared sessions"},{"from":13,"to":16,"value":1,"title":"1 shared sessions"},{"from":14,"to":3,"value":1,"title":"1 shared sessions"},{"from":14,"to":15,"value":1,"title":"1 shared sessions"},{"from":14,"to":16,"value":1,"title":"1 shared sessions"},{"from":15,"to":3,"value":1,"title":"1 shared sessions"},{"from":15,"to":16,"value":1,"title":"1 shared sessions"},{"from":16,"to":3,"value":1,"title":"1 shared sessions"},{"from":17,"to":12,"value":1,"title":"1 shared sessions"},{"from":17,"to":13,"value":1,"title":"1 shared sessions"},{"from":17,"to":14,"value":1,"title":"1 shared sessions"},{"from":18,"to":1,"value":1,"title":"1 shared sessions"},{"from":18,"to":19,"value":1,"title":"1 shared sessions"},{"from":18,"to":2,"value":1,"title":"1 shared sessions"},{"from":18,"to":20,"value":1,"title":"1 shared sessions"},{"from":18,"to":21,"value":1,"title":"1 shared sessions"},{"from":19,"to":1,"value":1,"title":"1 shared sessions"},{"from":19,"to":2,"value":1,"title":"1 shared sessions"},{"from":19,"to":20,"value":1,"title":"1 shared sessions"},{"from":19,"to":21,"value":1,"title":"1 shared sessions"},{"from":20,"to":1,"value":1,"title":"1 shared sessions"},{"from":20,"to":2,"value":1,"title":"1 shared sessions"},{"from":20,"to":21,"value":1,"title":"1 shared sessions"},{"from":21,"to":1,"value":1,"title":"1 shared sessions"},{"from":21,"to":2,"value":1,"title":"1 shared sessions"},{"from":22,"to":58,"value":2,"title":"2 shared sessions"},{"from":22,"to":18,"value":1,"title":"1 shared sessions"},{"from":23,"to":24,"value":2,"title":"2 shared sessions"},{"from":23,"to":46,"value":2,"title":"2 shared sessions"},{"from":23,"to":25,"value":1,"title":"1 shared sessions"},{"from":23,"to":26,"value":1,"title":"1 shared sessions"},{"from":23,"to":27,"value":1,"title":"1 shared sessions"},{"from":24,"to":25,"value":1,"title":"1 shared sessions"},{"from":24,"to":26,"value":1,"title":"1 shared sessions"},{"from":24,"to":27,"value":1,"title":"1 shared sessions"},{"from":24,"to":28,"value":1,"title":"1 shared sessions"},{"from":25,"to":26,"value":1,"title":"1 shared sessions"},{"from":25,"to":27,"value":1,"title":"1 shared sessions"},{"from":25,"to":28,"value":1,"title":"1 shared sessions"},{"from":26,"to":27,"value":1,"title":"1 shared sessions"},{"from":26,"to":28,"value":1,"title":"1 shared sessions"},{"from":27,"to":28,"value":1,"title":"1 shared sessions"},{"from":28,"to":23,"value":1,"title":"1 shared sessions"},{"from":29,"to":30,"value":2,"title":"2 shared sessions"},{"from":29,"to":1,"value":1,"title":"1 shared sessions"},{"from":29,"to":31,"value":1,"title":"1 shared sessions"},{"from":29,"to":32,"value":1,"title":"1 shared sessions"},{"from":29,"to":33,"value":1,"title":"1 shared sessions"},{"from":30,"to":46,"value":2,"title":"2 shared sessions"},{"from":30,"to":50,"value":2,"title":"2 shared sessions"},{"from":30,"to":31,"value":1,"title":"1 shared sessions"},{"from":31,"to":1,"value":1,"title":"1 shared sessions"},{"from":31,"to":32,"value":1,"title":"1 shared sessions"},{"from":31,"to":33,"value":1,"title":"1 shared sessions"},{"from":32,"to":1,"value":1,"title":"1 shared sessions"},{"from":32,"to":30,"value":1,"title":"1 shared sessions"},{"from":32,"to":33,"value":1,"title":"1 shared sessions"},{"from":33,"to":1,"value":1,"title":"1 shared sessions"},{"from":33,"to":30,"value":1,"title":"1 shared sessions"},{"from":34,"to":1,"value":1,"title":"1 shared sessions"},{"from":34,"to":29,"value":1,"title":"1 shared sessions"},{"from":34,"to":30,"value":1,"title":"1 shared sessions"},{"from":34,"to":31,"value":1,"title":"1 shared sessions"},{"from":34,"to":32,"value":1,"title":"1 shared sessions"},{"from":35,"to":1,"value":1,"title":"1 shared sessions"},{"from":35,"to":29,"value":1,"title":"1 shared sessions"},{"from":35,"to":30,"value":1,"title":"1 shared sessions"},{"from":35,"to":31,"value":1,"title":"1 shared sessions"},{"from":35,"to":32,"value":1,"title":"1 shared sessions"},{"from":36,"to":1,"value":1,"title":"1 shared sessions"},{"from":36,"to":29,"value":1,"title":"1 shared sessions"},{"from":36,"to":30,"value":1,"title":"1 shared sessions"},{"from":36,"to":31,"value":1,"title":"1 shared sessions"},{"from":36,"to":32,"value":1,"title":"1 shared sessions"},{"from":37,"to":38,"value":1,"title":"1 shared sessions"},{"from":37,"to":39,"value":1,"title":"1 shared sessions"},{"from":38,"to":39,"value":1,"title":"1 shared sessions"},{"from":40,"to":41,"value":1,"title":"1 shared sessions"},{"from":40,"to":42,"value":1,"title":"1 shared sessions"},{"from":40,"to":43,"value":1,"title":"1 shared sessions"},{"from":40,"to":3,"value":1,"title":"1 shared sessions"},{"from":40,"to":44,"value":1,"title":"1 shared sessions"},{"from":41,"to":42,"value":1,"title":"1 shared sessions"},{"from":41,"to":43,"value":1,"title":"1 shared sessions"},{"from":41,"to":3,"value":1,"title":"1 shared sessions"},{"from":41,"to":44,"value":1,"title":"1 shared sessions"},{"from":42,"to":43,"value":1,"title":"1 shared sessions"},{"from":42,"to":3,"value":1,"title":"1 shared sessions"},{"from":42,"to":44,"value":1,"title":"1 shared sessions"},{"from":43,"to":3,"value":1,"title":"1 shared sessions"},{"from":43,"to":44,"value":1,"title":"1 shared sessions"},{"from":44,"to":3,"value":1,"title":"1 shared sessions"},{"from":45,"to":40,"value":1,"title":"1 shared sessions"},{"from":45,"to":41,"value":1,"title":"1 shared sessions"},{"from":45,"to":42,"value":1,"title":"1 shared sessions"},{"from":45,"to":43,"value":1,"title":"1 shared sessions"},{"from":45,"to":3,"value":1,"title":"1 shared sessions"},{"from":46,"to":57,"value":6,"title":"6 shared sessions"},{"from":46,"to":5,"value":2,"title":"2 shared sessions"},{"from":46,"to":59,"value":2,"title":"2 shared sessions"},{"from":47,"to":46,"value":1,"title":"1 shared sessions"},{"from":47,"to":23,"value":1,"title":"1 shared sessions"},{"from":48,"to":29,"value":1,"title":"1 shared sessions"},{"from":48,"to":30,"value":1,"title":"1 shared sessions"},{"from":48,"to":46,"value":1,"title":"1 shared sessions"},{"from":49,"to":1,"value":1,"title":"1 shared sessions"},{"from":49,"to":50,"value":1,"title":"1 shared sessions"},{"from":49,"to":46,"value":1,"title":"1 shared sessions"},{"from":49,"to":30,"value":1,"title":"1 shared sessions"},{"from":49,"to":5,"value":1,"title":"1 shared sessions"},{"from":50,"to":46,"value":1,"title":"1 shared sessions"},{"from":50,"to":54,"value":1,"title":"1 shared sessions"},{"from":51,"to":5,"value":1,"title":"1 shared sessions"},{"from":51,"to":52,"value":1,"title":"1 shared sessions"},{"from":51,"to":46,"value":1,"title":"1 shared sessions"},{"from":52,"to":5,"value":1,"title":"1 shared sessions"},{"from":52,"to":46,"value":1,"title":"1 shared sessions"},{"from":53,"to":46,"value":1,"title":"1 shared sessions"},{"from":53,"to":23,"value":1,"title":"1 shared sessions"},{"from":54,"to":1,"value":1,"title":"1 shared sessions"},{"from":54,"to":30,"value":1,"title":"1 shared sessions"},{"from":54,"to":23,"value":1,"title":"1 shared sessions"},{"from":54,"to":60,"value":1,"title":"1 shared sessions"},{"from":55,"to":23,"value":1,"title":"1 shared sessions"},{"from":55,"to":56,"value":1,"title":"1 shared sessions"},{"from":55,"to":30,"value":1,"title":"1 shared sessions"},{"from":56,"to":23,"value":1,"title":"1 shared sessions"},{"from":56,"to":30,"value":1,"title":"1 shared sessions"},{"from":59,"to":57,"value":4,"title":"4 shared sessions"},{"from":59,"to":1,"value":1,"title":"1 shared sessions"},{"from":57,"to":58,"value":5,"title":"5 shared sessions"},{"from":57,"to":83,"value":4,"title":"4 shared sessions"},{"from":57,"to":64,"value":3,"title":"3 shared sessions"},{"from":60,"to":23,"value":1,"title":"1 shared sessions"},{"from":60,"to":24,"value":1,"title":"1 shared sessions"},{"from":60,"to":61,"value":1,"title":"1 shared sessions"},{"from":60,"to":62,"value":1,"title":"1 shared sessions"},{"from":61,"to":23,"value":1,"title":"1 shared sessions"},{"from":61,"to":54,"value":1,"title":"1 shared sessions"},{"from":61,"to":24,"value":1,"title":"1 shared sessions"},{"from":61,"to":62,"value":1,"title":"1 shared sessions"},{"from":62,"to":23,"value":1,"title":"1 shared sessions"},{"from":62,"to":54,"value":1,"title":"1 shared sessions"},{"from":62,"to":24,"value":1,"title":"1 shared sessions"},{"from":63,"to":23,"value":1,"title":"1 shared sessions"},{"from":63,"to":60,"value":1,"title":"1 shared sessions"},{"from":63,"to":54,"value":1,"title":"1 shared sessions"},{"from":63,"to":24,"value":1,"title":"1 shared sessions"},{"from":63,"to":61,"value":1,"title":"1 shared sessions"},{"from":64,"to":46,"value":2,"title":"2 shared sessions"},{"from":64,"to":60,"value":1,"title":"1 shared sessions"},{"from":64,"to":72,"value":1,"title":"1 shared sessions"},{"from":64,"to":73,"value":1,"title":"1 shared sessions"},{"from":66,"to":23,"value":1,"title":"1 shared sessions"},{"from":66,"to":67,"value":1,"title":"1 shared sessions"},{"from":66,"to":68,"value":1,"title":"1 shared sessions"},{"from":67,"to":23,"value":1,"title":"1 shared sessions"},{"from":67,"to":68,"value":1,"title":"1 shared sessions"},{"from":68,"to":23,"value":1,"title":"1 shared sessions"},{"from":69,"to":70,"value":1,"title":"1 shared sessions"},{"from":69,"to":20,"value":1,"title":"1 shared sessions"},{"from":69,"to":71,"value":1,"title":"1 shared sessions"},{"from":70,"to":20,"value":1,"title":"1 shared sessions"},{"from":70,"to":71,"value":1,"title":"1 shared sessions"},{"from":71,"to":20,"value":1,"title":"1 shared sessions"},{"from":72,"to":57,"value":1,"title":"1 shared sessions"},{"from":72,"to":73,"value":1,"title":"1 shared sessions"},{"from":72,"to":74,"value":1,"title":"1 shared sessions"},{"from":73,"to":57,"value":1,"title":"1 shared sessions"},{"from":73,"to":74,"value":1,"title":"1 shared sessions"},{"from":74,"to":64,"value":1,"title":"1 shared sessions"},{"from":74,"to":57,"value":1,"title":"1 shared sessions"},{"from":75,"to":57,"value":1,"title":"1 shared sessions"},{"from":75,"to":76,"value":1,"title":"1 shared sessions"},{"from":76,"to":57,"value":1,"title":"1 shared sessions"},{"from":77,"to":5,"value":2,"title":"2 shared sessions"},{"from":77,"to":78,"value":1,"title":"1 shared sessions"},{"from":77,"to":79,"value":1,"title":"1 shared sessions"},{"from":77,"to":57,"value":1,"title":"1 shared sessions"},{"from":77,"to":64,"value":1,"title":"1 shared sessions"},{"from":78,"to":79,"value":1,"title":"1 shared sessions"},{"from":78,"to":5,"value":1,"title":"1 shared sessions"},{"from":79,"to":5,"value":1,"title":"1 shared sessions"},{"from":80,"to":57,"value":1,"title":"1 shared sessions"},{"from":80,"to":81,"value":1,"title":"1 shared sessions"},{"from":80,"to":82,"value":1,"title":"1 shared sessions"},{"from":81,"to":57,"value":1,"title":"1 shared sessions"},{"from":81,"to":82,"value":1,"title":"1 shared sessions"},{"from":82,"to":57,"value":1,"title":"1 shared sessions"},{"from":82,"to":8,"value":1,"title":"1 shared sessions"},{"from":84,"to":5,"value":2,"title":"2 shared sessions"},{"from":84,"to":85,"value":1,"title":"1 shared sessions"},{"from":84,"to":77,"value":1,"title":"1 shared sessions"},{"from":84,"to":57,"value":1,"title":"1 shared sessions"},{"from":84,"to":64,"value":1,"title":"1 shared sessions"},{"from":86,"to":57,"value":1,"title":"1 shared sessions"},{"from":86,"to":46,"value":1,"title":"1 shared sessions"}]);
+
+    const container = document.getElementById('graph');
+    const data = { nodes, edges };
+
+    const options = {
+      nodes: {
+        shape: 'dot',
+        font: {
+          color: '#eee',
+          size: 12
+        },
+        borderWidth: 2,
+        shadow: true
+      },
+      edges: {
+        color: { color: '#444', highlight: '#3498db' },
+        smooth: { type: 'continuous' }
+      },
+      physics: {
+        forceAtlas2Based: {
+          gravitationalConstant: -50,
+          centralGravity: 0.01,
+          springLength: 100,
+          springConstant: 0.08
+        },
+        maxVelocity: 50,
+        solver: 'forceAtlas2Based',
+        timestep: 0.35,
+        stabilization: { iterations: 150 }
+      },
+      interaction: {
+        hover: true,
+        tooltipDelay: 100
+      }
+    };
+
+    const network = new vis.Network(container, data, options);
+
+    // Search functionality
+    document.getElementById('searchInput').addEventListener('input', function(e) {
+      const query = e.target.value.toLowerCase();
+      if (!query) {
+        nodes.forEach(node => nodes.update({ id: node.id, opacity: 1 }));
+        return;
+      }
+
+      nodes.forEach(node => {
+        const match = node.label.toLowerCase().includes(query);
+        nodes.update({
+          id: node.id,
+          opacity: match ? 1 : 0.2,
+          font: { color: match ? '#fff' : '#555' }
+        });
+
+        if (match) {
+          network.focus(node.id, { scale: 1.5, animation: true });
+        }
+      });
+    });
+
+    // Click to focus
+    network.on('click', function(params) {
+      if (params.nodes.length > 0) {
+        network.focus(params.nodes[0], { scale: 1.5, animation: true });
+      }
+    });
+  </script>
+</body>
+</html>

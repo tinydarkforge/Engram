@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Neural Memory - Memex Concepts</title>
+  <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #1a1a2e;
+      color: #eee;
+    }
+    #header {
+      padding: 15px 20px;
+      background: #16213e;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    #header h1 {
+      font-size: 18px;
+      font-weight: 500;
+    }
+    #header .stats {
+      font-size: 13px;
+      color: #888;
+    }
+    #graph {
+      width: 100%;
+      height: calc(100vh - 60px);
+    }
+    #legend {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      background: rgba(22, 33, 62, 0.9);
+      padding: 15px;
+      border-radius: 8px;
+      font-size: 12px;
+    }
+    #legend div {
+      display: flex;
+      align-items: center;
+      margin: 5px 0;
+    }
+    #legend span {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      margin-right: 8px;
+    }
+    #search {
+      position: absolute;
+      top: 70px;
+      right: 20px;
+      background: rgba(22, 33, 62, 0.9);
+      padding: 10px;
+      border-radius: 8px;
+    }
+    #search input {
+      background: #1a1a2e;
+      border: 1px solid #333;
+      color: #eee;
+      padding: 8px 12px;
+      border-radius: 4px;
+      width: 200px;
+    }
+    #search input:focus {
+      outline: none;
+      border-color: #3498db;
+    }
+  </style>
+</head>
+<body>
+  <div id="header">
+    <h1>🧠 Neural Memory - Memex Concepts</h1>
+    <div class="stats">28 concepts · 51 connections</div>
+  </div>
+  <div id="graph"></div>
+  <div id="legend">
+    <div><span style="background:#e74c3c"></span> Hot (5+ sessions)</div>
+    <div><span style="background:#f39c12"></span> Warm (3-4 sessions)</div>
+    <div><span style="background:#3498db"></span> Normal (2 sessions)</div>
+    <div><span style="background:#95a5a6"></span> Cold (1 session)</div>
+  </div>
+  <div id="search">
+    <input type="text" id="searchInput" placeholder="Search concept..." />
+  </div>
+
+  <script>
+    const nodes = new vis.DataSet([{"id":1,"label":"docker","value":1,"size":13,"color":"#95a5a6","title":"docker\n1 sessions"},{"id":2,"label":"fix","value":1,"size":13,"color":"#95a5a6","title":"fix\n1 sessions"},{"id":3,"label":"security","value":1,"size":13,"color":"#95a5a6","title":"security\n1 sessions"},{"id":4,"label":"production","value":1,"size":13,"color":"#95a5a6","title":"production\n1 sessions"},{"id":5,"label":"deploy","value":1,"size":13,"color":"#95a5a6","title":"deploy\n1 sessions"},{"id":6,"label":"memex","value":1,"size":13,"color":"#95a5a6","title":"memex\n1 sessions"},{"id":7,"label":"docs","value":4,"size":22,"color":"#f39c12","title":"docs\n4 sessions"},{"id":8,"label":"feat","value":2,"size":16,"color":"#3498db","title":"feat\n2 sessions"},{"id":9,"label":"chore","value":5479,"size":50,"color":"#e74c3c","title":"chore\n5479 sessions"},{"id":10,"label":"testing","value":1,"size":13,"color":"#95a5a6","title":"testing\n1 sessions"},{"id":11,"label":"help","value":1,"size":13,"color":"#95a5a6","title":"help\n1 sessions"},{"id":12,"label":"neural-memory","value":1,"size":13,"color":"#95a5a6","title":"neural-memory\n1 sessions"},{"id":13,"label":"mirage","value":1,"size":13,"color":"#95a5a6","title":"mirage\n1 sessions"},{"id":14,"label":"aither","value":1,"size":13,"color":"#95a5a6","title":"aither\n1 sessions"},{"id":15,"label":"release","value":1,"size":13,"color":"#95a5a6","title":"release\n1 sessions"},{"id":16,"label":"v3.4.0","value":1,"size":13,"color":"#95a5a6","title":"v3.4.0\n1 sessions"},{"id":17,"label":"milestone","value":1,"size":13,"color":"#95a5a6","title":"milestone\n1 sessions"},{"id":18,"label":"benchmarks","value":1,"size":13,"color":"#95a5a6","title":"benchmarks\n1 sessions"},{"id":19,"label":"polish","value":1,"size":13,"color":"#95a5a6","title":"polish\n1 sessions"},{"id":20,"label":"memex-v3.4","value":1,"size":13,"color":"#95a5a6","title":"memex-v3.4\n1 sessions"},{"id":21,"label":"examples","value":1,"size":13,"color":"#95a5a6","title":"examples\n1 sessions"},{"id":22,"label":"quickstart","value":1,"size":13,"color":"#95a5a6","title":"quickstart\n1 sessions"},{"id":23,"label":"bugfix","value":1,"size":13,"color":"#95a5a6","title":"bugfix\n1 sessions"},{"id":24,"label":"cache","value":1,"size":13,"color":"#95a5a6","title":"cache\n1 sessions"},{"id":25,"label":"project-detection","value":1,"size":13,"color":"#95a5a6","title":"project-detection\n1 sessions"},{"id":26,"label":"cleanup","value":1,"size":13,"color":"#95a5a6","title":"cleanup\n1 sessions"},{"id":27,"label":"bloom-filter","value":1,"size":13,"color":"#95a5a6","title":"bloom-filter\n1 sessions"},{"id":28,"label":"maintenance","value":1,"size":13,"color":"#95a5a6","title":"maintenance\n1 sessions"}]);
+    const edges = new vis.DataSet([{"from":1,"to":2,"value":2,"title":"2 shared sessions"},{"from":1,"to":5,"value":2,"title":"2 shared sessions"},{"from":2,"to":5,"value":2,"title":"2 shared sessions"},{"from":3,"to":26,"value":1,"title":"1 shared sessions"},{"from":3,"to":7,"value":1,"title":"1 shared sessions"},{"from":3,"to":27,"value":1,"title":"1 shared sessions"},{"from":4,"to":1,"value":1,"title":"1 shared sessions"},{"from":5,"to":8,"value":2,"title":"2 shared sessions"},{"from":9,"to":7,"value":4,"title":"4 shared sessions"},{"from":9,"to":1,"value":1,"title":"1 shared sessions"},{"from":7,"to":8,"value":5,"title":"5 shared sessions"},{"from":7,"to":10,"value":3,"title":"3 shared sessions"},{"from":10,"to":18,"value":1,"title":"1 shared sessions"},{"from":10,"to":19,"value":1,"title":"1 shared sessions"},{"from":12,"to":6,"value":1,"title":"1 shared sessions"},{"from":12,"to":13,"value":1,"title":"1 shared sessions"},{"from":12,"to":14,"value":1,"title":"1 shared sessions"},{"from":13,"to":6,"value":1,"title":"1 shared sessions"},{"from":13,"to":14,"value":1,"title":"1 shared sessions"},{"from":14,"to":6,"value":1,"title":"1 shared sessions"},{"from":15,"to":16,"value":1,"title":"1 shared sessions"},{"from":15,"to":4,"value":1,"title":"1 shared sessions"},{"from":15,"to":17,"value":1,"title":"1 shared sessions"},{"from":16,"to":4,"value":1,"title":"1 shared sessions"},{"from":16,"to":17,"value":1,"title":"1 shared sessions"},{"from":17,"to":4,"value":1,"title":"1 shared sessions"},{"from":18,"to":7,"value":1,"title":"1 shared sessions"},{"from":18,"to":19,"value":1,"title":"1 shared sessions"},{"from":18,"to":20,"value":1,"title":"1 shared sessions"},{"from":19,"to":7,"value":1,"title":"1 shared sessions"},{"from":19,"to":20,"value":1,"title":"1 shared sessions"},{"from":20,"to":10,"value":1,"title":"1 shared sessions"},{"from":20,"to":7,"value":1,"title":"1 shared sessions"},{"from":21,"to":7,"value":1,"title":"1 shared sessions"},{"from":21,"to":22,"value":1,"title":"1 shared sessions"},{"from":22,"to":7,"value":1,"title":"1 shared sessions"},{"from":23,"to":2,"value":2,"title":"2 shared sessions"},{"from":23,"to":24,"value":1,"title":"1 shared sessions"},{"from":23,"to":25,"value":1,"title":"1 shared sessions"},{"from":23,"to":7,"value":1,"title":"1 shared sessions"},{"from":23,"to":10,"value":1,"title":"1 shared sessions"},{"from":24,"to":25,"value":1,"title":"1 shared sessions"},{"from":24,"to":2,"value":1,"title":"1 shared sessions"},{"from":25,"to":2,"value":1,"title":"1 shared sessions"},{"from":26,"to":7,"value":1,"title":"1 shared sessions"},{"from":26,"to":27,"value":1,"title":"1 shared sessions"},{"from":26,"to":28,"value":1,"title":"1 shared sessions"},{"from":27,"to":7,"value":1,"title":"1 shared sessions"},{"from":27,"to":28,"value":1,"title":"1 shared sessions"},{"from":28,"to":7,"value":1,"title":"1 shared sessions"},{"from":28,"to":3,"value":1,"title":"1 shared sessions"}]);
+
+    const container = document.getElementById('graph');
+    const data = { nodes, edges };
+
+    const options = {
+      nodes: {
+        shape: 'dot',
+        font: {
+          color: '#eee',
+          size: 12
+        },
+        borderWidth: 2,
+        shadow: true
+      },
+      edges: {
+        color: { color: '#444', highlight: '#3498db' },
+        smooth: { type: 'continuous' }
+      },
+      physics: {
+        forceAtlas2Based: {
+          gravitationalConstant: -50,
+          centralGravity: 0.01,
+          springLength: 100,
+          springConstant: 0.08
+        },
+        maxVelocity: 50,
+        solver: 'forceAtlas2Based',
+        timestep: 0.35,
+        stabilization: { iterations: 150 }
+      },
+      interaction: {
+        hover: true,
+        tooltipDelay: 100
+      }
+    };
+
+    const network = new vis.Network(container, data, options);
+
+    // Search functionality
+    document.getElementById('searchInput').addEventListener('input', function(e) {
+      const query = e.target.value.toLowerCase();
+      if (!query) {
+        nodes.forEach(node => nodes.update({ id: node.id, opacity: 1 }));
+        return;
+      }
+
+      nodes.forEach(node => {
+        const match = node.label.toLowerCase().includes(query);
+        nodes.update({
+          id: node.id,
+          opacity: match ? 1 : 0.2,
+          font: { color: match ? '#fff' : '#555' }
+        });
+
+        if (match) {
+          network.focus(node.id, { scale: 1.5, animation: true });
+        }
+      });
+    });
+
+    // Click to focus
+    network.on('click', function(params) {
+      if (params.nodes.length > 0) {
+        network.focus(params.nodes[0], { scale: 1.5, animation: true });
+      }
+    });
+  </script>
+</body>
+</html>
