@@ -21,6 +21,7 @@
 const fs = require('fs');
 const path = require('path');
 const msgpack = require('msgpack-lite');
+const cli = require('./cli-utils');
 
 const MEMEX_PATH = process.env.MEMEX_PATH || path.join(process.env.HOME, 'code/cirrus/DevOps/Memex');
 const NEURAL_PATH = path.join(MEMEX_PATH, '.neural');
@@ -710,19 +711,22 @@ const neural = new NeuralMemory();
     switch (command) {
       case 'build':
         const buildResult = await neural.build();
-        console.log('\n📊 Summary:');
-        console.log(JSON.stringify(buildResult, null, 2));
+        cli.section('Build Summary', cli.icons.stats);
+        cli.stats({
+          'Embeddings': `${buildResult.embeddings?.sessions || 0} sessions`,
+          'Graph': `${buildResult.graph?.concepts || 0} concepts`,
+          'Bundles': `${buildResult.bundles?.count || 0} projects`
+        });
         break;
 
       case 'query':
         const queryText = process.argv.slice(3).join(' ');
         if (!queryText) {
-          console.error('Usage: neural-memory.js query <text>');
+          cli.error('Usage: neural-memory.js query <text>');
           process.exit(1);
         }
-        console.log(`🔍 Neural query: "${queryText}"\n`);
         const queryResult = await neural.query(queryText);
-        console.log(JSON.stringify(queryResult, null, 2));
+        cli.searchResults(queryResult.results || [], queryText);
         break;
 
       case 'bundle':
@@ -730,27 +734,42 @@ const neural = new NeuralMemory();
         if (projectName) {
           const context = neural.getInstantContext(projectName);
           if (context) {
-            console.log(`📦 Instant context for ${projectName}:\n`);
+            cli.header(`Bundle: ${projectName}`, cli.icons.package);
             console.log(context);
-            console.log(`\n(${context.length} chars)`);
+            cli.info(`${context.length} chars`);
           } else {
-            console.log(`No bundle found for ${projectName}`);
+            cli.error(`No bundle found for ${projectName}`);
           }
         } else {
-          console.log('Available bundles:');
+          cli.header('Available Bundles', cli.icons.package);
           const bundlesDir = path.join(NEURAL_PATH, 'bundles');
           if (fs.existsSync(bundlesDir)) {
-            fs.readdirSync(bundlesDir).forEach(f => {
-              console.log(`  - ${f.replace('.msgpack', '')}`);
-            });
+            const bundles = fs.readdirSync(bundlesDir).map(f => ({
+              name: f.replace('.msgpack', ''),
+              size: fs.statSync(path.join(bundlesDir, f)).size
+            }));
+            cli.table(bundles, [
+              { key: 'name', label: 'Project', width: 25 },
+              { key: 'size', label: 'Size', width: 10, align: 'right' }
+            ]);
           }
         }
         break;
 
       case 'stats':
-        const stats = neural.getStats();
-        console.log('🧠 Neural Memory Stats:\n');
-        console.log(JSON.stringify(stats, null, 2));
+        const statsData = neural.getStats();
+        cli.header('Neural Memory Stats');
+        cli.stats({
+          'Neural Path': statsData.neural_path,
+          'Embeddings': statsData.structures?.embeddings ? cli.colors.success('✓') : cli.colors.muted('–'),
+          'Graph': statsData.structures?.graph ? cli.colors.success('✓') : cli.colors.muted('–')
+        });
+        if (statsData.structures) {
+          cli.section('Structure Sizes');
+          cli.simpleTable(Object.entries(statsData.structures).map(([k, v]) => [
+            k, v ? `${(v / 1024).toFixed(1)} KB` : '–'
+          ]));
+        }
         break;
 
       // ============================================
@@ -760,29 +779,37 @@ const neural = new NeuralMemory();
       case 'relates':
         const relatesConcept = process.argv[3];
         if (!relatesConcept) {
-          console.error('Usage: neural-memory.js relates <concept>');
-          console.error('Example: neural-memory.js relates docker');
+          cli.error('Usage: neural-memory.js relates <concept>');
+          cli.info('Example: neural-memory.js relates docker');
           process.exit(1);
         }
-        console.log(`🔗 What relates to "${relatesConcept}"?\n`);
         const relatesResult = await neural.relates(relatesConcept);
+        cli.header(`Relates: ${relatesConcept}`, cli.icons.graph);
+
         if (relatesResult.found) {
-          console.log(`Concept: ${relatesResult.concept} (${relatesResult.weight} sessions)\n`);
-          console.log('Directly related:');
-          relatesResult.directly_related.forEach(r => {
-            console.log(`  ${r.concept} (${r.strength} shared sessions)`);
-          });
+          cli.keyValue('Concept', cli.colors.primary(relatesResult.concept));
+          cli.keyValue('Sessions', relatesResult.weight);
+
+          cli.section('Directly Related');
+          const relatedData = relatesResult.directly_related.map(r => ({
+            concept: cli.topicTag(r.concept, r.strength),
+            strength: `${r.strength} shared`
+          }));
+          cli.table(relatedData, [
+            { key: 'concept', label: 'Concept', width: 20 },
+            { key: 'strength', label: 'Strength', width: 15 }
+          ]);
+
           if (relatesResult.second_degree.length > 0) {
-            console.log('\nSecond-degree (related to related):');
+            cli.section('Second Degree');
             relatesResult.second_degree.forEach(r => {
-              console.log(`  ${r.concept} (via ${r.via})`);
+              cli.indent(`${cli.colors.muted(r.concept)} via ${r.via}`);
             });
           }
-          console.log('\nSample sessions:', relatesResult.sessions.slice(0, 3).join(', '));
         } else {
-          console.log(relatesResult.message);
+          cli.warning(relatesResult.message);
           if (relatesResult.similar) {
-            console.log('Did you mean:', relatesResult.similar.join(', '));
+            cli.info(`Did you mean: ${relatesResult.similar.join(', ')}`);
           }
         }
         break;
@@ -791,88 +818,93 @@ const neural = new NeuralMemory();
         const pathFrom = process.argv[3];
         const pathTo = process.argv[4];
         if (!pathFrom || !pathTo) {
-          console.error('Usage: neural-memory.js path <from> <to>');
-          console.error('Example: neural-memory.js path docker typescript');
+          cli.error('Usage: neural-memory.js path <from> <to>');
+          cli.info('Example: neural-memory.js path docker typescript');
           process.exit(1);
         }
-        console.log(`🛤️  Path from "${pathFrom}" to "${pathTo}":\n`);
         const pathResult = await neural.path(pathFrom, pathTo);
+        cli.header(`Path: ${pathFrom} → ${pathTo}`);
+
         if (pathResult.connected) {
-          console.log(`Connected! Distance: ${pathResult.distance} hops\n`);
-          console.log(`Path: ${pathResult.path.join(' → ')}`);
-          console.log(`\nExplanation: ${pathResult.explanation}`);
+          cli.success(`Connected! Distance: ${pathResult.distance} hops`);
+          console.log();
+          console.log(`  ${cli.colors.primary(pathResult.path.join(` ${cli.icons.arrow} `))}`);
+          console.log();
+          cli.info(pathResult.explanation);
         } else {
-          console.log(pathResult.message || pathResult.error);
+          cli.warning(pathResult.message || pathResult.error);
         }
         break;
 
       case 'learn':
         const learnConcept = process.argv[3];
         if (!learnConcept) {
-          console.error('Usage: neural-memory.js learn <concept>');
-          console.error('Example: neural-memory.js learn docker');
+          cli.error('Usage: neural-memory.js learn <concept>');
+          cli.info('Example: neural-memory.js learn docker');
           process.exit(1);
         }
-        console.log(`📚 Learning about "${learnConcept}":\n`);
         const learnResult = await neural.learn(learnConcept);
+        cli.header(`Learn: ${learnConcept}`);
+
         if (learnResult.error) {
-          console.log(learnResult.error);
+          cli.warning(learnResult.error);
         } else {
-          console.log(`Summary: ${learnResult.summary}\n`);
-          console.log('Related concepts:', learnResult.related_concepts.join(', '));
-          console.log('\nSessions:');
-          learnResult.sessions.forEach(s => {
-            console.log(`  [${s.date}] ${s.project}: ${s.summary.slice(0, 60)}...`);
-          });
+          console.log(learnResult.summary);
+          console.log();
+          cli.section('Related Concepts');
+          cli.topicList(learnResult.related_concepts.map(c => ({ name: c, count: 1 })), false);
+          cli.section('Sessions');
+          learnResult.sessions.forEach(s => cli.sessionItem(s));
         }
         break;
 
       case 'concepts':
-        console.log('📊 All concepts in graph:\n');
         const conceptsResult = await neural.concepts({ limit: 30 });
-        console.log(`Total: ${conceptsResult.total} concepts\n`);
-        console.log('Top concepts by session count:');
-        conceptsResult.concepts.forEach(c => {
-          console.log(`  ${c.concept.padEnd(20)} ${c.sessions} sessions, ${c.related} related`);
-        });
+        cli.header('Concepts', cli.icons.stats);
+        cli.keyValue('Total', conceptsResult.total);
+        console.log();
+
+        cli.table(conceptsResult.concepts, [
+          { key: 'concept', label: 'Concept', width: 22 },
+          { key: 'sessions', label: 'Sessions', width: 10, align: 'right' },
+          { key: 'related', label: 'Related', width: 10, align: 'right' }
+        ]);
         break;
 
       case 'viz':
-        console.log('🎨 Generating graph visualization...');
+        cli.info('Generating graph visualization...');
         const { execSync } = require('child_process');
         execSync('node ' + path.join(MEMEX_PATH, 'scripts/graph-viz.js'), { stdio: 'inherit' });
         break;
 
       default:
-        console.log(`
-Neural Memory v2.0 - AI-Native Knowledge Storage
+        cli.header('Neural Memory v2.0');
+        console.log(cli.colors.muted('AI-Native Knowledge Storage\n'));
 
-Usage:
-  node neural-memory.js build           Build all neural structures
-  node neural-memory.js query <text>    Semantic query with graph enrichment
-  node neural-memory.js bundle [project] Get instant context bundle
-  node neural-memory.js stats           Show neural memory statistics
+        cli.section('Core Commands');
+        cli.simpleTable([
+          ['build', 'Build all neural structures'],
+          ['query <text>', 'Semantic query with graph enrichment'],
+          ['bundle [project]', 'Get instant context bundle'],
+          ['stats', 'Show neural memory statistics']
+        ], 22);
 
-Phase 2 - Knowledge Graph:
-  node neural-memory.js relates <concept>     What relates to this concept?
-  node neural-memory.js path <from> <to>      How are two concepts connected?
-  node neural-memory.js learn <concept>       What did we learn about this?
-  node neural-memory.js concepts              List all concepts in graph
-  node neural-memory.js viz                   Open interactive graph visualization
+        cli.section('Knowledge Graph');
+        cli.simpleTable([
+          ['relates <concept>', 'What relates to this concept?'],
+          ['path <from> <to>', 'How are two concepts connected?'],
+          ['learn <concept>', 'What did we learn about this?'],
+          ['concepts', 'List all concepts in graph'],
+          ['viz', 'Open interactive graph visualization']
+        ], 22);
 
-Examples:
-  node neural-memory.js relates docker
-  node neural-memory.js path docker typescript
-  node neural-memory.js learn memex
-
-This creates:
-  .neural/embeddings.msgpack   Binary embeddings (50% smaller)
-  .neural/graph.msgpack        Concept relationship graph
-  .neural/bundles/*.msgpack    Pre-compiled project contexts
-`);
+        cli.section('Examples');
+        cli.indent(cli.colors.muted('node neural-memory.js relates docker'));
+        cli.indent(cli.colors.muted('node neural-memory.js path docker typescript'));
+        cli.indent(cli.colors.muted('node neural-memory.js learn memex'));
     }
   } catch (error) {
-    console.error('Error:', error.message);
+    cli.error(error.message);
     if (process.env.DEBUG) console.error(error.stack);
     process.exit(1);
   }
