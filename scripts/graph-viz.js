@@ -4,8 +4,10 @@
  * Graph Visualization - Generate interactive HTML concept map
  *
  * Usage:
- *   node graph-viz.js              Generate and open graph.html
- *   node graph-viz.js --no-open    Generate without opening
+ *   node graph-viz.js                        Generate global graph (all projects)
+ *   node graph-viz.js --project Memex        Generate project-specific graph
+ *   node graph-viz.js --no-open              Generate without opening browser
+ *   node graph-viz.js --deploy               Deploy global graph to all repos
  */
 
 const fs = require('fs');
@@ -14,11 +16,103 @@ const { execSync } = require('child_process');
 const msgpack = require('msgpack-lite');
 
 const MEMEX_PATH = process.env.MEMEX_PATH || path.join(process.env.HOME, 'code/cirrus/DevOps/Memex');
+const CIRRUS_PATH = path.join(process.env.HOME, 'code/cirrus');
 const GRAPH_PATH = path.join(MEMEX_PATH, '.neural', 'graph.msgpack');
-const OUTPUT_PATH = path.join(MEMEX_PATH, 'graph.html');
 
-function generateVisualization() {
-  console.log('🎨 Generating graph visualization...\n');
+// Known repositories (same as deploy-neural.js)
+const REPO_MAP = {
+  'DemoProject': path.join(CIRRUS_PATH, 'DemoProject'),
+  'translate.hellocirrus': path.join(CIRRUS_PATH, 'translatehellocirrus'),
+  'DevOps': path.join(CIRRUS_PATH, 'DevOps'),
+  'Memex': path.join(CIRRUS_PATH, 'DevOps/Memex'),
+  'PROJECT_C': path.join(CIRRUS_PATH, 'PROJECT_C'),
+  'ProjectB': path.join(CIRRUS_PATH, 'ProjectB'),
+  'CLEAR-Render': path.join(CIRRUS_PATH, 'CLEAR-Render'),
+  'FORGE': path.join(CIRRUS_PATH, 'FORGE')
+};
+
+/**
+ * Load all sessions to map concepts to projects
+ */
+function loadSessionProjects() {
+  const sessionToProject = {};
+  const projectsDir = path.join(MEMEX_PATH, 'summaries/projects');
+
+  if (!fs.existsSync(projectsDir)) return sessionToProject;
+
+  for (const project of fs.readdirSync(projectsDir)) {
+    const indexPath = path.join(projectsDir, project, 'sessions-index.json');
+    if (!fs.existsSync(indexPath)) continue;
+
+    try {
+      const data = JSON.parse(fs.readFileSync(indexPath, 'utf8'));
+      for (const session of data.sessions || []) {
+        sessionToProject[session.id] = project;
+      }
+    } catch (e) {
+      // Skip
+    }
+  }
+
+  return sessionToProject;
+}
+
+/**
+ * Filter graph to only include concepts from a specific project
+ */
+function filterGraphByProject(graph, projectName, sessionToProject) {
+  const filteredNodes = {};
+  const filteredEdges = {};
+  const filteredReverse = {};
+
+  // Find sessions belonging to this project
+  const projectSessions = new Set(
+    Object.entries(sessionToProject)
+      .filter(([_, proj]) => proj.toLowerCase() === projectName.toLowerCase())
+      .map(([id]) => id)
+  );
+
+  // Filter nodes - keep only concepts that appear in project sessions
+  for (const [concept, data] of Object.entries(graph.nodes)) {
+    const projectSessionsForConcept = (data.s || []).filter(s => projectSessions.has(s));
+    if (projectSessionsForConcept.length > 0) {
+      filteredNodes[concept] = {
+        w: projectSessionsForConcept.length,
+        s: projectSessionsForConcept
+      };
+    }
+  }
+
+  // Filter edges - keep only edges between filtered nodes
+  for (const [from, targets] of Object.entries(graph.edges)) {
+    if (!filteredNodes[from]) continue;
+
+    const filteredTargets = targets.filter(t => filteredNodes[t.c]);
+    if (filteredTargets.length > 0) {
+      filteredEdges[from] = filteredTargets;
+    }
+  }
+
+  // Filter reverse index
+  for (const [sessionId, concepts] of Object.entries(graph.reverse || {})) {
+    if (projectSessions.has(sessionId)) {
+      filteredReverse[sessionId] = concepts.filter(c => filteredNodes[c]);
+    }
+  }
+
+  return {
+    v: graph.v,
+    nodes: filteredNodes,
+    edges: filteredEdges,
+    reverse: filteredReverse
+  };
+}
+
+function generateVisualization(options = {}) {
+  const { projectFilter, outputPath } = options;
+  const title = projectFilter ? `${projectFilter} Concepts` : 'All Projects';
+
+  console.log(`🎨 Generating graph: ${title}...\n`);
 
   // Load graph
   if (!fs.existsSync(GRAPH_PATH)) {
@@ -26,7 +120,18 @@ function generateVisualization() {
     process.exit(1);
   }
 
-  const graph = msgpack.decode(fs.readFileSync(GRAPH_PATH));
+  let graph = msgpack.decode(fs.readFileSync(GRAPH_PATH));
+
+  // Filter by project if specified
+  if (projectFilter) {
+    const sessionToProject = loadSessionProjects();
+    graph = filterGraphByProject(graph, projectFilter, sessionToProject);
+
+    if (Object.keys(graph.nodes).length === 0) {
+      console.error(`No concepts found for project: ${projectFilter}`);
+      process.exit(1);
+    }
+  }
 
   // Prepare nodes and edges for vis.js
   const nodes = [];
@@ -88,11 +193,14 @@ function generateVisualization() {
   console.log(`  Nodes: ${nodes.length}`);
   console.log(`  Edges: ${edges.length}`);
 
+  // Determine output path
+  const finalOutputPath = outputPath || path.join(MEMEX_PATH, projectFilter ? `graph-${projectFilter.toLowerCase()}.html` : 'graph.html');
+
   // Generate HTML
   const html = `<!DOCTYPE html>
 <html>
 <head>
-  <title>Neural Memory - Concept Graph</title>
+  <title>Neural Memory - ${title}</title>
   <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -164,7 +272,7 @@ function generateVisualization() {
 </head>
 <body>
   <div id="header">
-    <h1>🧠 Neural Memory - Concept Graph</h1>
+    <h1>🧠 Neural Memory - ${title}</h1>
     <div class="stats">${nodes.length} concepts · ${edges.length} connections</div>
   </div>
   <div id="graph"></div>
@@ -251,21 +359,72 @@ function generateVisualization() {
 </body>
 </html>`;
 
-  fs.writeFileSync(OUTPUT_PATH, html);
-  console.log(`\n✅ Generated: ${OUTPUT_PATH}`);
+  fs.writeFileSync(finalOutputPath, html);
+  console.log(`\n✅ Generated: ${finalOutputPath}`);
 
-  return OUTPUT_PATH;
+  return finalOutputPath;
+}
+
+/**
+ * Deploy global graph.html to all repos
+ */
+function deployGraphToRepos() {
+  console.log('🚀 Deploying graph.html to all repositories...\n');
+
+  // Generate global graph first
+  const globalGraphPath = generateVisualization({ outputPath: path.join(MEMEX_PATH, 'graph.html') });
+
+  // Use REPO_MAP for deployment
+  const repos = Object.entries(REPO_MAP).map(([name, repoPath]) => ({ name, path: repoPath }));
+
+  // Copy graph.html to each repo's .neural folder
+  const graphHtml = fs.readFileSync(globalGraphPath, 'utf8');
+  let deployed = 0;
+
+  for (const repo of repos) {
+    const neuralDir = path.join(repo.path, '.neural');
+    const targetPath = path.join(neuralDir, 'graph.html');
+
+    try {
+      // Create .neural if it doesn't exist
+      if (!fs.existsSync(neuralDir)) {
+        fs.mkdirSync(neuralDir, { recursive: true });
+      }
+
+      fs.writeFileSync(targetPath, graphHtml);
+      console.log(`✅ ${repo.name}: ${targetPath}`);
+      deployed++;
+    } catch (e) {
+      console.log(`❌ ${repo.name}: ${e.message}`);
+    }
+  }
+
+  console.log(`\n✅ Deployed to ${deployed} repos`);
 }
 
 // CLI
-const noOpen = process.argv.includes('--no-open');
-const outputPath = generateVisualization();
+const args = process.argv.slice(2);
+const noOpen = args.includes('--no-open');
+const deployMode = args.includes('--deploy');
 
-if (!noOpen) {
-  console.log('📂 Opening in browser...');
-  try {
-    execSync(`open "${outputPath}"`);
-  } catch (e) {
-    console.log(`   Open manually: file://${outputPath}`);
+// Parse --project flag
+let projectFilter = null;
+const projectIdx = args.indexOf('--project');
+if (projectIdx !== -1 && args[projectIdx + 1]) {
+  projectFilter = args[projectIdx + 1];
+}
+
+if (deployMode) {
+  deployGraphToRepos();
+} else {
+  const outputPath = generateVisualization({ projectFilter });
+
+  if (!noOpen) {
+    console.log('📂 Opening in browser...');
+    try {
+      execSync(`open "${outputPath}"`);
+    } catch (e) {
+      console.log(`   Open manually: file://${outputPath}`);
+    }
   }
 }
