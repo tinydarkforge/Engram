@@ -144,14 +144,57 @@ class VectorSearch {
   }
 
   /**
+   * Calculate decay factor based on session age
+   * Uses exponential decay: score * decay_rate^days_old
+   *
+   * @param {string} sessionId - Session ID (format: xx-YYYY-MM-DD-slug)
+   * @param {number} decayRate - Daily decay rate (default 0.98 = 2% per day)
+   * @param {number} halfLifeDays - Alternative: specify half-life in days
+   * @returns {number} Decay multiplier between 0 and 1
+   */
+  calculateDecay(sessionId, options = {}) {
+    const { decayRate = 0.98, halfLifeDays = null, maxAgeDays = 365 } = options;
+
+    // Extract date from session ID (format: xx-YYYY-MM-DD-slug)
+    const dateMatch = sessionId.match(/(\d{4}-\d{2}-\d{2})/);
+    if (!dateMatch) return 1.0; // No decay if can't parse date
+
+    const sessionDate = new Date(dateMatch[1]);
+    const now = new Date();
+    const daysOld = Math.floor((now - sessionDate) / (1000 * 60 * 60 * 24));
+
+    if (daysOld <= 0) return 1.0; // Today's sessions get full weight
+    if (daysOld > maxAgeDays) return 0.1; // Floor for very old sessions
+
+    // Calculate decay rate from half-life if provided
+    // half-life formula: 0.5 = rate^halfLifeDays, so rate = 0.5^(1/halfLifeDays)
+    const effectiveRate = halfLifeDays
+      ? Math.pow(0.5, 1 / halfLifeDays)
+      : decayRate;
+
+    return Math.pow(effectiveRate, daysOld);
+  }
+
+  /**
    * Search sessions by semantic similarity
    * Returns ranked results with similarity scores
+   *
+   * @param {string} query - Search query
+   * @param {object} options - Search options
+   * @param {number} options.limit - Max results (default 10)
+   * @param {number} options.minSimilarity - Min similarity threshold (default 0.2)
+   * @param {boolean} options.useDecay - Apply time decay (default true)
+   * @param {number} options.decayRate - Daily decay rate (default 0.98)
+   * @param {number} options.halfLifeDays - Half-life in days (overrides decayRate)
    */
   async search(query, options = {}) {
     const {
       limit = 10,
       minSimilarity = 0.2,
-      includeScores = true
+      includeScores = true,
+      useDecay = true,
+      decayRate = 0.98,
+      halfLifeDays = null
     } = options;
 
     // Load embeddings if not already loaded
@@ -176,19 +219,30 @@ class VectorSearch {
     for (const [sessionId, sessionData] of Object.entries(this.embeddings.sessions)) {
       if (!sessionData.embedding) continue;
 
-      const similarity = this.cosineSimilarity(queryEmbedding, sessionData.embedding);
+      const rawSimilarity = this.cosineSimilarity(queryEmbedding, sessionData.embedding);
 
-      if (similarity >= minSimilarity) {
+      // Apply time decay if enabled
+      let finalScore = rawSimilarity;
+      let decayFactor = 1.0;
+
+      if (useDecay) {
+        decayFactor = this.calculateDecay(sessionId, { decayRate, halfLifeDays });
+        finalScore = rawSimilarity * decayFactor;
+      }
+
+      if (finalScore >= minSimilarity) {
         results.push({
           session_id: sessionId,
-          similarity: Math.round(similarity * 100) / 100,
+          similarity: Math.round(rawSimilarity * 100) / 100,
+          score: Math.round(finalScore * 100) / 100,
+          decay: Math.round(decayFactor * 100) / 100,
           text_preview: sessionData.text_preview
         });
       }
     }
 
-    // Sort by similarity (highest first)
-    results.sort((a, b) => b.similarity - a.similarity);
+    // Sort by final score (with decay applied)
+    results.sort((a, b) => b.score - a.score);
 
     // Limit results
     const limitedResults = results.slice(0, limit);
@@ -197,7 +251,8 @@ class VectorSearch {
       query,
       results: limitedResults,
       total_matches: results.length,
-      showing: limitedResults.length
+      showing: limitedResults.length,
+      decay_enabled: useDecay
     };
   }
 
