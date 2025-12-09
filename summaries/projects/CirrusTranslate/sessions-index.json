@@ -1,8 +1,32 @@
 {
   "project": "CirrusTranslate",
-  "total_sessions": 19,
-  "last_updated": "2025-12-08",
+  "total_sessions": 20,
+  "last_updated": "2025-12-09",
   "sessions": [
+    {
+      "id": "ci-2025-12-09-docker",
+      "project": "CirrusTranslate",
+      "date": "2025-12-09",
+      "summary": "Fixed",
+      "topics": [
+        "docker",
+        "deployment",
+        "bug-fix",
+        "cirrus-editor"
+      ],
+      "key_decisions": [],
+      "outcomes": {
+        "completed": []
+      },
+      "learnings": [],
+      "code_changes": {
+        "files_added": [],
+        "files_modified": [],
+        "files_deleted": [],
+        "lines_added": 0,
+        "lines_removed": 0
+      }
+    },
     {
       "id": "ci-2025-12-08-session",
       "project": "CirrusTranslate",
@@ -277,7 +301,8 @@
   "_session_details_path": "sessions/{id}.json",
   "topics_index": {
     "deployment": [
-      "ci-2025-12-08-deployment"
+      "ci-2025-12-08-deployment",
+      "ci-2025-12-09-docker"
     ],
     "digitalocean": [
       "ci-2025-12-08-deployment"
@@ -296,6 +321,15 @@
     ],
     "security": [
       "ci-2025-12-08-project-management"
+    ],
+    "docker": [
+      "ci-2025-12-09-docker"
+    ],
+    "bug-fix": [
+      "ci-2025-12-09-docker"
+    ],
+    "cirrus-editor": [
+      "ci-2025-12-09-docker"
     ]
   }
 }
