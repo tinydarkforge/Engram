@@ -7,7 +7,9 @@
     "compress": "node scripts/compress-index.js",
     "convert-msgpack": "node scripts/convert-to-msgpack.js",
     "startup": "node scripts/memex-loader.js startup",
-    "test": "node scripts/memex-loader.js startup"
+    "test": "node scripts/memex-loader.js startup",
+    "web": "node scripts/web-server.js",
+    "dev": "node scripts/web-server.js"
   },
   "keywords": [
     "memex",
@@ -22,6 +24,8 @@
   "dependencies": {
     "@huggingface/transformers": "^3.8.1",
     "better-sqlite3": "^9.2.2",
+    "chalk": "^4.1.2",
+    "express": "^5.2.1",
     "glob": "^10.5.0",
     "msgpack-lite": "^0.1.26"
   },
