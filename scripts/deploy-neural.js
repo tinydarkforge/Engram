@@ -77,7 +77,8 @@ class NeuralDeployer {
     const deploy = bundle?.dp || project?.deploy || {};
     const env = bundle?.e || project?.env || {};
     const recent = bundle?.r || this.slimContext?.recent?.[projectName] || [];
-    const concepts = bundle?.c || [];
+    const concepts = bundle?.c || project?.concepts || [];
+    const features = project?.features || [];
 
     const md = `# Neural Memory Context
 
@@ -91,6 +92,7 @@ class NeuralDeployer {
 ## ${projectName}
 - **About:** ${desc}
 - **Tech:** ${tech}
+${features.length > 0 ? `- **Features:** ${features.join(', ')}` : ''}
 ${env.dev ? `- **Dev:** ${env.dev}` : ''}
 ${env.stg ? `- **Staging:** ${env.stg}` : ''}
 ${env.prd ? `- **Prod:** ${env.prd}` : ''}
