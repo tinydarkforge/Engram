@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Memex - Neural Memory</title>
+  <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app">
+    <!-- Header -->
+    <header>
+      <div class="logo">
+        <span class="logo-icon">🧠</span>
+        <span class="logo-text">Memex</span>
+      </div>
+      <nav>
+        <button class="nav-btn active" data-view="dashboard">Dashboard</button>
+        <button class="nav-btn" data-view="search">Search</button>
+        <button class="nav-btn" data-view="graph">Graph</button>
+        <button class="nav-btn" data-view="sessions">Sessions</button>
+      </nav>
+      <div class="stats-mini" id="stats-mini">
+        <span id="total-sessions">-</span> sessions
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+      <!-- Dashboard View -->
+      <section id="view-dashboard" class="view active">
+        <div class="dashboard-grid">
+          <div class="card stats-card">
+            <h3>Overview</h3>
+            <div class="stats-grid" id="stats-overview">
+              <div class="stat">
+                <span class="stat-value" id="stat-sessions">-</span>
+                <span class="stat-label">Sessions</span>
+              </div>
+              <div class="stat">
+                <span class="stat-value" id="stat-projects">-</span>
+                <span class="stat-label">Projects</span>
+              </div>
+              <div class="stat">
+                <span class="stat-value" id="stat-topics">-</span>
+                <span class="stat-label">Topics</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3>Projects</h3>
+            <div id="projects-list" class="projects-list">
+              <div class="loading">Loading...</div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3>Top Topics</h3>
+            <div id="topics-cloud" class="topics-cloud">
+              <div class="loading">Loading...</div>
+            </div>
+          </div>
+
+          <div class="card recent-card">
+            <h3>Recent Sessions</h3>
+            <div id="recent-sessions" class="sessions-list">
+              <div class="loading">Loading...</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Search View -->
+      <section id="view-search" class="view">
+        <div class="search-container">
+          <div class="search-box">
+            <input type="text" id="search-input" placeholder="Search sessions by meaning..." autocomplete="off">
+            <div class="search-options">
+              <label>
+                <input type="checkbox" id="semantic-toggle" checked>
+                Semantic search
+              </label>
+              <label>
+                <input type="checkbox" id="decay-toggle" checked>
+                Time decay
+              </label>
+            </div>
+          </div>
+          <div id="search-results" class="search-results">
+            <div class="search-hint">
+              Type to search across all sessions and projects
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Graph View -->
+      <section id="view-graph" class="view">
+        <div class="graph-container">
+          <div id="graph-canvas"></div>
+          <div class="graph-legend">
+            <div><span class="legend-dot hot"></span> Hot (5+ sessions)</div>
+            <div><span class="legend-dot warm"></span> Warm (3-4 sessions)</div>
+            <div><span class="legend-dot normal"></span> Normal (2 sessions)</div>
+            <div><span class="legend-dot cold"></span> Cold (1 session)</div>
+          </div>
+          <div class="graph-search">
+            <input type="text" id="graph-search" placeholder="Find concept...">
+          </div>
+        </div>
+      </section>
+
+      <!-- Sessions View -->
+      <section id="view-sessions" class="view">
+        <div class="sessions-container">
+          <div class="sessions-sidebar">
+            <h3>Projects</h3>
+            <div id="project-tabs" class="project-tabs">
+              <div class="loading">Loading...</div>
+            </div>
+          </div>
+          <div class="sessions-main">
+            <div id="sessions-list-full" class="sessions-list-full">
+              <div class="empty-state">Select a project to view sessions</div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
