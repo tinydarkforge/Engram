@@ -1,10 +1,10 @@
 {
   "$schema": "./schemas/index.schema.json",
   "v": "2.0.0",
-  "u": "2025-12-09T11:55:28.786Z",
+  "u": "2025-12-09T11:55:29.593Z",
   "m": {
     "tp": 6,
-    "ts": 2126,
+    "ts": 2127,
     "gs": 5
   },
   "g": {
@@ -224,7 +224,7 @@
         "JavaScript"
       ],
       "a": "library",
-      "sc": 2020,
+      "sc": 2021,
       "u": "2025-12-09",
       "mf": "metadata/projects/Memex.json",
       "tp": [
@@ -675,7 +675,7 @@
         "translate.hellocirrus",
         "Memex"
       ],
-      "sc": 2014
+      "sc": 2015
     },
     "cross-project": {
       "p": [
@@ -733,7 +733,7 @@
         "translate.hellocirrus",
         "Memex"
       ],
-      "sc": 2015
+      "sc": 2016
     },
     "digitalocean": {
       "p": [
