@@ -348,6 +348,125 @@ class NeuralMemory {
   }
 
   /**
+   * Cross-project search - find related work across ALL projects
+   *
+   * Example: "What did I learn about docker across all projects?"
+   */
+  async crossProject(queryText, options = {}) {
+    const { limit = 20, groupByProject = true } = options;
+
+    // Initialize vector search if needed
+    if (!this.vectorSearch) {
+      const VectorSearch = require('./vector-search');
+      this.vectorSearch = new VectorSearch();
+      await this.vectorSearch.initialize();
+    }
+
+    // Load structures for enrichment
+    await this.loadStructures();
+
+    // Search across all sessions
+    const searchResults = await this.vectorSearch.search(queryText, {
+      limit,
+      useDecay: true,
+      minSimilarity: 0.15
+    });
+
+    // Map session ID prefixes to project names
+    const prefixToProject = this.buildPrefixMap();
+
+    // Enrich results with project info
+    const enriched = searchResults.results.map(result => {
+      const sessionId = result.session_id;
+      const prefix = sessionId.split('-')[0];
+      const project = prefixToProject[prefix] || 'Unknown';
+      const concepts = this.graph?.reverse?.[sessionId] || [];
+
+      return {
+        ...result,
+        project,
+        concepts: concepts.slice(0, 5)
+      };
+    });
+
+    if (!groupByProject) {
+      return {
+        query: queryText,
+        results: enriched,
+        total: searchResults.total_matches
+      };
+    }
+
+    // Group by project
+    const byProject = {};
+    for (const result of enriched) {
+      if (!byProject[result.project]) {
+        byProject[result.project] = {
+          project: result.project,
+          sessions: [],
+          totalScore: 0,
+          topConcepts: new Set()
+        };
+      }
+      byProject[result.project].sessions.push(result);
+      byProject[result.project].totalScore += result.score;
+      result.concepts.forEach(c => byProject[result.project].topConcepts.add(c));
+    }
+
+    // Convert to array and sort by total relevance
+    const projects = Object.values(byProject)
+      .map(p => ({
+        project: p.project,
+        sessions: p.sessions,
+        sessionCount: p.sessions.length,
+        avgScore: Math.round((p.totalScore / p.sessions.length) * 100) / 100,
+        topConcepts: [...p.topConcepts].slice(0, 8)
+      }))
+      .sort((a, b) => b.sessionCount - a.sessionCount || b.avgScore - a.avgScore);
+
+    // Summary
+    const allConcepts = new Set();
+    enriched.forEach(r => r.concepts.forEach(c => allConcepts.add(c)));
+
+    return {
+      query: queryText,
+      summary: {
+        totalSessions: enriched.length,
+        projectsFound: projects.length,
+        topConcepts: [...allConcepts].slice(0, 10)
+      },
+      byProject: projects
+    };
+  }
+
+  /**
+   * Build mapping from session ID prefix to project name
+   */
+  buildPrefixMap() {
+    const map = {};
+    const projectsDir = path.join(MEMEX_PATH, 'summaries/projects');
+
+    if (!fs.existsSync(projectsDir)) return map;
+
+    for (const project of fs.readdirSync(projectsDir)) {
+      const indexPath = path.join(projectsDir, project, 'sessions-index.json');
+      if (!fs.existsSync(indexPath)) continue;
+
+      try {
+        const data = JSON.parse(fs.readFileSync(indexPath, 'utf8'));
+        for (const session of (data.sessions || []).slice(0, 1)) {
+          const prefix = session.id.split('-')[0];
+          map[prefix] = project;
+        }
+      } catch (e) {
+        // Skip malformed files
+      }
+    }
+
+    return map;
+  }
+
+  /**
    * Load neural structures from binary files
    */
   async loadStructures() {
@@ -877,6 +996,40 @@ const neural = new NeuralMemory();
         execSync('node ' + path.join(MEMEX_PATH, 'scripts/graph-viz.js'), { stdio: 'inherit' });
         break;
 
+      case 'across':
+        const acrossQuery = process.argv.slice(3).join(' ');
+        if (!acrossQuery) {
+          cli.error('Usage: neural-memory.js across <query>');
+          cli.info('Example: neural-memory.js across "docker deployment"');
+          process.exit(1);
+        }
+        const acrossResult = await neural.crossProject(acrossQuery);
+        cli.header(`Cross-Project: "${acrossQuery}"`, cli.icons.search);
+
+        cli.stats({
+          'Sessions found': acrossResult.summary.totalSessions,
+          'Projects': acrossResult.summary.projectsFound,
+          'Top concepts': acrossResult.summary.topConcepts.slice(0, 5).join(', ') || '–'
+        });
+
+        for (const proj of acrossResult.byProject) {
+          cli.section(`${proj.project}`, cli.icons.package);
+          cli.keyValue('  Sessions', proj.sessionCount);
+          cli.keyValue('  Avg score', `${(proj.avgScore * 100).toFixed(0)}%`);
+
+          if (proj.topConcepts.length > 0) {
+            cli.keyValue('  Concepts', proj.topConcepts.slice(0, 5).join(', '));
+          }
+
+          // Show top 2 sessions per project
+          proj.sessions.slice(0, 2).forEach(s => {
+            const preview = s.text_preview?.slice(0, 60) || s.session_id;
+            const score = cli.colors.primary(`${(s.score * 100).toFixed(0)}%`);
+            cli.indent(`${score} ${preview}...`, 2);
+          });
+        }
+        break;
+
       default:
         cli.header('Neural Memory v2.0');
         console.log(cli.colors.muted('AI-Native Knowledge Storage\n'));
@@ -895,7 +1048,8 @@ const neural = new NeuralMemory();
           ['path <from> <to>', 'How are two concepts connected?'],
           ['learn <concept>', 'What did we learn about this?'],
           ['concepts', 'List all concepts in graph'],
-          ['viz', 'Open interactive graph visualization']
+          ['viz', 'Open interactive graph visualization'],
+          ['across <query>', 'Search across ALL projects']
         ], 22);
 
         cli.section('Examples');
