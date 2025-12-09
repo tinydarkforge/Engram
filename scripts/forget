@@ -1,0 +1,444 @@
+#!/usr/bin/env node
+
+/**
+ * Forget - Prune old or irrelevant memories from Neural Memory
+ *
+ * Usage:
+ *   forget --older-than 90        # Forget sessions older than 90 days
+ *   forget --low-value            # Forget low-quality sessions (orphaned, sparse)
+ *   forget --session <id>         # Forget a specific session
+ *   forget --topic <topic>        # Forget all sessions with this topic
+ *   forget --duplicates           # Remove duplicate/near-duplicate sessions
+ *   forget --dry-run              # Preview what would be deleted
+ */
+
+const fs = require('fs');
+const path = require('path');
+const msgpack = require('msgpack-lite');
+const cli = require('./cli-utils');
+
+const MEMEX_PATH = process.env.MEMEX_PATH || path.join(process.env.HOME, 'code/cirrus/DevOps/Memex');
+const NEURAL_PATH = path.join(MEMEX_PATH, '.neural');
+
+class Forgetter {
+  constructor() {
+    this.dryRun = false;
+    this.removed = [];
+  }
+
+  /**
+   * Load all sessions from the index files
+   */
+  loadAllSessions() {
+    const sessions = [];
+    const projectsDir = path.join(MEMEX_PATH, 'summaries/projects');
+
+    if (!fs.existsSync(projectsDir)) return sessions;
+
+    for (const project of fs.readdirSync(projectsDir)) {
+      const indexPath = path.join(projectsDir, project, 'sessions-index.json');
+      if (!fs.existsSync(indexPath)) continue;
+
+      try {
+        const data = JSON.parse(fs.readFileSync(indexPath, 'utf8'));
+        for (const session of data.sessions || []) {
+          sessions.push({
+            ...session,
+            project,
+            indexPath
+          });
+        }
+      } catch (e) {
+        // Skip malformed files
+      }
+    }
+
+    return sessions;
+  }
+
+  /**
+   * Remove a session from its index
+   */
+  removeFromIndex(session) {
+    if (this.dryRun) {
+      this.removed.push(session);
+      return;
+    }
+
+    try {
+      const data = JSON.parse(fs.readFileSync(session.indexPath, 'utf8'));
+      data.sessions = (data.sessions || []).filter(s => s.id !== session.id);
+      fs.writeFileSync(session.indexPath, JSON.stringify(data, null, 2));
+      this.removed.push(session);
+    } catch (e) {
+      console.error(`Failed to remove ${session.id}: ${e.message}`);
+    }
+  }
+
+  /**
+   * Remove session from embeddings cache
+   */
+  removeFromEmbeddings(sessionId) {
+    if (this.dryRun) return;
+
+    const embeddingsPath = path.join(MEMEX_PATH, '.cache/embeddings.json');
+    if (!fs.existsSync(embeddingsPath)) return;
+
+    try {
+      const data = JSON.parse(fs.readFileSync(embeddingsPath, 'utf8'));
+      if (data.sessions && data.sessions[sessionId]) {
+        delete data.sessions[sessionId];
+        fs.writeFileSync(embeddingsPath, JSON.stringify(data, null, 2));
+      }
+    } catch (e) {
+      // Ignore
+    }
+  }
+
+  /**
+   * Calculate value score for a session (0-100, lower = less valuable)
+   *
+   * Scoring factors:
+   * - Summary quality: short/generic summaries score lower
+   * - Topic health: 0 topics = orphaned, 10+ = unfocused
+   * - Age: older sessions decay in value
+   * - Uniqueness: duplicate summaries score lower
+   *
+   * @param {object} session - Session object with id, date, summary, topics
+   * @param {Array} allSessions - All sessions for context
+   * @returns {number} Value score from 0-100
+   */
+  calculateValueScore(session, allSessions) {
+    let score = 50; // Start neutral
+
+    // 1. Summary quality (-20 to +20)
+    const summary = (session.summary || '').trim();
+    if (summary.length === 0) {
+      score -= 20; // No summary = very low value
+    } else if (summary.length < 20) {
+      score -= 15; // Very short
+    } else if (summary.length < 40) {
+      score -= 5; // Short
+    } else if (summary.length > 80) {
+      score += 10; // Detailed
+    }
+
+    // Generic summary patterns
+    const genericPatterns = [
+      /^updated?\s+\w+$/i,
+      /^fix(ed)?\s+\w+$/i,
+      /^changed?\s+files?$/i,
+      /^work\s+on/i,
+      /^wip$/i,
+      /^misc$/i
+    ];
+    if (genericPatterns.some(p => p.test(summary))) {
+      score -= 15;
+    }
+
+    // 2. Topic health (-15 to +15)
+    const topicCount = (session.topics || []).length;
+    if (topicCount === 0) {
+      score -= 15; // Orphaned - no topics
+    } else if (topicCount === 1) {
+      score -= 5; // Sparse
+    } else if (topicCount >= 2 && topicCount <= 5) {
+      score += 15; // Good topic coverage
+    } else if (topicCount > 10) {
+      score -= 10; // Too unfocused
+    }
+
+    // 3. Age decay (-20 to 0)
+    const dateMatch = session.date || session.id.match(/(\d{4}-\d{2}-\d{2})/)?.[1];
+    if (dateMatch) {
+      const sessionDate = new Date(dateMatch);
+      const daysOld = Math.floor((Date.now() - sessionDate) / (1000 * 60 * 60 * 24));
+
+      if (daysOld > 180) {
+        score -= 20; // Over 6 months old
+      } else if (daysOld > 90) {
+        score -= 10; // Over 3 months old
+      } else if (daysOld > 30) {
+        score -= 5; // Over 1 month old
+      }
+      // Recent sessions get no penalty
+    }
+
+    // 4. Uniqueness check (-20 for duplicates)
+    const duplicateCount = allSessions.filter(s =>
+      s.id !== session.id && s.summary === session.summary
+    ).length;
+
+    if (duplicateCount > 0) {
+      score -= Math.min(20, duplicateCount * 10); // Penalize duplicates
+    }
+
+    // Clamp to 0-100 range
+    return Math.max(0, Math.min(100, score));
+  }
+
+  /**
+   * Forget sessions older than N days
+   */
+  forgetOlderThan(days) {
+    const sessions = this.loadAllSessions();
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - days);
+
+    const toForget = sessions.filter(s => {
+      const sessionDate = new Date(s.date);
+      return sessionDate < cutoff;
+    });
+
+    cli.header(`Forget: Older than ${days} days`);
+    cli.keyValue('Cutoff', cutoff.toISOString().split('T')[0]);
+    cli.keyValue('Found', `${toForget.length} sessions`);
+
+    if (toForget.length === 0) {
+      cli.success('Nothing to forget!');
+      return;
+    }
+
+    console.log();
+    for (const session of toForget) {
+      this.removeFromIndex(session);
+      this.removeFromEmbeddings(session.id);
+      cli.indent(`${this.dryRun ? '(would remove)' : '✓ Removed'} ${session.id}`);
+    }
+
+    this.printSummary();
+  }
+
+  /**
+   * Forget low-value sessions
+   */
+  forgetLowValue(threshold = 30) {
+    const sessions = this.loadAllSessions();
+
+    const scored = sessions.map(s => ({
+      ...s,
+      valueScore: this.calculateValueScore(s, sessions)
+    })).sort((a, b) => a.valueScore - b.valueScore);
+
+    const toForget = scored.filter(s => s.valueScore < threshold);
+
+    cli.header(`Forget: Low Value (score < ${threshold})`);
+    cli.keyValue('Analyzed', `${sessions.length} sessions`);
+    cli.keyValue('Low value', `${toForget.length} sessions`);
+
+    if (toForget.length === 0) {
+      cli.success('All sessions have good value!');
+      return;
+    }
+
+    console.log();
+    for (const session of toForget) {
+      this.removeFromIndex(session);
+      this.removeFromEmbeddings(session.id);
+      cli.indent(`${this.dryRun ? '(would remove)' : '✓ Removed'} [${session.valueScore}] ${session.id}`);
+    }
+
+    this.printSummary();
+  }
+
+  /**
+   * Forget a specific session by ID
+   */
+  forgetSession(sessionId) {
+    const sessions = this.loadAllSessions();
+    const session = sessions.find(s => s.id === sessionId);
+
+    if (!session) {
+      cli.error(`Session not found: ${sessionId}`);
+      return;
+    }
+
+    cli.header('Forget: Specific Session');
+    cli.keyValue('ID', session.id);
+    cli.keyValue('Date', session.date);
+    cli.keyValue('Summary', session.summary?.slice(0, 60) || '(empty)');
+
+    this.removeFromIndex(session);
+    this.removeFromEmbeddings(session.id);
+
+    this.printSummary();
+  }
+
+  /**
+   * Forget all sessions with a specific topic
+   */
+  forgetTopic(topic) {
+    const sessions = this.loadAllSessions();
+    const toForget = sessions.filter(s =>
+      (s.topics || []).some(t => t.toLowerCase() === topic.toLowerCase())
+    );
+
+    cli.header(`Forget: Topic "${topic}"`);
+    cli.keyValue('Found', `${toForget.length} sessions`);
+
+    if (toForget.length === 0) {
+      cli.warning(`No sessions found with topic: ${topic}`);
+      return;
+    }
+
+    console.log();
+    for (const session of toForget) {
+      this.removeFromIndex(session);
+      this.removeFromEmbeddings(session.id);
+      cli.indent(`${this.dryRun ? '(would remove)' : '✓ Removed'} ${session.id}`);
+    }
+
+    this.printSummary();
+  }
+
+  /**
+   * Find and forget duplicate/near-duplicate sessions
+   */
+  async forgetDuplicates(threshold = 0.90) {
+    cli.header('Forget: Duplicates');
+    cli.info(`Similarity threshold: ${threshold * 100}%`);
+
+    const VectorSearch = require('./vector-search');
+    const vectorSearch = new VectorSearch();
+
+    const duplicates = vectorSearch.findDuplicates({ threshold });
+
+    if (duplicates.duplicates.length === 0) {
+      cli.success('No duplicates found!');
+      return;
+    }
+
+    cli.keyValue('Duplicates found', duplicates.duplicates.length);
+    console.log();
+
+    // For each duplicate pair, keep the newer one
+    const toRemove = new Set();
+    for (const dup of duplicates.duplicates) {
+      const date1 = dup.session1.id.match(/\d{4}-\d{2}-\d{2}/)?.[0] || '0000-00-00';
+      const date2 = dup.session2.id.match(/\d{4}-\d{2}-\d{2}/)?.[0] || '0000-00-00';
+
+      // Remove the older one
+      const olderSession = date1 < date2 ? dup.session1.id : dup.session2.id;
+      toRemove.add(olderSession);
+
+      cli.indent(`${(dup.similarity * 100).toFixed(0)}% similar:`);
+      cli.indent(`  Keep: ${date1 >= date2 ? dup.session1.id : dup.session2.id}`, 2);
+      cli.indent(`  ${this.dryRun ? 'Would remove' : 'Remove'}: ${olderSession}`, 2);
+    }
+
+    // Remove the duplicates
+    const sessions = this.loadAllSessions();
+    for (const sessionId of toRemove) {
+      const session = sessions.find(s => s.id === sessionId);
+      if (session) {
+        this.removeFromIndex(session);
+        this.removeFromEmbeddings(session.id);
+      }
+    }
+
+    this.printSummary();
+  }
+
+  printSummary() {
+    console.log();
+    if (this.dryRun) {
+      cli.warning(`DRY RUN: Would remove ${this.removed.length} sessions`);
+      cli.info('Run without --dry-run to actually remove');
+    } else {
+      cli.success(`Removed ${this.removed.length} sessions`);
+      cli.info('Run `node neural-memory.js build` to rebuild neural structures');
+    }
+  }
+
+  /**
+   * List all sessions (for inspection)
+   */
+  list() {
+    const sessions = this.loadAllSessions();
+
+    cli.header('All Sessions');
+    cli.keyValue('Total', sessions.length);
+    console.log();
+
+    // Group by project
+    const byProject = {};
+    for (const s of sessions) {
+      if (!byProject[s.project]) byProject[s.project] = [];
+      byProject[s.project].push(s);
+    }
+
+    for (const [project, projectSessions] of Object.entries(byProject)) {
+      cli.section(project);
+      const sorted = projectSessions.sort((a, b) => b.date.localeCompare(a.date));
+      sorted.slice(0, 5).forEach(s => {
+        cli.indent(`${s.date} ${s.id.slice(0, 20)}... ${(s.summary || '').slice(0, 40)}`);
+      });
+      if (sorted.length > 5) {
+        cli.indent(`  ... and ${sorted.length - 5} more`);
+      }
+    }
+  }
+}
+
+// CLI
+const args = process.argv.slice(2);
+const forgetter = new Forgetter();
+
+// Check for dry-run flag
+forgetter.dryRun = args.includes('--dry-run');
+const cleanArgs = args.filter(a => a !== '--dry-run');
+
+(async () => {
+  try {
+    if (cleanArgs.length === 0) {
+      cli.header('Forget - Prune Neural Memory');
+      console.log();
+      cli.simpleTable([
+        ['--older-than <days>', 'Forget sessions older than N days'],
+        ['--low-value', 'Forget low-quality sessions'],
+        ['--session <id>', 'Forget a specific session'],
+        ['--topic <topic>', 'Forget all sessions with topic'],
+        ['--duplicates', 'Remove near-duplicate sessions'],
+        ['--list', 'List all sessions'],
+        ['--dry-run', 'Preview without deleting']
+      ], 22);
+      console.log();
+      cli.info('Example: forget --older-than 90 --dry-run');
+      return;
+    }
+
+    if (cleanArgs.includes('--list')) {
+      forgetter.list();
+    } else if (cleanArgs.includes('--older-than')) {
+      const idx = cleanArgs.indexOf('--older-than');
+      const days = parseInt(cleanArgs[idx + 1]) || 90;
+      forgetter.forgetOlderThan(days);
+    } else if (cleanArgs.includes('--low-value')) {
+      forgetter.forgetLowValue();
+    } else if (cleanArgs.includes('--session')) {
+      const idx = cleanArgs.indexOf('--session');
+      const sessionId = cleanArgs[idx + 1];
+      if (!sessionId) {
+        cli.error('Usage: forget --session <session-id>');
+        process.exit(1);
+      }
+      forgetter.forgetSession(sessionId);
+    } else if (cleanArgs.includes('--topic')) {
+      const idx = cleanArgs.indexOf('--topic');
+      const topic = cleanArgs[idx + 1];
+      if (!topic) {
+        cli.error('Usage: forget --topic <topic-name>');
+        process.exit(1);
+      }
+      forgetter.forgetTopic(topic);
+    } else if (cleanArgs.includes('--duplicates')) {
+      await forgetter.forgetDuplicates();
+    } else {
+      cli.error('Unknown option. Run `forget` for help.');
+    }
+  } catch (error) {
+    cli.error(error.message);
+    if (process.env.DEBUG) console.error(error.stack);
+    process.exit(1);
+  }
+})();
