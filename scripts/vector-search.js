@@ -542,16 +542,68 @@ if (require.main === module) {
           console.log(`✓ First 5 values: [${testEmbedding.slice(0, 5).map(v => v.toFixed(4)).join(', ')}...]`);
           break;
 
+        case 'duplicates': {
+          const threshold = parseFloat(process.argv[3]) || 0.85;
+          console.log(`🔍 Finding duplicate sessions (threshold: ${threshold * 100}%)...\n`);
+
+          const dupResult = vectorSearch.findDuplicates({ threshold });
+
+          console.log(`📊 Checked ${dupResult.total_pairs_checked.toLocaleString()} session pairs`);
+          console.log(`🔗 Found ${dupResult.duplicates_found} potential duplicates\n`);
+
+          if (dupResult.duplicates.length === 0) {
+            console.log('✅ No duplicates found above threshold');
+          } else {
+            dupResult.duplicates.forEach((dup, i) => {
+              console.log(`${i + 1}. ${(dup.similarity * 100).toFixed(0)}% similar:`);
+              console.log(`   📄 ${dup.session1.id}`);
+              console.log(`      ${dup.session1.preview}...`);
+              console.log(`   📄 ${dup.session2.id}`);
+              console.log(`      ${dup.session2.preview}...`);
+              console.log('');
+            });
+          }
+          break;
+        }
+
+        case 'similar': {
+          const targetId = process.argv[3];
+          if (!targetId) {
+            console.error('Usage: vector-search.js similar <session-id>');
+            process.exit(1);
+          }
+
+          console.log(`🔍 Finding sessions similar to: ${targetId}\n`);
+
+          const simResult = vectorSearch.findSimilarTo(targetId);
+
+          if (simResult.error) {
+            console.error(`❌ ${simResult.error}`);
+            process.exit(1);
+          }
+
+          console.log(`📄 Source: ${simResult.source_preview}...\n`);
+          console.log(`Found ${simResult.similar_sessions.length} similar sessions:\n`);
+
+          simResult.similar_sessions.forEach((s, i) => {
+            console.log(`${i + 1}. [${(s.similarity * 100).toFixed(0)}%] ${s.session_id}`);
+            console.log(`   ${s.text_preview}...\n`);
+          });
+          break;
+        }
+
         default:
           console.log('Vector Search - Semantic search for Memex');
           console.log('');
           console.log('Usage: vector-search.js [command]');
           console.log('');
           console.log('Commands:');
-          console.log('  generate       - Generate embeddings for all sessions');
-          console.log('  search <query> - Search sessions by meaning');
-          console.log('  stats          - Show embedding statistics');
-          console.log('  test           - Test embedding generation');
+          console.log('  generate          - Generate embeddings for all sessions');
+          console.log('  search <query>    - Search sessions by meaning');
+          console.log('  duplicates [0.85] - Find duplicate/similar sessions');
+          console.log('  similar <id>      - Find sessions similar to a specific one');
+          console.log('  stats             - Show embedding statistics');
+          console.log('  test              - Test embedding generation');
       }
     } catch (error) {
       console.error('Error:', error.message);
