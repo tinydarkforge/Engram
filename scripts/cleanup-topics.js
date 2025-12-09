@@ -10,12 +10,13 @@
 
 const fs = require('fs');
 const path = require('path');
+const cli = require('./cli-utils');
 
 const MEMEX_PATH = process.env.MEMEX_PATH || path.join(process.env.HOME, 'code/cirrus/DevOps/Memex');
 const projectsDir = path.join(MEMEX_PATH, 'summaries/projects');
 
 function scan() {
-  console.log('🔍 Scanning for empty topics...\n');
+  cli.header('Scan for Empty Topics', cli.icons.search);
 
   let totalEmpty = 0;
   let sessionsWithEmpty = [];
@@ -39,14 +40,16 @@ function scan() {
     }
   }
 
-  console.log(`Sessions with empty topics: ${sessionsWithEmpty.length}`);
-  console.log(`Total empty topic entries: ${totalEmpty}\n`);
+  cli.stats({
+    'Sessions with empty topics': sessionsWithEmpty.length,
+    'Total empty entries': totalEmpty
+  });
 
   if (sessionsWithEmpty.length > 0) {
-    console.log('Affected sessions:');
+    cli.section('Affected Sessions');
     sessionsWithEmpty.forEach(s => {
-      const topicsStr = s.topics.map(t => t || '""').join(', ');
-      console.log(`  ${s.project}/${s.id}: [${topicsStr}]`);
+      const topicsStr = s.topics.map(t => t || cli.colors.error('""')).join(', ');
+      cli.indent(`${cli.colors.primary(s.project)}/${s.id}: [${topicsStr}]`);
     });
   }
 
@@ -54,7 +57,7 @@ function scan() {
 }
 
 function fix() {
-  console.log('🧹 Fixing empty topics...\n');
+  cli.header('Fix Empty Topics', cli.icons.build);
 
   let fixed = 0;
   let filesModified = 0;
@@ -79,7 +82,7 @@ function fix() {
     if (modified) {
       fs.writeFileSync(indexPath, JSON.stringify(data, null, 2));
       filesModified++;
-      console.log(`✅ ${proj}: cleaned sessions-index.json`);
+      cli.success(`${proj}: cleaned sessions-index.json`);
     }
   }
 
@@ -91,16 +94,17 @@ function fix() {
     if (index.t && index.t['']) {
       delete index.t[''];
       fs.writeFileSync(indexPath, JSON.stringify(index, null, 2));
-      console.log('✅ Removed empty topic from index.json');
+      cli.success('Removed empty topic from index.json');
     }
   }
 
-  console.log(`\n🎉 Fixed ${fixed} empty topics in ${filesModified} files`);
+  console.log();
+  cli.success(`Fixed ${fixed} empty topics in ${filesModified} files`);
   return { fixed, filesModified };
 }
 
 function consolidate() {
-  console.log('🔗 Consolidating low-value topics...\n');
+  cli.header('Consolidate Topics', cli.icons.graph);
 
   const indexPath = path.join(MEMEX_PATH, 'index.json');
   const index = JSON.parse(fs.readFileSync(indexPath, 'utf8'));
@@ -116,7 +120,7 @@ function consolidate() {
   }
 
   if (removed > 0) {
-    console.log(`🗑️  Removed ${removed} orphaned topics (0 sessions)`);
+    cli.warning(`Removed ${removed} orphaned topics (0 sessions)`);
   }
 
   // Consolidate PR/issue/epic topics into categories
@@ -150,7 +154,7 @@ function consolidate() {
         consolidated++;
       }
 
-      console.log(`📦 Consolidated ${matching.length} ${prefix}* topics into '${target}'`);
+      cli.info(`Consolidated ${matching.length} ${prefix}* topics into '${target}'`);
     }
   }
 
@@ -158,12 +162,15 @@ function consolidate() {
   fs.writeFileSync(indexPath, JSON.stringify(index, null, 2));
 
   const remaining = Object.keys(index.t).length;
-  console.log(`\n✅ Topics: ${remaining} remaining (removed ${removed}, consolidated ${consolidated})`);
+  console.log();
+  cli.success(`Topics: ${remaining} remaining (removed ${removed}, consolidated ${consolidated})`);
 
   return { removed, consolidated, remaining };
 }
 
 function stats() {
+  cli.header('Topic Statistics', cli.icons.stats);
+
   const indexPath = path.join(MEMEX_PATH, 'index.json');
   const index = JSON.parse(fs.readFileSync(indexPath, 'utf8'));
 
@@ -174,19 +181,25 @@ function stats() {
     return acc;
   }, {});
 
-  console.log('📊 Topic Statistics\n');
-  console.log(`Total topics: ${topics.length}`);
-  console.log('');
-  console.log('By session count:');
-  console.log(`  0 sessions (orphaned): ${byCount['0'] || 0}`);
-  console.log(`  1 session: ${byCount['1'] || 0}`);
-  console.log(`  2-5 sessions: ${byCount['2-5'] || 0}`);
-  console.log(`  5+ sessions: ${byCount['5+'] || 0}`);
-  console.log('');
-  console.log('Top 10 topics:');
-  topics.sort((a, b) => b[1].sc - a[1].sc).slice(0, 10).forEach(([k, v]) => {
-    console.log(`  ${k.padEnd(20)} ${v.sc} sessions`);
-  });
+  cli.keyValue('Total topics', topics.length);
+
+  cli.section('By Session Count');
+  cli.simpleTable([
+    ['0 (orphaned)', byCount['0'] || 0],
+    ['1 session', byCount['1'] || 0],
+    ['2-5 sessions', byCount['2-5'] || 0],
+    ['5+ sessions', byCount['5+'] || 0]
+  ], 16);
+
+  cli.section('Top 10 Topics');
+  const topTopics = topics.sort((a, b) => b[1].sc - a[1].sc).slice(0, 10).map(([k, v]) => ({
+    topic: cli.topicTag(k, v.sc),
+    sessions: v.sc
+  }));
+  cli.table(topTopics, [
+    { key: 'topic', label: 'Topic', width: 22 },
+    { key: 'sessions', label: 'Sessions', width: 10, align: 'right' }
+  ]);
 }
 
 // CLI
@@ -199,10 +212,10 @@ switch (command) {
   case 'fix':
     const before = scan();
     if (before.totalEmpty > 0) {
-      console.log('\n---\n');
+      console.log();
       fix();
     } else {
-      console.log('\n✨ No empty topics to fix!');
+      cli.success('No empty topics to fix!');
     }
     break;
   case 'consolidate':
@@ -213,22 +226,18 @@ switch (command) {
     break;
   case 'all':
     scan();
-    console.log('\n---\n');
     fix();
-    console.log('\n---\n');
     consolidate();
-    console.log('\n---\n');
     stats();
     break;
   default:
-    console.log(`
-Cleanup topics from Memex
-
-Usage:
-  node cleanup-topics.js scan         Find empty topics in sessions
-  node cleanup-topics.js fix          Remove empty topics from sessions
-  node cleanup-topics.js consolidate  Merge low-value topics (pr-*, issue-*, etc)
-  node cleanup-topics.js stats        Show topic statistics
-  node cleanup-topics.js all          Run all cleanup steps
-`);
+    cli.header('Cleanup Topics');
+    console.log(cli.colors.muted('Maintain topic hygiene\n'));
+    cli.simpleTable([
+      ['scan', 'Find empty topics in sessions'],
+      ['fix', 'Remove empty topics from sessions'],
+      ['consolidate', 'Merge low-value topics'],
+      ['stats', 'Show topic statistics'],
+      ['all', 'Run all cleanup steps']
+    ], 14);
 }
