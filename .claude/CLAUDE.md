@@ -38,4 +38,4 @@ node ~/code/cirrus/DevOps/Memex/scripts/neural-memory.js bundle Memex
 ```
 
 ---
-*Neural Memory v1.0 | 2025-12-09*
+*Neural Memory v1.0 | 2025-12-10*
