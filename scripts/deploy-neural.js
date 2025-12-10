@@ -307,13 +307,13 @@ This deploys CLAUDE.md files containing:
   const projectIdx = args.indexOf('--project');
   const projectName = args[projectIdx + 1];
   const quiet = args.includes('--quiet');
+  const ifStale = args.includes('--if-stale');
 
   if (!projectName) {
     console.error('Usage: deploy-neural.js --project <name>');
     process.exit(1);
   }
 
-  deployer.load();
   const repoPath = REPO_MAP[projectName];
 
   if (!repoPath) {
@@ -321,12 +321,30 @@ This deploys CLAUDE.md files containing:
     process.exit(1);
   }
 
+  const claudeDir = path.join(repoPath, '.claude');
+  const claudeMdPath = path.join(claudeDir, 'CLAUDE.md');
+
+  // Check staleness before loading data (fast path - no memory allocation)
+  if (ifStale && fs.existsSync(claudeMdPath)) {
+    const claudeMdMtime = fs.statSync(claudeMdPath).mtimeMs;
+    const neuralDataPath = path.join(NEURAL_PATH, 'graph.msgpack');
+
+    if (fs.existsSync(neuralDataPath)) {
+      const neuralMtime = fs.statSync(neuralDataPath).mtimeMs;
+      if (claudeMdMtime > neuralMtime) {
+        // CLAUDE.md is newer than neural data - skip regeneration
+        if (!quiet) console.log(`⏭️  ${projectName}: CLAUDE.md is up to date`);
+        process.exit(0);
+      }
+    }
+  }
+
+  // Load data only if we need to regenerate
+  deployer.load();
+
   const content = deployer.bundles[projectName]
     ? deployer.generateClaudeMd(projectName, repoPath)
     : deployer.generateGenericClaudeMd(projectName);
-
-  const claudeDir = path.join(repoPath, '.claude');
-  const claudeMdPath = path.join(claudeDir, 'CLAUDE.md');
 
   if (!fs.existsSync(claudeDir)) {
     fs.mkdirSync(claudeDir, { recursive: true });
