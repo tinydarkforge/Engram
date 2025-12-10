@@ -1,10 +1,10 @@
 {
   "$schema": "./schemas/index.schema.json",
   "v": "2.0.0",
-  "u": "2025-12-10T09:38:26.534Z",
+  "u": "2025-12-10T10:30:34.380Z",
   "m": {
     "tp": 6,
-    "ts": 9660,
+    "ts": 9661,
     "gs": 5
   },
   "g": {
@@ -202,8 +202,8 @@
         "KeePass"
       ],
       "a": "utility",
-      "sc": 11,
-      "u": "2025-12-09",
+      "sc": 12,
+      "u": "2025-12-10",
       "mf": "metadata/projects/DevOps.json",
       "tp": [
         "memex",
@@ -539,7 +539,8 @@
     },
     "hotfix": {
       "p": [
-        "CirrusTranslate"
+        "CirrusTranslate",
+        "DevOps"
       ],
       "sc": 1
     },
@@ -568,7 +569,7 @@
         "translate.hellocirrus",
         "DevOps"
       ],
-      "sc": 1
+      "sc": 5
     },
     "bloom-filter": {
       "p": [
@@ -676,7 +677,7 @@
         "translate.hellocirrus",
         "Memex"
       ],
-      "sc": 9542
+      "sc": 1
     },
     "cross-project": {
       "p": [
@@ -702,7 +703,7 @@
         "translate.hellocirrus",
         "Memex"
       ],
-      "sc": 4
+      "sc": 3
     },
     "dependencies": {
       "p": [
@@ -734,7 +735,7 @@
         "translate.hellocirrus",
         "Memex"
       ],
-      "sc": 9546
+      "sc": 7
     },
     "digitalocean": {
       "p": [
