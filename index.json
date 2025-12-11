@@ -1,10 +1,10 @@
 {
   "$schema": "./schemas/index.schema.json",
   "v": "2.0.0",
-  "u": "2025-12-11T09:39:08.315Z",
+  "u": "2025-12-11T09:52:51.862Z",
   "m": {
     "tp": 6,
-    "ts": 11721,
+    "ts": 11722,
     "gs": 5
   },
   "g": {
@@ -202,8 +202,8 @@
         "KeePass"
       ],
       "a": "utility",
-      "sc": 13,
-      "u": "2025-12-10",
+      "sc": 14,
+      "u": "2025-12-11",
       "mf": "metadata/projects/DevOps.json",
       "tp": [
         "memex",
@@ -571,7 +571,7 @@
         "translate.hellocirrus",
         "DevOps"
       ],
-      "sc": 2
+      "sc": 6
     },
     "bloom-filter": {
       "p": [
@@ -582,9 +582,10 @@
     "security": {
       "p": [
         "Memex",
-        "CirrusTranslate"
+        "CirrusTranslate",
+        "DevOps"
       ],
-      "sc": 5
+      "sc": 1
     },
     "maintenance": {
       "p": [
@@ -679,7 +680,7 @@
         "translate.hellocirrus",
         "Memex"
       ],
-      "sc": 11596
+      "sc": 1
     },
     "cross-project": {
       "p": [
@@ -705,7 +706,7 @@
         "translate.hellocirrus",
         "Memex"
       ],
-      "sc": 4
+      "sc": 3
     },
     "dependencies": {
       "p": [
@@ -737,7 +738,7 @@
         "translate.hellocirrus",
         "Memex"
       ],
-      "sc": 11600
+      "sc": 8
     },
     "digitalocean": {
       "p": [
@@ -832,6 +833,42 @@
     "race-condition": {
       "p": [
         "CirrusTranslate"
+      ],
+      "sc": 1
+    },
+    "soc": {
+      "p": [
+        "DevOps"
+      ],
+      "sc": 1
+    },
+    "audit": {
+      "p": [
+        "DevOps"
+      ],
+      "sc": 1
+    },
+    "npm": {
+      "p": [
+        "DevOps"
+      ],
+      "sc": 1
+    },
+    "trivy": {
+      "p": [
+        "DevOps"
+      ],
+      "sc": 1
+    },
+    "semgrep": {
+      "p": [
+        "DevOps"
+      ],
+      "sc": 1
+    },
+    "gitleaks": {
+      "p": [
+        "DevOps"
       ],
       "sc": 1
     }
