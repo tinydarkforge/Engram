@@ -1,10 +1,10 @@
 {
   "$schema": "./schemas/index.schema.json",
   "v": "2.0.0",
-  "u": "2025-12-11T11:25:47.058Z",
+  "u": "2025-12-11T12:20:48.249Z",
   "m": {
     "tp": 6,
-    "ts": 11724,
+    "ts": 11725,
     "gs": 5
   },
   "g": {
@@ -127,7 +127,7 @@
         "Python"
       ],
       "a": "monorepo",
-      "sc": 27,
+      "sc": 28,
       "u": "2025-12-11",
       "mf": "metadata/projects/CirrusTranslate.json",
       "tp": [
@@ -469,7 +469,7 @@
       "p": [
         "CirrusTranslate"
       ],
-      "sc": 2
+      "sc": 3
     },
     "epics": {
       "p": [
@@ -881,6 +881,18 @@
     "code-quality": {
       "p": [
         "DevOps"
+      ],
+      "sc": 1
+    },
+    "ci-cd": {
+      "p": [
+        "CirrusTranslate"
+      ],
+      "sc": 1
+    },
+    "github": {
+      "p": [
+        "CirrusTranslate"
       ],
       "sc": 1
     }
