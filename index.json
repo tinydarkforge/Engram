@@ -1,10 +1,10 @@
 {
   "$schema": "./schemas/index.schema.json",
   "v": "2.0.0",
-  "u": "2025-12-11T09:52:51.862Z",
+  "u": "2025-12-11T11:24:17.404Z",
   "m": {
     "tp": 6,
-    "ts": 11722,
+    "ts": 11723,
     "gs": 5
   },
   "g": {
@@ -202,7 +202,7 @@
         "KeePass"
       ],
       "a": "utility",
-      "sc": 14,
+      "sc": 15,
       "u": "2025-12-11",
       "mf": "metadata/projects/DevOps.json",
       "tp": [
@@ -585,7 +585,7 @@
         "CirrusTranslate",
         "DevOps"
       ],
-      "sc": 1
+      "sc": 2
     },
     "maintenance": {
       "p": [
@@ -840,7 +840,7 @@
       "p": [
         "DevOps"
       ],
-      "sc": 1
+      "sc": 2
     },
     "audit": {
       "p": [
@@ -867,6 +867,18 @@
       "sc": 1
     },
     "gitleaks": {
+      "p": [
+        "DevOps"
+      ],
+      "sc": 1
+    },
+    "dependency-analysis": {
+      "p": [
+        "DevOps"
+      ],
+      "sc": 1
+    },
+    "code-quality": {
       "p": [
         "DevOps"
       ],
