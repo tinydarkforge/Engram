@@ -1,10 +1,10 @@
 {
   "$schema": "./schemas/index.schema.json",
   "v": "2.0.0",
-  "u": "2025-12-11T15:23:04.192Z",
+  "u": "2025-12-11T17:08:56.586Z",
   "m": {
     "tp": 6,
-    "ts": 11732,
+    "ts": 11733,
     "gs": 5
   },
   "g": {
@@ -202,7 +202,7 @@
         "KeePass"
       ],
       "a": "utility",
-      "sc": 20,
+      "sc": 21,
       "u": "2025-12-11",
       "mf": "metadata/projects/DevOps.json",
       "tp": [
@@ -904,6 +904,30 @@
       "sc": 1
     },
     "issue-220": {
+      "p": [
+        "DevOps"
+      ],
+      "sc": 1
+    },
+    "rbac": {
+      "p": [
+        "DevOps"
+      ],
+      "sc": 1
+    },
+    "uploader": {
+      "p": [
+        "DevOps"
+      ],
+      "sc": 1
+    },
+    "permissions": {
+      "p": [
+        "DevOps"
+      ],
+      "sc": 1
+    },
+    "ui-simplification": {
       "p": [
         "DevOps"
       ],
