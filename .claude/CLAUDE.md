@@ -6,6 +6,19 @@
 - **Commit:** `<type>(<scope>): <description>` (feat|fix|docs|style|refactor|test|chore)
 - **PR:** tests + self-review + lint + typecheck + build + 1 approval
 - **Branches:** main→staging→develop→feature/*
+- **Branch naming:** `feature/`, `feat/`, `fix/`, `hotfix/`, `release/`, `chore/`, `docs/`
+
+## GitHub Issue Workflow (IMPORTANT)
+When working on GitHub issues, follow this workflow:
+
+**Starting a task:**
+1. **Assign to Pamperito74** - Do this immediately when starting work
+2. **Move to "In Progress"** - Update the project board status
+
+**Completing a task:**
+3. **Move to "Done"** - Update the project board status
+4. **Update monthly report** - Add entry to `docs/monthly/<MONTH>_<YEAR>.md`
+5. **Commit changes** - Include the issue number in commit message
 
 ## Memex
 - **About:** Extended memory system for Claude - token-optimized knowledg
