@@ -1,10 +1,10 @@
 {
   "$schema": "./schemas/index.schema.json",
   "v": "2.0.0",
-  "u": "2025-12-11T22:49:59.942Z",
+  "u": "2025-12-11T22:56:52.936Z",
   "m": {
     "tp": 6,
-    "ts": 11734,
+    "ts": 11735,
     "gs": 5
   },
   "g": {
@@ -202,7 +202,7 @@
         "KeePass"
       ],
       "a": "utility",
-      "sc": 22,
+      "sc": 23,
       "u": "2025-12-11",
       "mf": "metadata/projects/DevOps.json",
       "tp": [
@@ -716,7 +716,8 @@
     },
     "typescript": {
       "p": [
-        "CirrusTranslate"
+        "CirrusTranslate",
+        "DevOps"
       ],
       "sc": 1
     },
@@ -781,7 +782,7 @@
         "Memex",
         "DevOps"
       ],
-      "sc": 1
+      "sc": 2
     },
     "aither": {
       "p": [
@@ -920,7 +921,7 @@
       "p": [
         "DevOps"
       ],
-      "sc": 2
+      "sc": 3
     },
     "permissions": {
       "p": [
@@ -938,9 +939,15 @@
       "p": [
         "DevOps"
       ],
-      "sc": 1
+      "sc": 2
     },
     "cirrustranslate": {
+      "p": [
+        "DevOps"
+      ],
+      "sc": 1
+    },
+    "projectfiles": {
       "p": [
         "DevOps"
       ],
