@@ -1,8 +1,32 @@
 {
   "project": "CirrusTranslate",
-  "total_sessions": 34,
+  "total_sessions": 35,
   "last_updated": "2025-12-12",
   "sessions": [
+    {
+      "id": "ci-2025-12-12-video",
+      "project": "CirrusTranslate",
+      "date": "2025-12-12",
+      "summary": "Added",
+      "topics": [
+        "video",
+        "ui",
+        "modal",
+        "project-files"
+      ],
+      "key_decisions": [],
+      "outcomes": {
+        "completed": []
+      },
+      "learnings": [],
+      "code_changes": {
+        "files_added": [],
+        "files_modified": [],
+        "files_deleted": [],
+        "lines_added": 0,
+        "lines_removed": 0
+      }
+    },
     {
       "id": "ci-2025-12-12-editor",
       "project": "CirrusTranslate",
@@ -724,6 +748,18 @@
     ],
     "bugfix": [
       "ci-2025-12-12-editor"
+    ],
+    "video": [
+      "ci-2025-12-12-video"
+    ],
+    "ui": [
+      "ci-2025-12-12-video"
+    ],
+    "modal": [
+      "ci-2025-12-12-video"
+    ],
+    "project-files": [
+      "ci-2025-12-12-video"
     ]
   }
 }
