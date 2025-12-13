@@ -1,10 +1,10 @@
 {
   "$schema": "./schemas/index.schema.json",
   "v": "2.0.0",
-  "u": "2025-12-13T03:01:04.491Z",
+  "u": "2025-12-13T11:53:18.756Z",
   "m": {
     "tp": 6,
-    "ts": 11747,
+    "ts": 11748,
     "gs": 5
   },
   "g": {
@@ -127,7 +127,7 @@
         "Python"
       ],
       "a": "monorepo",
-      "sc": 42,
+      "sc": 43,
       "u": "2025-12-13",
       "mf": "metadata/projects/CirrusTranslate.json",
       "tp": [
@@ -585,7 +585,7 @@
         "CirrusTranslate",
         "DevOps"
       ],
-      "sc": 6
+      "sc": 7
     },
     "maintenance": {
       "p": [
@@ -1064,6 +1064,24 @@
       "sc": 1
     },
     "forms": {
+      "p": [
+        "CirrusTranslate"
+      ],
+      "sc": 1
+    },
+    "npm-audit": {
+      "p": [
+        "CirrusTranslate"
+      ],
+      "sc": 1
+    },
+    "dependency-cleanup": {
+      "p": [
+        "CirrusTranslate"
+      ],
+      "sc": 1
+    },
+    "SOC-audit": {
       "p": [
         "CirrusTranslate"
       ],
