@@ -1,10 +1,10 @@
 {
   "$schema": "./schemas/index.schema.json",
   "v": "2.0.0",
-  "u": "2025-12-13T02:05:36.963Z",
+  "u": "2025-12-13T03:01:04.491Z",
   "m": {
     "tp": 6,
-    "ts": 11746,
+    "ts": 11747,
     "gs": 5
   },
   "g": {
@@ -127,7 +127,7 @@
         "Python"
       ],
       "a": "monorepo",
-      "sc": 41,
+      "sc": 42,
       "u": "2025-12-13",
       "mf": "metadata/projects/CirrusTranslate.json",
       "tp": [
@@ -971,7 +971,7 @@
       "p": [
         "CirrusTranslate"
       ],
-      "sc": 1
+      "sc": 2
     },
     "debugging": {
       "p": [
@@ -1046,6 +1046,24 @@
       "sc": 2
     },
     "feature": {
+      "p": [
+        "CirrusTranslate"
+      ],
+      "sc": 1
+    },
+    "optimistic-updates": {
+      "p": [
+        "CirrusTranslate"
+      ],
+      "sc": 1
+    },
+    "react-hooks": {
+      "p": [
+        "CirrusTranslate"
+      ],
+      "sc": 1
+    },
+    "forms": {
       "p": [
         "CirrusTranslate"
       ],
