@@ -1,10 +1,10 @@
 {
   "$schema": "./schemas/index.schema.json",
   "v": "2.0.0",
-  "u": "2025-12-14T12:25:04.661Z",
+  "u": "2025-12-14T12:57:57.744Z",
   "m": {
     "tp": 6,
-    "ts": 11752,
+    "ts": 11753,
     "gs": 5
   },
   "g": {
@@ -202,7 +202,7 @@
         "KeePass"
       ],
       "a": "utility",
-      "sc": 24,
+      "sc": 25,
       "u": "2025-12-14",
       "mf": "metadata/projects/DevOps.json",
       "tp": [
@@ -333,7 +333,7 @@
         "CirrusTranslate",
         "Memex"
       ],
-      "sc": 1
+      "sc": 2
     },
     "architecture": {
       "p": [
@@ -387,7 +387,8 @@
     },
     "search": {
       "p": [
-        "CirrusTranslate"
+        "CirrusTranslate",
+        "DevOps"
       ],
       "sc": 1
     },
@@ -775,7 +776,8 @@
     },
     "neural-memory": {
       "p": [
-        "Memex"
+        "Memex",
+        "DevOps"
       ],
       "sc": 1
     },
@@ -1107,6 +1109,12 @@
       "sc": 1
     },
     "stability": {
+      "p": [
+        "DevOps"
+      ],
+      "sc": 1
+    },
+    "git-indexing": {
       "p": [
         "DevOps"
       ],
