@@ -830,11 +830,24 @@ const neural = new NeuralMemory();
     switch (command) {
       case 'build':
         const buildResult = await neural.build();
+
+        // Also build git index
+        cli.section('Git Index', cli.icons.git || '📦');
+        let gitResult = { total: 0 };
+        try {
+          const GitIndexer = require('./index-git');
+          const gitIndexer = new GitIndexer();
+          gitResult = await gitIndexer.build({ since: '3 months ago' });
+        } catch (e) {
+          cli.warning(`Git indexing failed: ${e.message}`);
+        }
+
         cli.section('Build Summary', cli.icons.stats);
         cli.stats({
-          'Embeddings': `${buildResult.embeddings?.sessions || 0} sessions`,
-          'Graph': `${buildResult.graph?.concepts || 0} concepts`,
-          'Bundles': `${buildResult.bundles?.count || 0} projects`
+          'Sessions': `${buildResult.embeddings?.sessions || 0} embedded`,
+          'Concepts': `${buildResult.graph?.concepts || 0} in graph`,
+          'Bundles': `${buildResult.bundles?.count || 0} projects`,
+          'Git Commits': `${gitResult.total || 0} indexed`
         });
         break;
 
@@ -1030,6 +1043,69 @@ const neural = new NeuralMemory();
         }
         break;
 
+      case 'search':
+        // Unified search: sessions + git commits
+        const searchQuery = process.argv.slice(3).join(' ');
+        if (!searchQuery) {
+          cli.error('Usage: neural-memory.js search <query>');
+          cli.info('Searches both sessions and git commits');
+          process.exit(1);
+        }
+
+        cli.header(`Unified Search: "${searchQuery}"`, cli.icons.search);
+
+        // Search sessions
+        let sessionResults = [];
+        try {
+          const sessionsResult = await neural.query(searchQuery, { limit: 5 });
+          sessionResults = sessionsResult.results || [];
+        } catch (e) {
+          // Sessions index might not exist
+        }
+
+        // Search git commits
+        let gitResults = [];
+        try {
+          const GitIndexer = require('./index-git');
+          const gitIndexer = new GitIndexer();
+          const gitResult = await gitIndexer.query(searchQuery, { limit: 5 });
+          gitResults = gitResult.results || [];
+        } catch (e) {
+          // Git index might not exist
+        }
+
+        // Display results
+        if (sessionResults.length > 0) {
+          cli.section('📝 Sessions');
+          sessionResults.forEach(r => {
+            const score = `${Math.round((r.score || 0) * 100)}%`;
+            const preview = r.text_preview?.slice(0, 60) || r.session_id;
+            cli.indent(`${score.padStart(4)} ${preview}`);
+          });
+        }
+
+        if (gitResults.length > 0) {
+          cli.section('📦 Git Commits');
+          gitResults.forEach(r => {
+            const score = `${Math.round(r.score * 100)}%`;
+            const type = r.type ? `${r.type}` : '';
+            const scope = r.scope ? `(${r.scope})` : '';
+            cli.indent(`${score.padStart(4)} [${r.project}] ${r.hash} ${type}${scope}`);
+            cli.indent(`      ${r.subject}`, 0);
+            if (r.files?.length > 0) {
+              cli.indent(`      Files: ${r.files.slice(0, 3).join(', ')}`, 0);
+            }
+          });
+        }
+
+        if (sessionResults.length === 0 && gitResults.length === 0) {
+          cli.warning('No results found in sessions or git history');
+        } else {
+          console.log();
+          cli.info(`Found ${sessionResults.length} sessions, ${gitResults.length} commits`);
+        }
+        break;
+
       default:
         cli.header('Neural Memory v2.0');
         console.log(cli.colors.muted('AI-Native Knowledge Storage\n'));
@@ -1037,6 +1113,7 @@ const neural = new NeuralMemory();
         cli.section('Core Commands');
         cli.simpleTable([
           ['build', 'Build all neural structures'],
+          ['search <text>', 'Unified search (sessions + git)'],
           ['query <text>', 'Semantic query with graph enrichment'],
           ['bundle [project]', 'Get instant context bundle'],
           ['stats', 'Show neural memory statistics']
@@ -1052,10 +1129,16 @@ const neural = new NeuralMemory();
           ['across <query>', 'Search across ALL projects']
         ], 22);
 
+        cli.section('Git History');
+        cli.simpleTable([
+          ['git build', 'Index git commits (via index-git.js)'],
+          ['git query <text>', 'Search git history only']
+        ], 22);
+
         cli.section('Examples');
+        cli.indent(cli.colors.muted('node neural-memory.js search "memory leak"'));
         cli.indent(cli.colors.muted('node neural-memory.js relates docker'));
         cli.indent(cli.colors.muted('node neural-memory.js path docker typescript'));
-        cli.indent(cli.colors.muted('node neural-memory.js learn memex'));
     }
   } catch (error) {
     cli.error(error.message);
