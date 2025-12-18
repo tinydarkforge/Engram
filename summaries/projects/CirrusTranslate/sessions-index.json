@@ -1,8 +1,34 @@
 {
   "project": "CirrusTranslate",
-  "total_sessions": 47,
+  "total_sessions": 48,
   "last_updated": "2025-12-18",
   "sessions": [
+    {
+      "id": "ci-2025-12-18-CirrusTranslate",
+      "project": "CirrusTranslate",
+      "date": "2025-12-18",
+      "summary": "Fixed",
+      "topics": [
+        "CirrusTranslate",
+        "bug-fix",
+        "S3",
+        "MinIO",
+        "MIRAGE",
+        "deployment"
+      ],
+      "key_decisions": [],
+      "outcomes": {
+        "completed": []
+      },
+      "learnings": [],
+      "code_changes": {
+        "files_added": [],
+        "files_modified": [],
+        "files_deleted": [],
+        "lines_added": 0,
+        "lines_removed": 0
+      }
+    },
     {
       "id": "ci-2025-12-18-apps",
       "project": "CirrusTranslate",
@@ -919,7 +945,8 @@
   "topics_index": {
     "deployment": [
       "ci-2025-12-08-deployment",
-      "ci-2025-12-09-docker"
+      "ci-2025-12-09-docker",
+      "ci-2025-12-18-CirrusTranslate"
     ],
     "digitalocean": [
       "ci-2025-12-08-deployment"
@@ -953,7 +980,8 @@
       "ci-2025-12-09-docker"
     ],
     "bug-fix": [
-      "ci-2025-12-09-docker"
+      "ci-2025-12-09-docker",
+      "ci-2025-12-18-CirrusTranslate"
     ],
     "cirrus-editor": [
       "ci-2025-12-09-docker"
@@ -1108,6 +1136,18 @@
     ],
     "[locale]": [
       "ci-2025-12-18-apps"
+    ],
+    "CirrusTranslate": [
+      "ci-2025-12-18-CirrusTranslate"
+    ],
+    "S3": [
+      "ci-2025-12-18-CirrusTranslate"
+    ],
+    "MinIO": [
+      "ci-2025-12-18-CirrusTranslate"
+    ],
+    "MIRAGE": [
+      "ci-2025-12-18-CirrusTranslate"
     ]
   }
 }

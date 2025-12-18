@@ -1,10 +1,10 @@
 {
   "$schema": "./schemas/index.schema.json",
   "v": "2.0.0",
-  "u": "2025-12-18T02:37:29.553Z",
+  "u": "2025-12-18T03:47:47.873Z",
   "m": {
     "tp": 6,
-    "ts": 11754,
+    "ts": 11755,
     "gs": 5
   },
   "g": {
@@ -127,7 +127,7 @@
         "Python"
       ],
       "a": "monorepo",
-      "sc": 47,
+      "sc": 48,
       "u": "2025-12-18",
       "mf": "metadata/projects/CirrusTranslate.json",
       "tp": [
@@ -458,7 +458,7 @@
       "p": [
         "CirrusTranslate"
       ],
-      "sc": 1
+      "sc": 2
     },
     "pr-reviews": {
       "p": [
@@ -512,7 +512,7 @@
       "p": [
         "CirrusTranslate"
       ],
-      "sc": 2
+      "sc": 3
     },
     "automation": {
       "p": [
@@ -1157,6 +1157,30 @@
       "sc": 1
     },
     "[locale]": {
+      "p": [
+        "CirrusTranslate"
+      ],
+      "sc": 1
+    },
+    "CirrusTranslate": {
+      "p": [
+        "CirrusTranslate"
+      ],
+      "sc": 1
+    },
+    "S3": {
+      "p": [
+        "CirrusTranslate"
+      ],
+      "sc": 1
+    },
+    "MinIO": {
+      "p": [
+        "CirrusTranslate"
+      ],
+      "sc": 1
+    },
+    "MIRAGE": {
       "p": [
         "CirrusTranslate"
       ],
