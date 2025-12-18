@@ -1,8 +1,33 @@
 {
   "project": "CirrusTranslate",
-  "total_sessions": 48,
+  "total_sessions": 49,
   "last_updated": "2025-12-18",
   "sessions": [
+    {
+      "id": "ci-2025-12-18-load-testing",
+      "project": "CirrusTranslate",
+      "date": "2025-12-18",
+      "summary": "Heavy",
+      "topics": [
+        "load-testing",
+        "performance",
+        "editor",
+        "bug-fix",
+        "api-hardening"
+      ],
+      "key_decisions": [],
+      "outcomes": {
+        "completed": []
+      },
+      "learnings": [],
+      "code_changes": {
+        "files_added": [],
+        "files_modified": [],
+        "files_deleted": [],
+        "lines_added": 0,
+        "lines_removed": 0
+      }
+    },
     {
       "id": "ci-2025-12-18-CirrusTranslate",
       "project": "CirrusTranslate",
@@ -981,7 +1006,8 @@
     ],
     "bug-fix": [
       "ci-2025-12-09-docker",
-      "ci-2025-12-18-CirrusTranslate"
+      "ci-2025-12-18-CirrusTranslate",
+      "ci-2025-12-18-load-testing"
     ],
     "cirrus-editor": [
       "ci-2025-12-09-docker"
@@ -1052,7 +1078,8 @@
       "ci-2025-12-12-mirage"
     ],
     "editor": [
-      "ci-2025-12-12-editor"
+      "ci-2025-12-12-editor",
+      "ci-2025-12-18-load-testing"
     ],
     "authentication": [
       "ci-2025-12-12-editor"
@@ -1148,6 +1175,15 @@
     ],
     "MIRAGE": [
       "ci-2025-12-18-CirrusTranslate"
+    ],
+    "load-testing": [
+      "ci-2025-12-18-load-testing"
+    ],
+    "performance": [
+      "ci-2025-12-18-load-testing"
+    ],
+    "api-hardening": [
+      "ci-2025-12-18-load-testing"
     ]
   }
 }
