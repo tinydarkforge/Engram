@@ -1,8 +1,44 @@
 {
   "project": "CirrusTranslate",
-  "total_sessions": 46,
-  "last_updated": "2025-12-14",
+  "total_sessions": 47,
+  "last_updated": "2025-12-18",
   "sessions": [
+    {
+      "id": "ci-2025-12-18-apps",
+      "project": "CirrusTranslate",
+      "date": "2025-12-18",
+      "summary": "Updated project-files.controller.ts, project-files.service.ts, page.tsx +5 more",
+      "topics": [
+        "apps",
+        "api",
+        "project",
+        "files",
+        "controller",
+        "service",
+        "web",
+        "[locale]"
+      ],
+      "key_decisions": [],
+      "outcomes": {
+        "completed": []
+      },
+      "learnings": [],
+      "code_changes": {
+        "files_added": [],
+        "files_modified": [
+          "apps/api/src/project-files/project-files.controller.ts",
+          "apps/api/src/project-files/project-files.service.ts",
+          "apps/web/src/app/[locale]/projects/[id]/page.tsx",
+          "apps/web/src/app/[locale]/projects/page.tsx",
+          "apps/web/src/components/form/Input.tsx",
+          "apps/web/src/components/projects/ProjectsSearch.tsx",
+          "apps/web/src/components/shared/VideoPreviewModal.tsx"
+        ],
+        "files_deleted": [],
+        "lines_added": 316,
+        "lines_removed": 135
+      }
+    },
     {
       "id": "ci-2025-12-14-security",
       "project": "CirrusTranslate",
@@ -1046,10 +1082,32 @@
       "ci-2025-12-13-security"
     ],
     "api": [
-      "ci-2025-12-14-security"
+      "ci-2025-12-14-security",
+      "ci-2025-12-18-apps"
     ],
     "best-practices": [
       "ci-2025-12-14-security"
+    ],
+    "apps": [
+      "ci-2025-12-18-apps"
+    ],
+    "project": [
+      "ci-2025-12-18-apps"
+    ],
+    "files": [
+      "ci-2025-12-18-apps"
+    ],
+    "controller": [
+      "ci-2025-12-18-apps"
+    ],
+    "service": [
+      "ci-2025-12-18-apps"
+    ],
+    "web": [
+      "ci-2025-12-18-apps"
+    ],
+    "[locale]": [
+      "ci-2025-12-18-apps"
     ]
   }
 }

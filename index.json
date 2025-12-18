@@ -1,10 +1,10 @@
 {
   "$schema": "./schemas/index.schema.json",
   "v": "2.0.0",
-  "u": "2025-12-14T12:57:57.744Z",
+  "u": "2025-12-18T02:37:29.553Z",
   "m": {
     "tp": 6,
-    "ts": 11753,
+    "ts": 11754,
     "gs": 5
   },
   "g": {
@@ -127,8 +127,8 @@
         "Python"
       ],
       "a": "monorepo",
-      "sc": 46,
-      "u": "2025-12-14",
+      "sc": 47,
+      "u": "2025-12-18",
       "mf": "metadata/projects/CirrusTranslate.json",
       "tp": [
         "auth",
@@ -587,7 +587,7 @@
         "CirrusTranslate",
         "DevOps"
       ],
-      "sc": 2
+      "sc": 8
     },
     "maintenance": {
       "p": [
@@ -787,7 +787,7 @@
         "DevOps",
         "CirrusTranslate"
       ],
-      "sc": 2
+      "sc": 3
     },
     "aither": {
       "p": [
@@ -908,7 +908,7 @@
         "DevOps",
         "CirrusTranslate"
       ],
-      "sc": 1
+      "sc": 2
     },
     "issue-220": {
       "p": [
@@ -1094,7 +1094,7 @@
       "p": [
         "CirrusTranslate"
       ],
-      "sc": 1
+      "sc": 2
     },
     "best-practices": {
       "p": [
@@ -1117,6 +1117,48 @@
     "git-indexing": {
       "p": [
         "DevOps"
+      ],
+      "sc": 1
+    },
+    "apps": {
+      "p": [
+        "CirrusTranslate"
+      ],
+      "sc": 1
+    },
+    "project": {
+      "p": [
+        "CirrusTranslate"
+      ],
+      "sc": 1
+    },
+    "files": {
+      "p": [
+        "CirrusTranslate"
+      ],
+      "sc": 1
+    },
+    "controller": {
+      "p": [
+        "CirrusTranslate"
+      ],
+      "sc": 1
+    },
+    "service": {
+      "p": [
+        "CirrusTranslate"
+      ],
+      "sc": 1
+    },
+    "web": {
+      "p": [
+        "CirrusTranslate"
+      ],
+      "sc": 1
+    },
+    "[locale]": {
+      "p": [
+        "CirrusTranslate"
       ],
       "sc": 1
     }
