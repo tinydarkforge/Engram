@@ -7,9 +7,16 @@
     "start": "node scripts/server.js",
     "startup": "node scripts/memex-loader.js startup",
     "test": "node --test tests/*.test.js",
+    "status": "node scripts/memex-loader.js status",
+    "search": "node scripts/memex-loader.js search",
+    "semantic": "node scripts/memex-loader.js semantic",
     "manifest": "node scripts/manifest-manager.js generate",
     "bloom:build": "node scripts/bloom-filter.js build",
+    "bloom:stats": "node scripts/bloom-filter.js stats",
+    "lazy:convert": "node scripts/lazy-loader.js convert",
     "lazy:stats": "node scripts/lazy-loader.js stats",
+    "git:index": "node scripts/index-git.js build",
+    "git:query": "node scripts/index-git.js query",
     "semantic:stats": "node scripts/vector-search.js stats"
   },
   "keywords": [
