@@ -131,7 +131,9 @@ class ManifestManager {
    * Returns: { changed: [], added: [], deleted: [] }
    */
   detectChanges() {
+    const currentManifest = this.manifest;
     const oldManifest = this.load();
+    this.manifest = currentManifest;
 
     if (!oldManifest) {
       return {
