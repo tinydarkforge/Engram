@@ -23,20 +23,48 @@ const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
 const msgpack = require('msgpack-lite');
+const { resolveMemexPath, resolveReposRoot } = require('./paths');
 
-const MEMEX_PATH = process.env.MEMEX_PATH || path.join(process.env.HOME, 'code/cirrus/DevOps/Memex');
+const MEMEX_PATH = resolveMemexPath(__dirname);
 const NEURAL_PATH = path.join(MEMEX_PATH, '.neural');
 const GIT_INDEX_PATH = path.join(NEURAL_PATH, 'git-index.msgpack');
 
-// Known projects to index (from CLAUDE.md)
-// NOTE: Memex excluded - its commits are mostly automated session saves
-const PROJECTS = {
-  'DemoProject': path.join(process.env.HOME, 'code/cirrus/DemoProject'),
-  'translate.REDACTED': path.join(process.env.HOME, 'code/cirrus/translateREDACTED'),
-  'DevOps': path.join(process.env.HOME, 'code/cirrus/DevOps'),
-  'REDACTED': path.join(process.env.HOME, 'code/cirrus/REDACTED'),
-  'ProjectB': path.join(process.env.HOME, 'code/cirrus/ProjectB'),
-};
+function buildProjectMap() {
+  if (process.env.MEMEX_PROJECTS_JSON) {
+    try {
+      return JSON.parse(process.env.MEMEX_PROJECTS_JSON);
+    } catch (e) {
+      console.warn('⚠️  Invalid MEMEX_PROJECTS_JSON, falling back to discovery');
+    }
+  }
+
+  const indexPath = path.join(MEMEX_PATH, 'index.json');
+  if (!fs.existsSync(indexPath)) {
+    return {};
+  }
+
+  const reposRoot = resolveReposRoot(MEMEX_PATH);
+  const index = JSON.parse(fs.readFileSync(indexPath, 'utf8'));
+  const projects = Object.keys(index.p || {});
+  const map = {};
+
+  for (const projectName of projects) {
+    const candidates = [
+      path.join(reposRoot, projectName),
+      path.join(reposRoot, projectName.replace(/\./g, '')),
+      path.join(reposRoot, projectName.toLowerCase()),
+    ];
+
+    const repoPath = candidates.find(p => fs.existsSync(path.join(p, '.git')));
+    if (repoPath) {
+      map[projectName] = repoPath;
+    }
+  }
+
+  return map;
+}
+
+const PROJECTS = buildProjectMap();
 
 // How far back to index
 const DEFAULT_SINCE = '6 months ago';

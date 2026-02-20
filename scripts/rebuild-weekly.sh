@@ -15,8 +15,8 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-MEMEX_PATH="${MEMEX_PATH:-$HOME/code/cirrus/DevOps/Memex}"
-PLIST_PATH="$HOME/Library/LaunchAgents/com.cirrus.neural-rebuild.plist"
+MEMEX_PATH="${MEMEX_PATH:-$(cd "$SCRIPT_DIR/.." && pwd)}"
+PLIST_PATH="$HOME/Library/LaunchAgents/com.memex.neural-rebuild.plist"
 LOG_FILE="/tmp/neural-rebuild.log"
 
 # Colors for output
@@ -41,7 +41,7 @@ install_schedule() {
 <plist version="1.0">
 <dict>
     <key>Label</key>
-    <string>com.cirrus.neural-rebuild</string>
+    <string>com.memex.neural-rebuild</string>
     <key>ProgramArguments</key>
     <array>
         <string>$SCRIPT_DIR/rebuild-weekly.sh</string>

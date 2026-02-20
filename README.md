@@ -1,6 +1,6 @@
 # Memex v4.0
 
-**Extended Memory for Claude - 94-98% Token Savings**
+**Extended Memory for AI assistant - 94-98% Token Savings**
 
 Ultra-efficient knowledge system that remembers your project context across sessions.
 
@@ -10,7 +10,7 @@ Ultra-efficient knowledge system that remembers your project context across sess
 
 ```bash
 # 1. Setup (one-time)
-cd ~/code/cirrus/DevOps/Memex
+cd ~/code/Memex
 node scripts/memex-loader.js startup
 
 # 2. Save a session
@@ -29,7 +29,7 @@ node scripts/memex-loader.js quick "commit format"
 ### 🎯 **94-98% Token Savings**
 - Loads 4KB index vs 500KB docs
 - Most queries: 1,000 tokens vs 50,000
-- **Saves ~$35/month** on Claude API costs
+- **Saves ~$35/month** on AI assistant API costs
 
 **See [HOW-MEMEX-SAVES-TOKENS.md](HOW-MEMEX-SAVES-TOKENS.md) for details**
 
@@ -174,7 +174,7 @@ scripts/git-hook-capture.sh install  # Auto-capture on commit
 
 ---
 
-## How Claude Uses It
+## How AI assistant Uses It
 
 ```
 User: "What's our commit format?"
@@ -209,7 +209,7 @@ Files loaded: 1 (index only)
 
 ```bash
 # Clone/navigate to Memex
-cd ~/code/cirrus/DevOps/Memex
+cd ~/code/Memex
 
 # Make scripts executable
 chmod +x scripts/*.js scripts/*.sh
@@ -218,7 +218,7 @@ chmod +x scripts/*.js scripts/*.sh
 node scripts/memex-loader.js startup
 
 # Optional: Add alias
-echo 'alias memex="node ~/code/cirrus/DevOps/Memex/scripts/memex-loader.js"' >> ~/.zshrc
+echo 'alias memex="node ~/code/Memex/scripts/memex-loader.js"' >> ~/.zshrc
 source ~/.zshrc
 ```
 
@@ -270,7 +270,7 @@ cd /path/to/your/repo
 
 Memex is part of the Cirrus DevOps toolkit. Contributions welcome!
 
-- Report issues: https://github.com/<owner>/<private-repo>/issues
+- Report issues: open an issue in this repository
 - See roadmap: [ROADMAP-V4.md](ROADMAP-V4.md)
 
 ---

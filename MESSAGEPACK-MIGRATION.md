@@ -26,13 +26,13 @@ npm list msgpack-lite
 
 ```bash
 # Backup your Memex directory
-cp -r ~/code/cirrus/DevOps/Memex ~/code/cirrus/DevOps/Memex.backup
+cp -r ~/code/Memex ~/code/Memex.backup
 ```
 
 ### Step 3: Preview Migration (Dry Run)
 
 ```bash
-cd ~/code/cirrus/DevOps/Memex
+cd ~/code/Memex
 node scripts/migrate-to-msgpack.js migrate --dry-run
 ```
 
@@ -98,7 +98,7 @@ The absolute parsing difference (0.11ms) is negligible for Memex's use case.
 **Solution**: Install dependencies
 
 ```bash
-cd ~/code/cirrus/DevOps/Memex
+cd ~/code/Memex
 npm install
 ```
 
