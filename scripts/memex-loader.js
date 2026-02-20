@@ -16,6 +16,7 @@ const ManifestManager = require('./manifest-manager');
 const VectorSearch = require('./vector-search');
 const BloomFilter = require('./bloom-filter');
 const { resolveMemexPath } = require('./paths');
+const agentbridge = require('./agentbridge-client');
 
 const MEMEX_PATH = resolveMemexPath(__dirname);
 
@@ -48,6 +49,8 @@ class Memex {
     this.vectorSearch = new VectorSearch();
     // Bloom filter for instant negative lookups (#27)
     this.bloomFilter = BloomFilter.load();
+    // AgentBridge: async init, stored as promise (never blocks constructor)
+    this._bridge = agentbridge.connect();
   }
 
   /**
@@ -611,24 +614,37 @@ if (require.main === module) {
         console.log(memex.getStartupMessage());
         break;
 
-      case 'search':
+      case 'search': {
         const query = process.argv.slice(3).join(' ');
         memex.loadIndex();
+        const searchStart = Date.now();
         const results = memex.search(query);
+        const searchMs = Date.now() - searchStart;
         console.log(JSON.stringify(results, null, 2));
+        memex._bridge.then(bridge => bridge.emit('memex.query.result', {
+          query, source: 'keyword', results_count: results.total, latency_ms: searchMs,
+        })).catch(() => {});
         break;
+      }
 
-      case 'semantic':
+      case 'semantic': {
         const semanticQuery = process.argv.slice(3).join(' ');
         (async () => {
           try {
+            const semanticStart = Date.now();
             const semanticResults = await memex.semanticSearch(semanticQuery);
+            const semanticMs = Date.now() - semanticStart;
             console.log(JSON.stringify(semanticResults, null, 2));
+            const bridge = await memex._bridge;
+            bridge.emit('memex.query.result', {
+              query: semanticQuery, source: 'semantic', results_count: semanticResults.results?.length || 0, latency_ms: semanticMs,
+            });
           } catch (e) {
             console.error('Semantic search error:', e.message);
           }
         })();
         return;
+      }
 
       case 'list':
         memex.loadIndex();
@@ -660,95 +676,111 @@ if (require.main === module) {
         break;
 
       case 'status': {
-        const startTime = Date.now();
-        const indexResult = memex.loadIndex();
-        memex.detectProject();
-        const loadMs = Date.now() - startTime;
+        (async () => {
+          const startTime = Date.now();
+          const indexResult = memex.loadIndex();
+          memex.detectProject();
+          const loadMs = Date.now() - startTime;
 
-        const issues = [];
+          const issues = [];
 
-        // Version consistency check
-        const pkg = require('../package.json');
-        if (pkg.version !== memex.index.v) {
-          issues.push(`Version mismatch: package.json=${pkg.version}, index=${memex.index.v}`);
-        }
-
-        // Check for missing metadata files
-        for (const [name, proj] of Object.entries(memex.index.p)) {
-          const mfPath = path.join(MEMEX_PATH, proj.mf);
-          if (!fs.existsSync(mfPath)) {
-            issues.push(`Missing metadata: ${proj.mf} (project: ${name})`);
+          // Version consistency check
+          const pkg = require('../package.json');
+          if (pkg.version !== memex.index.v) {
+            issues.push(`Version mismatch: package.json=${pkg.version}, index=${memex.index.v}`);
           }
-        }
 
-        // Cache stats
-        let cacheStats = { total_entries: 0, database_size_kb: 0 };
-        try { cacheStats = memex.persistentCache.getStats(); } catch (e) { /* no cache */ }
-
-        // Bloom filter stats
-        let bloomStats = null;
-        try { if (memex.bloomFilter) bloomStats = memex.bloomFilter.getStats(); } catch (e) { /* no bloom */ }
-
-        // Vector search stats
-        let vectorStats = { total_embeddings: 0, file_size_kb: 0 };
-        try { vectorStats = memex.vectorSearch.getStats(); } catch (e) { /* no vectors */ }
-
-        // Per-project session counts
-        const projectStats = memex.listProjects().map(p => `    ${p.name}: ${p.session_count} sessions (last: ${p.last_updated || 'unknown'})`);
-
-        // Find last saved session across all projects
-        let lastSession = null;
-        for (const [name] of Object.entries(memex.index.p)) {
-          const sessions = memex.listSessions(name);
-          if (sessions.length > 0 && (!lastSession || sessions[0].date > lastSession.date)) {
-            lastSession = { ...sessions[0], project: name };
+          // Check for missing metadata files
+          for (const [name, proj] of Object.entries(memex.index.p)) {
+            const mfPath = path.join(MEMEX_PATH, proj.mf);
+            if (!fs.existsSync(mfPath)) {
+              issues.push(`Missing metadata: ${proj.mf} (project: ${name})`);
+            }
           }
-        }
 
-        console.log(`Memex v${memex.index.v} Status`);
-        console.log('='.repeat(40));
-        console.log('');
-        console.log(`Version:        ${memex.index.v}`);
-        console.log(`Load time:      ${loadMs}ms`);
-        console.log(`Index format:   ${indexResult.format}`);
-        console.log(`Index size:     ${indexResult.size_kb}KB`);
-        console.log(`Total sessions: ${indexResult.total_sessions}`);
-        console.log(`Projects:       ${indexResult.projects.length}`);
-        console.log('');
-        console.log('Projects:');
-        projectStats.forEach(s => console.log(s));
-        console.log('');
-        console.log('Cache:');
-        console.log(`    Entries:  ${cacheStats.total_entries}`);
-        console.log(`    DB size:  ${cacheStats.database_size_kb}KB`);
-        if (bloomStats) {
+          // Cache stats
+          let cacheStats = { total_entries: 0, database_size_kb: 0 };
+          try { cacheStats = memex.persistentCache.getStats(); } catch (e) { /* no cache */ }
+
+          // Bloom filter stats
+          let bloomStats = null;
+          try { if (memex.bloomFilter) bloomStats = memex.bloomFilter.getStats(); } catch (e) { /* no bloom */ }
+
+          // Vector search stats
+          let vectorStats = { total_embeddings: 0, file_size_kb: 0 };
+          try { vectorStats = memex.vectorSearch.getStats(); } catch (e) { /* no vectors */ }
+
+          // Per-project session counts
+          const projectStats = memex.listProjects().map(p => `    ${p.name}: ${p.session_count} sessions (last: ${p.last_updated || 'unknown'})`);
+
+          // Find last saved session across all projects
+          let lastSession = null;
+          for (const [name] of Object.entries(memex.index.p)) {
+            const sessions = memex.listSessions(name);
+            if (sessions.length > 0 && (!lastSession || sessions[0].date > lastSession.date)) {
+              lastSession = { ...sessions[0], project: name };
+            }
+          }
+
+          // AgentBridge status
+          let bridgeStatus = 'disabled (AGENTBRIDGE_URL not set)';
+          try {
+            const bridge = await memex._bridge;
+            if (bridge.isConnected()) {
+              bridgeStatus = `connected (${process.env.AGENTBRIDGE_URL})`;
+            }
+          } catch {
+            bridgeStatus = 'error';
+          }
+
+          console.log(`Memex v${memex.index.v} Status`);
+          console.log('='.repeat(40));
           console.log('');
-          console.log('Bloom Filter:');
-          console.log(`    Items:      ${bloomStats.items}`);
-          console.log(`    Size:       ${bloomStats.size_bytes} bytes`);
-          console.log(`    Fill ratio: ${bloomStats.fill_ratio}`);
-          console.log(`    Est. FPR:   ${bloomStats.actual_fpr}`);
-        }
-        console.log('');
-        console.log('Embeddings:');
-        console.log(`    Total:    ${vectorStats.total_embeddings}`);
-        console.log(`    Size:     ${vectorStats.file_size_kb}KB`);
-        if (lastSession) {
+          console.log(`Version:        ${memex.index.v}`);
+          console.log(`Load time:      ${loadMs}ms`);
+          console.log(`Index format:   ${indexResult.format}`);
+          console.log(`Index size:     ${indexResult.size_kb}KB`);
+          console.log(`Total sessions: ${indexResult.total_sessions}`);
+          console.log(`Projects:       ${indexResult.projects.length}`);
           console.log('');
-          console.log(`Last session: ${lastSession.id}`);
-          console.log(`    Date:     ${lastSession.date}`);
-          console.log(`    Project:  ${lastSession.project}`);
-          console.log(`    Summary:  ${lastSession.summary}`);
-        }
-        if (issues.length > 0) {
+          console.log('Projects:');
+          projectStats.forEach(s => console.log(s));
           console.log('');
-          console.log('Issues detected:');
-          issues.forEach(i => console.log(`    ! ${i}`));
-        } else {
+          console.log('Cache:');
+          console.log(`    Entries:  ${cacheStats.total_entries}`);
+          console.log(`    DB size:  ${cacheStats.database_size_kb}KB`);
+          if (bloomStats) {
+            console.log('');
+            console.log('Bloom Filter:');
+            console.log(`    Items:      ${bloomStats.items}`);
+            console.log(`    Size:       ${bloomStats.size_bytes} bytes`);
+            console.log(`    Fill ratio: ${bloomStats.fill_ratio}`);
+            console.log(`    Est. FPR:   ${bloomStats.actual_fpr}`);
+          }
           console.log('');
-          console.log('No issues detected.');
-        }
-        break;
+          console.log('Embeddings:');
+          console.log(`    Total:    ${vectorStats.total_embeddings}`);
+          console.log(`    Size:     ${vectorStats.file_size_kb}KB`);
+          console.log('');
+          console.log('AgentBridge:');
+          console.log(`    Status:   ${bridgeStatus}`);
+          if (lastSession) {
+            console.log('');
+            console.log(`Last session: ${lastSession.id}`);
+            console.log(`    Date:     ${lastSession.date}`);
+            console.log(`    Project:  ${lastSession.project}`);
+            console.log(`    Summary:  ${lastSession.summary}`);
+          }
+          if (issues.length > 0) {
+            console.log('');
+            console.log('Issues detected:');
+            issues.forEach(i => console.log(`    ! ${i}`));
+          } else {
+            console.log('');
+            console.log('No issues detected.');
+          }
+        })();
+        return;
       }
 
       default:
