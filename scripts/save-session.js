@@ -15,6 +15,7 @@ const path = require('path');
 const { execFileSync } = require('child_process');
 const readline = require('readline');
 const { resolveMemexPath } = require('./paths');
+const agentbridge = require('./agentbridge-client');
 
 const MEMEX_PATH = resolveMemexPath(__dirname);
 
@@ -29,6 +30,9 @@ class SessionSaver {
     if (!this.currentProject) {
       throw new Error('Could not detect current project from git remote, package.json, or directory.');
     }
+
+    // AgentBridge: async init, stored as promise (never blocks constructor)
+    this._bridge = agentbridge.connect();
   }
 
   /**
@@ -178,6 +182,20 @@ class SessionSaver {
 
     // Update main index
     this.updateMainIndex();
+
+    // Notify AgentBridge (fire-and-forget, never blocks)
+    if (this._bridge) {
+      this._bridge
+        .then(bridge => bridge.emit('memex.session.saved', {
+          session_id: sessionId,
+          project: this.currentProject,
+          summary,
+          topics,
+          timestamp: new Date().toISOString(),
+          git_stats: gitChanges?.stats || null,
+        }))
+        .catch(() => {});
+    }
 
     // Commit to git only if explicitly requested
     if (options.commit) {
