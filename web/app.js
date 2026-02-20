@@ -112,6 +112,35 @@ async function loadDashboard() {
 
   // Load recent sessions
   await loadRecentSessions();
+
+  // Load AgentBridge status
+  await loadBridgeStatus();
+}
+
+async function loadBridgeStatus() {
+  const container = document.getElementById('agentbridge-status');
+  try {
+    const data = await api.get('/agentbridge/status');
+    const connected = data.bridge_connected;
+    const consumer = data.consumer || {};
+
+    const statusDot = connected ? 'connected' : (consumer.configured ? 'configured' : 'disabled');
+    const statusLabel = connected ? 'Connected' : (consumer.configured ? 'Disconnected' : 'Disabled');
+
+    container.innerHTML = `
+      <div class="bridge-row">
+        <span class="bridge-dot ${statusDot}"></span>
+        <span>${statusLabel}</span>
+      </div>
+      ${data.bridge_url ? `<div class="bridge-row bridge-meta">${data.bridge_url}</div>` : ''}
+      <div class="bridge-row bridge-meta">
+        Events: ${consumer.events_processed || 0} processed, ${consumer.errors || 0} errors
+      </div>
+      ${consumer.last_event_at ? `<div class="bridge-row bridge-meta">Last: ${consumer.last_event_at}</div>` : ''}
+    `;
+  } catch {
+    container.innerHTML = '<div class="bridge-row bridge-meta">Status unavailable</div>';
+  }
 }
 
 async function loadRecentSessions() {

@@ -577,3 +577,47 @@ main {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--text-muted);
 }
+
+/* ─────────────────────────────────────────────────────────────
+   AgentBridge Status
+   ───────────────────────────────────────────────────────────── */
+
+.bridge-status {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.bridge-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.bridge-meta {
+  color: var(--text-secondary);
+  font-size: 12px;
+  padding-left: 20px;
+}
+
+.bridge-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.bridge-dot.connected {
+  background: var(--success);
+  box-shadow: 0 0 6px var(--success);
+}
+
+.bridge-dot.configured {
+  background: var(--warning);
+}
+
+.bridge-dot.disabled {
+  background: var(--text-muted);
+}
