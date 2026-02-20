@@ -27,6 +27,8 @@ class PersistentCache {
     this.version = options.version || '4.0.0';
     this.maxEntries = options.maxEntries || DEFAULT_MAX_ENTRIES;
     this.db = null;
+    this.hits = 0;
+    this.misses = 0;
     this.initializeDatabase();
   }
 
@@ -89,18 +91,21 @@ class PersistentCache {
     const row = stmt.get(key);
 
     if (!row) {
+      this.misses++;
       return null;
     }
 
     // Check expiration
     const now = Date.now();
     if (row.expires_at < now) {
+      this.misses++;
       this.delete(key);
       return null;
     }
 
     // Check version
     if (row.version !== this.version) {
+      this.misses++;
       this.delete(key);
       return null;
     }
@@ -121,6 +126,7 @@ class PersistentCache {
     `);
     updateStmt.run(now, key);
 
+    this.hits++;
     return value;
   }
 
@@ -219,7 +225,9 @@ class PersistentCache {
       database_path: CACHE_DB_PATH,
       version: this.version,
       ttl_minutes: this.ttl / 60 / 1000,
-      lru_enabled: true
+      lru_enabled: true,
+      hits: this.hits,
+      misses: this.misses,
     };
   }
 
