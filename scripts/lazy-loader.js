@@ -17,6 +17,7 @@ const fs = require('fs');
 const path = require('path');
 const { glob } = require('glob');
 const { resolveMemexPath } = require('./paths');
+const { readJSON } = require('./safe-json');
 
 const MEMEX_PATH = resolveMemexPath(__dirname);
 
@@ -41,7 +42,8 @@ class LazyLoader {
 
     for (const indexFile of sessionIndexFiles) {
       const fullPath = path.join(MEMEX_PATH, indexFile);
-      const fullIndex = JSON.parse(fs.readFileSync(fullPath, 'utf8'));
+      const fullIndex = readJSON(fullPath);
+      if (!fullIndex) continue;
 
       const sizeBefore = Buffer.byteLength(JSON.stringify(fullIndex));
       totalSizeBefore += sizeBefore;
@@ -131,11 +133,7 @@ class LazyLoader {
       `${sessionId}.json`
     );
 
-    if (!fs.existsSync(detailsPath)) {
-      return null;
-    }
-
-    return JSON.parse(fs.readFileSync(detailsPath, 'utf8'));
+    return readJSON(detailsPath);
   }
 
   /**
@@ -164,7 +162,8 @@ class LazyLoader {
     let totalFullBytes = 0;
 
     for (const file of detailFiles) {
-      const session = JSON.parse(fs.readFileSync(file, 'utf8'));
+      const session = readJSON(file);
+      if (!session) continue;
       stats.total_sessions++;
       totalIndexBytes += session._index_size_bytes || 0;
       totalFullBytes += session._full_size_bytes || 0;
@@ -190,7 +189,8 @@ class LazyLoader {
 
     for (const indexFile of sessionIndexFiles) {
       const fullPath = path.join(MEMEX_PATH, indexFile);
-      const lightIndex = JSON.parse(fs.readFileSync(fullPath, 'utf8'));
+      const lightIndex = readJSON(fullPath);
+      if (!lightIndex) continue;
 
       if (!lightIndex._lazy_loading_enabled) {
         console.log(`  ⊘ ${path.basename(path.dirname(fullPath))}: Not in lazy format, skipping`);
@@ -204,8 +204,8 @@ class LazyLoader {
       const fullSessions = [];
       for (const lightSession of lightIndex.sessions) {
         const detailsPath = path.join(sessionsDir, `${lightSession.id}.json`);
-        if (fs.existsSync(detailsPath)) {
-          const fullSession = JSON.parse(fs.readFileSync(detailsPath, 'utf8'));
+        const fullSession = readJSON(detailsPath);
+        if (fullSession) {
           // Remove lazy loading metadata
           delete fullSession._lazy_loaded;
           delete fullSession._index_size_bytes;

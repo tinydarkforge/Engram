@@ -16,6 +16,7 @@ const { execFileSync } = require('child_process');
 const readline = require('readline');
 const { resolveMemexPath } = require('./paths');
 const agentbridge = require('./agentbridge-client');
+const { readJSON } = require('./safe-json');
 
 const MEMEX_PATH = resolveMemexPath(__dirname);
 
@@ -131,9 +132,8 @@ class SessionSaver {
       'sessions-index.json'
     );
 
-    let sessionsIndex;
-    if (fs.existsSync(indexPath)) {
-      sessionsIndex = JSON.parse(fs.readFileSync(indexPath, 'utf8'));
+    let sessionsIndex = readJSON(indexPath);
+    if (sessionsIndex) {
       // Ensure topics_index exists (backward compatibility)
       if (!sessionsIndex.topics_index) {
         sessionsIndex.topics_index = {};
@@ -214,7 +214,8 @@ class SessionSaver {
    */
   updateMainIndex() {
     const indexPath = path.join(MEMEX_PATH, 'index.json');
-    const index = JSON.parse(fs.readFileSync(indexPath, 'utf8'));
+    const index = readJSON(indexPath);
+    if (!index) return;
 
     // Update project session count
     const sessionsIndexPath = path.join(
@@ -224,8 +225,8 @@ class SessionSaver {
       'sessions-index.json'
     );
 
-    if (fs.existsSync(sessionsIndexPath)) {
-      const sessionsIndex = JSON.parse(fs.readFileSync(sessionsIndexPath, 'utf8'));
+    const sessionsIndex = readJSON(sessionsIndexPath);
+    if (sessionsIndex) {
       // v2.0 uses abbreviated keys: p=projects, sc=session_count, u=last_updated
       if (index.p && index.p[this.currentProject]) {
         index.p[this.currentProject].sc = sessionsIndex.total_sessions;

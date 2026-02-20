@@ -17,6 +17,7 @@ const VectorSearch = require('./vector-search');
 const BloomFilter = require('./bloom-filter');
 const { resolveMemexPath } = require('./paths');
 const agentbridge = require('./agentbridge-client');
+const { readJSON, validateIndex } = require('./safe-json');
 
 const MEMEX_PATH = resolveMemexPath(__dirname);
 
@@ -126,12 +127,22 @@ class Memex {
 
     // Fallback to plain JSON
     if (!this.index && fs.existsSync(jsonPath)) {
-      this.index = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
-      format = 'json';
+      try {
+        this.index = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
+        format = 'json';
+      } catch (e) {
+        console.warn('⚠️  Failed to load JSON index:', e.message);
+      }
     }
 
     if (!this.index) {
       throw new Error(`Memex index not found at ${basePath}.[msgpack|json.gz|json]`);
+    }
+
+    // Validate index shape
+    const validation = validateIndex(this.index);
+    if (!validation.valid) {
+      console.warn('⚠️  Index validation warnings:', validation.errors.join(', '));
     }
 
     // Save to persistent cache for next time
@@ -179,8 +190,8 @@ class Memex {
     // Try package.json
     try {
       const pkgPath = path.join(cwd, 'package.json');
-      if (fs.existsSync(pkgPath)) {
-        const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+      const pkg = readJSON(pkgPath);
+      if (pkg) {
         const projectName = pkg.name?.replace('@cirrus/', '');
         if (projectName && this.index.p[projectName]) {
           this.currentProject = projectName;
@@ -219,7 +230,8 @@ class Memex {
       return this.index.p[projectName]; // Return quick_ref only
     }
 
-    const metadata = JSON.parse(fs.readFileSync(metadataFile, 'utf8'));
+    const metadata = readJSON(metadataFile);
+    if (!metadata) return this.index.p[projectName];
 
     // Cache it
     this.cache.hot.set(`project:${projectName}`, metadata);
@@ -282,7 +294,8 @@ class Memex {
     let content;
 
     if (ext === '.json') {
-      content = JSON.parse(fs.readFileSync(fullPath, 'utf8'));
+      content = readJSON(fullPath);
+      if (!content) return null;
     } else {
       content = fs.readFileSync(fullPath, 'utf8');
     }
@@ -446,8 +459,8 @@ class Memex {
         'sessions-index.json'
       );
 
-      if (fs.existsSync(indexPath)) {
-        const index = JSON.parse(fs.readFileSync(indexPath, 'utf8'));
+      const index = readJSON(indexPath);
+      if (index) {
         const session = index.sessions?.find(s => s.id === sessionId);
         if (session) {
           return { ...session, from_cache: false, legacy_format: true };
@@ -457,7 +470,8 @@ class Memex {
       return null;
     }
 
-    const details = JSON.parse(fs.readFileSync(detailsPath, 'utf8'));
+    const details = readJSON(detailsPath);
+    if (!details) return null;
 
     // Cache it
     this.cache.hot.set(cacheKey, details);
@@ -484,11 +498,8 @@ class Memex {
       'sessions-index.json'
     );
 
-    if (!fs.existsSync(indexPath)) {
-      return [];
-    }
-
-    const index = JSON.parse(fs.readFileSync(indexPath, 'utf8'));
+    const index = readJSON(indexPath);
+    if (!index) return [];
 
     // Check if lazy loading enabled
     if (index._lazy_loading_enabled) {
@@ -749,6 +760,13 @@ if (require.main === module) {
           console.log('Cache:');
           console.log(`    Entries:  ${cacheStats.total_entries}`);
           console.log(`    DB size:  ${cacheStats.database_size_kb}KB`);
+          if (cacheStats.hits !== undefined) {
+            const hitRate = (cacheStats.hits + cacheStats.misses) > 0
+              ? Math.round(cacheStats.hits / (cacheStats.hits + cacheStats.misses) * 100) : 0;
+            console.log(`    Hits:     ${cacheStats.hits}`);
+            console.log(`    Misses:   ${cacheStats.misses}`);
+            console.log(`    Hit rate: ${hitRate}%`);
+          }
           if (bloomStats) {
             console.log('');
             console.log('Bloom Filter:');
