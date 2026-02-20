@@ -16,15 +16,15 @@
 const fs = require('fs');
 const path = require('path');
 const { resolveMemexPath, resolveReposRoot } = require('./paths');
+const { readJSON } = require('./safe-json');
 
 const MEMEX_PATH = resolveMemexPath(__dirname);
 const REPOS_ROOT = resolveReposRoot(MEMEX_PATH);
 
 function discoverRepos() {
   const indexPath = path.join(MEMEX_PATH, 'index.json');
-  if (!fs.existsSync(indexPath)) return {};
-
-  const index = JSON.parse(fs.readFileSync(indexPath, 'utf8'));
+  const index = readJSON(indexPath);
+  if (!index) return {};
   const repos = {};
 
   for (const projectName of Object.keys(index.p || {})) {

@@ -12,6 +12,7 @@
 const fs = require('fs');
 const path = require('path');
 const { resolveMemexPath } = require('./paths');
+const { readJSON } = require('./safe-json');
 
 const MEMEX_PATH = resolveMemexPath(__dirname);
 const EMBEDDINGS_PATH = path.join(MEMEX_PATH, '.cache', 'embeddings.json');
@@ -335,9 +336,9 @@ class VectorSearch {
 
     for (const file of sessionFiles) {
       const fullPath = path.join(MEMEX_PATH, file);
-      const sessionsIndex = JSON.parse(fs.readFileSync(fullPath, 'utf8'));
+      const sessionsIndex = readJSON(fullPath);
 
-      if (!sessionsIndex.sessions) continue;
+      if (!sessionsIndex || !sessionsIndex.sessions) continue;
 
       for (const session of sessionsIndex.sessions) {
         totalSessions++;
