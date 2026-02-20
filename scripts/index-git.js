@@ -24,6 +24,7 @@ const path = require('path');
 const { execSync } = require('child_process');
 const msgpack = require('msgpack-lite');
 const { resolveMemexPath, resolveReposRoot } = require('./paths');
+const { readJSON } = require('./safe-json');
 
 const MEMEX_PATH = resolveMemexPath(__dirname);
 const NEURAL_PATH = path.join(MEMEX_PATH, '.neural');
@@ -39,12 +40,10 @@ function buildProjectMap() {
   }
 
   const indexPath = path.join(MEMEX_PATH, 'index.json');
-  if (!fs.existsSync(indexPath)) {
-    return {};
-  }
+  const index = readJSON(indexPath);
+  if (!index) return {};
 
   const reposRoot = resolveReposRoot(MEMEX_PATH);
-  const index = JSON.parse(fs.readFileSync(indexPath, 'utf8'));
   const projects = Object.keys(index.p || {});
   const map = {};
 

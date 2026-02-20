@@ -23,6 +23,7 @@ const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 const { resolveMemexPath } = require('./paths');
+const { readJSON } = require('./safe-json');
 
 const MEMEX_PATH = resolveMemexPath(__dirname);
 const BLOOM_FILTER_PATH = path.join(MEMEX_PATH, '.cache', 'bloom-filter.json');
@@ -176,8 +177,17 @@ class BloomFilter {
     if (!fs.existsSync(BLOOM_FILTER_PATH)) {
       return null;
     }
-    const json = JSON.parse(fs.readFileSync(BLOOM_FILTER_PATH, 'utf8'));
-    return BloomFilter.fromJSON(json);
+    try {
+      const json = JSON.parse(fs.readFileSync(BLOOM_FILTER_PATH, 'utf8'));
+      if (json.version && json.version !== '1.0.0') {
+        console.warn(`⚠️  Bloom filter version mismatch: expected 1.0.0, got ${json.version}. Rebuild with: npm run bloom:build`);
+        return null;
+      }
+      return BloomFilter.fromJSON(json);
+    } catch (e) {
+      console.warn('⚠️  Failed to load bloom filter:', e.message);
+      return null;
+    }
   }
 
   /**
@@ -214,9 +224,9 @@ async function buildMemexBloomFilter() {
 
   for (const file of sessionFiles) {
     const fullPath = path.join(MEMEX_PATH, file);
-    const index = JSON.parse(fs.readFileSync(fullPath, 'utf8'));
+    const index = readJSON(fullPath);
 
-    if (!index.sessions) continue;
+    if (!index || !index.sessions) continue;
 
     for (const session of index.sessions) {
       totalSessions++;
