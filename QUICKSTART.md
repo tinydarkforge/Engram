@@ -143,7 +143,7 @@ node ~/code/Memex/scripts/remember.js \
 node ~/code/Memex/scripts/remember.js --interactive
 
 # Prompts:
-# 📝 Recuerda - Save session for CirrusTranslate
+# 📝 Remember - Save session for CirrusTranslate
 #
 # Summary (1-2 sentences): Added OAuth2 authentication with Google
 # Topics (comma-separated): auth,oauth,google

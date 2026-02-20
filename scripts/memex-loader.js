@@ -30,7 +30,7 @@ class Memex {
     // Persistent cache for instant cold starts (gracefully degrade if unavailable)
     try {
       this.persistentCache = new PersistentCache({
-        version: '3.3.0',
+        version: '4.0.0',
         ttl: 60 * 60 * 1000 // 60 minutes
       });
     } catch (e) {
@@ -660,7 +660,7 @@ if (require.main === module) {
         break;
 
       default:
-        console.log('Memex Loader v2.0 - Token-optimized knowledge base');
+        console.log('Memex v4.0.0 - Token-optimized knowledge base');
         console.log('');
         console.log('Usage: memex-loader.js [command] [args]');
         console.log('');
