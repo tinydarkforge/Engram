@@ -212,10 +212,27 @@ function queryConcept(concept) {
 
 async function crossProjectSearch(query, limit = 20) {
   try {
-    const NeuralMemory = require('./neural-memory.js');
-    const neural = new NeuralMemory();
-    const result = await neural.crossProject(query, { limit, groupByProject: true });
-    return result;
+    const GitIndexer = require('./index-git.js');
+    const indexer = new GitIndexer();
+    const result = await indexer.query(query, { limit });
+
+    if (result.error) {
+      return { error: result.error };
+    }
+
+    const grouped = {};
+    for (const item of result.results || []) {
+      if (!grouped[item.project]) {
+        grouped[item.project] = [];
+      }
+      grouped[item.project].push(item);
+    }
+
+    return {
+      query,
+      total: result.total || 0,
+      by_project: grouped
+    };
   } catch (e) {
     return { error: e.message };
   }

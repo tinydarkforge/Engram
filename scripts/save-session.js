@@ -10,7 +10,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { execSync } = require('child_process');
+const { execFileSync } = require('child_process');
 const readline = require('readline');
 
 const MEMEX_PATH = process.env.MEMEX_PATH || path.join(process.env.HOME, 'code/cirrus/DevOps/Memex');
@@ -32,10 +32,16 @@ class Recuerda {
    * Generate session ID
    */
   generateSessionId(topics) {
-    const date = new Date().toISOString().split('T')[0];
+    const now = new Date();
+    const date = now.toISOString().split('T')[0];
+    const time = now.toISOString().slice(11, 16).replace(':', '');
     const projectPrefix = this.currentProject.substring(0, 2).toLowerCase();
-    const topicSlug = topics[0] || 'session';
-    return `${projectPrefix}-${date}-${topicSlug}`;
+    const topicSlug = (topics[0] || 'session')
+      .toLowerCase()
+      .replace(/[^a-z0-9-_]/g, '')
+      .slice(0, 24) || 'session';
+    const nonce = Math.random().toString(36).slice(2, 6);
+    return `${projectPrefix}-${date}-${time}-${topicSlug}-${nonce}`;
   }
 
   /**
@@ -43,8 +49,8 @@ class Recuerda {
    */
   getGitChanges() {
     try {
-      const status = execSync('git status --short', { encoding: 'utf8' });
-      const diff = execSync('git diff --stat', { encoding: 'utf8' });
+      const status = execFileSync('git', ['status', '--short'], { encoding: 'utf8' });
+      const diff = execFileSync('git', ['diff', '--stat'], { encoding: 'utf8' });
 
       const files = {
         added: [],
@@ -79,7 +85,7 @@ class Recuerda {
   /**
    * Save session
    */
-  async saveSession(summary, topics, fullContent = null) {
+  async saveSession(summary, topics, fullContent = null, options = {}) {
     const sessionId = this.generateSessionId(topics);
     const date = new Date().toISOString().split('T')[0];
     const yearMonth = date.substring(0, 7); // YYYY-MM
@@ -171,7 +177,7 @@ class Recuerda {
     this.updateMainIndex();
 
     // Commit to git
-    this.commitToGit(sessionId);
+    this.commitToGit(sessionId, { push: options.push === true });
 
     return {
       session_id: sessionId,
@@ -230,18 +236,27 @@ class Recuerda {
   /**
    * Commit changes to git
    */
-  commitToGit(sessionId) {
+  commitToGit(sessionId, options = {}) {
+    const { push = false } = options;
     try {
-      execSync('git add .', { cwd: MEMEX_PATH });
-      execSync(
-        `git commit -m "chore(memex): add session ${sessionId}" || true`,
-        { cwd: MEMEX_PATH }
-      );
+      const pathsToAdd = ['index.json'];
+      const projectSummariesPath = path.join('summaries', 'projects', this.currentProject);
+      if (fs.existsSync(path.join(MEMEX_PATH, projectSummariesPath))) {
+        pathsToAdd.push(projectSummariesPath);
+      }
+      const projectContentPath = path.join('content', 'projects', this.currentProject);
+      if (fs.existsSync(path.join(MEMEX_PATH, projectContentPath))) {
+        pathsToAdd.push(projectContentPath);
+      }
+
+      execFileSync('git', ['add', ...pathsToAdd], { cwd: MEMEX_PATH });
+      execFileSync('git', ['commit', '-m', `chore(memex): add session ${sessionId}`], { cwd: MEMEX_PATH });
       console.log('✓ Changes committed to Memex');
 
-      // Push in background (don't wait)
-      execSync('git push origin main &', { cwd: MEMEX_PATH, stdio: 'ignore' });
-      console.log('✓ Pushing to remote (background)...');
+      if (push) {
+        execFileSync('git', ['push', 'origin', 'main'], { cwd: MEMEX_PATH, stdio: 'inherit' });
+        console.log('✓ Pushed to remote');
+      }
     } catch (e) {
       console.warn('⚠ Could not commit to git:', e.message);
     }
@@ -298,11 +313,12 @@ if (require.main === module) {
     } else {
       const summary = args[0];
       const topicsIndex = args.indexOf('--topics');
-      const topics = topicsIndex > -1
+      const topics = topicsIndex > -1 && args[topicsIndex + 1]
         ? args[topicsIndex + 1].split(',').map(t => t.trim())
         : [];
+      const push = args.includes('--push');
 
-      recuerda.saveSession(summary, topics).then(result => {
+      recuerda.saveSession(summary, topics, null, { push }).then(result => {
         console.log(`✅ Session saved: ${result.session_id}`);
       });
     }

@@ -10,7 +10,7 @@
  *   remember --interactive         # Prompts for everything
  */
 
-const { execSync } = require('child_process');
+const { execFileSync } = require('child_process');
 const path = require('path');
 const fs = require('fs');
 
@@ -71,7 +71,7 @@ function shouldUpdateRecent(topics, files) {
 function autoCapture() {
   try {
     // Check git status
-    const status = execSync('git status --short', { encoding: 'utf8' }).trim();
+    const status = execFileSync('git', ['status', '--short'], { encoding: 'utf8' }).trim();
 
     if (!status) {
       console.log('📭 No changes detected to capture.');
@@ -88,7 +88,7 @@ function autoCapture() {
     // Get git diff summary
     let diffSummary = '';
     try {
-      diffSummary = execSync('git diff --stat HEAD', { encoding: 'utf8' }).trim();
+      diffSummary = execFileSync('git', ['diff', '--stat', 'HEAD'], { encoding: 'utf8' }).trim();
     } catch (e) {
       // Might be untracked files
       diffSummary = `${files.length} files changed`;
@@ -137,11 +137,13 @@ function autoCapture() {
     console.log('');
 
     // Build command
-    const topicsArg = topics.size > 0 ? `--topics ${Array.from(topics).slice(0, 8).join(',')}` : '';
-    const command = `node "${SAVE_SESSION}" "${summary}" ${topicsArg}`;
+    const cmdArgs = [SAVE_SESSION, summary];
+    if (topics.size > 0) {
+      cmdArgs.push('--topics', Array.from(topics).slice(0, 8).join(','));
+    }
 
     // Execute
-    execSync(command, {
+    execFileSync(process.execPath, cmdArgs, {
       stdio: 'inherit',
       cwd: process.cwd()
     });
@@ -162,8 +164,7 @@ function smartCapture(summary) {
 
   if (hasTopics) {
     // User provided topics, pass through
-    const args = process.argv.slice(2).join(' ');
-    execSync(`node "${SAVE_SESSION}" ${args}`, {
+    execFileSync(process.execPath, [SAVE_SESSION, ...process.argv.slice(2)], {
       stdio: 'inherit',
       cwd: process.cwd()
     });
@@ -185,7 +186,7 @@ function smartCapture(summary) {
 
   // Get git context for more topics
   try {
-    const files = execSync('git status --short', { encoding: 'utf8' })
+    const files = execFileSync('git', ['status', '--short'], { encoding: 'utf8' })
       .trim()
       .split('\n')
       .map(line => line.replace(/^\s*[MADRCU?]+\s+/, ''))
@@ -210,8 +211,11 @@ function smartCapture(summary) {
 
   console.log(`💡 Auto-detected topics: ${topicsList || 'none'}\n`);
 
-  const args = `"${summary}" ${topicsArg}`;
-  execSync(`node "${SAVE_SESSION}" ${args}`, {
+  const cmdArgs = [SAVE_SESSION, summary];
+  if (topicsList) {
+    cmdArgs.push('--topics', topicsList);
+  }
+  execFileSync(process.execPath, cmdArgs, {
     stdio: 'inherit',
     cwd: process.cwd()
   });
@@ -239,11 +243,13 @@ function gitHookAutoCapture() {
   console.log(`   Commit: ${commit?.substring(0, 7) || 'unknown'}`);
   console.log(`   Changes: +${linesAdded}/-${linesRemoved}`);
 
-  const topicsArg = topics ? `--topics ${topics}` : '';
-  const args = `"${summary}" ${topicsArg}`;
+  const cmdArgs = [SAVE_SESSION, summary];
+  if (topics) {
+    cmdArgs.push('--topics', topics);
+  }
 
   try {
-    execSync(`node "${SAVE_SESSION}" ${args}`, {
+    execFileSync(process.execPath, cmdArgs, {
       stdio: 'inherit',
       cwd: process.cwd()
     });
@@ -265,7 +271,7 @@ try {
     autoCapture();
   } else if (args[0] === '--interactive' || args[0] === '-i') {
     // Interactive mode
-    execSync(`node "${SAVE_SESSION}" ${args.join(' ')}`, {
+    execFileSync(process.execPath, [SAVE_SESSION, ...args], {
       stdio: 'inherit',
       cwd: process.cwd()
     });
@@ -274,7 +280,7 @@ try {
     smartCapture(args[0]);
   } else {
     // Full control: pass through
-    execSync(`node "${SAVE_SESSION}" ${args.join(' ')}`, {
+    execFileSync(process.execPath, [SAVE_SESSION, ...args], {
       stdio: 'inherit',
       cwd: process.cwd()
     });
