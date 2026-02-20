@@ -1,4 +1,4 @@
-# Memex v4.0
+# Memex v4.0.0
 
 **Extended Memory for AI assistant - 94-98% Token Savings**
 
