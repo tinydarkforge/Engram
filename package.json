@@ -4,6 +4,7 @@
   "description": "Memex - Persistent memory system across projects",
   "main": "scripts/memex-loader.js",
   "scripts": {
+    "start": "node scripts/server.js",
     "startup": "node scripts/memex-loader.js startup",
     "test": "node --test tests/*.test.js",
     "manifest": "node scripts/manifest-manager.js generate",
