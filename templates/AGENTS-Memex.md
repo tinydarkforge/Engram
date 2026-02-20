@@ -6,7 +6,7 @@
 - **Branches:** main(prod) → staging(QA) → develop(dev) → feature/*
 
 ## Memex
-- **About:** Extended memory system for Claude - token-optimized knowledge base
+- **About:** Extended memory system for AI assistants - token-optimized knowledge base
 - **Tech:** Node.js, JavaScript
 
 
@@ -17,8 +17,8 @@
 
 ## Deep Queries
 ```bash
-node ~/code/cirrus/DevOps/Memex/scripts/memex-loader.js quick "<query>"
+node ~/code/Memex/scripts/memex-loader.js quick "<query>"
 ```
 
 ---
-*Token-optimized. Full Memex: ~/code/cirrus/DevOps/Memex*
+*Token-optimized. Full Memex: ~/code/Memex*

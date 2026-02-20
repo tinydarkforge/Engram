@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * Recuerda - Save Claude session to Memex
+ * Recuerda - Save AI assistant session to Memex
  *
  * Usage:
  *   recuerda "Implemented OAuth2 authentication" --topics auth,oauth,google
@@ -12,8 +12,9 @@ const fs = require('fs');
 const path = require('path');
 const { execFileSync } = require('child_process');
 const readline = require('readline');
+const { resolveMemexPath } = require('./paths');
 
-const MEMEX_PATH = process.env.MEMEX_PATH || path.join(process.env.HOME, 'code/cirrus/DevOps/Memex');
+const MEMEX_PATH = resolveMemexPath(__dirname);
 
 class Recuerda {
   constructor() {
@@ -24,7 +25,7 @@ class Recuerda {
     this.currentProject = detection.project;
 
     if (!this.currentProject) {
-      throw new Error('Could not detect current project. Are you in a Cirrus repository?');
+      throw new Error('Could not detect current project from git remote, package.json, or directory.');
     }
   }
 

@@ -14,8 +14,9 @@ const Database = require('better-sqlite3');
 const path = require('path');
 const fs = require('fs');
 const msgpack = require('msgpack-lite');
+const { resolveMemexPath } = require('./paths');
 
-const MEMEX_PATH = process.env.MEMEX_PATH || path.join(process.env.HOME, 'code/cirrus/DevOps/Memex');
+const MEMEX_PATH = resolveMemexPath(__dirname);
 const CACHE_DB_PATH = path.join(MEMEX_PATH, '.cache', 'memex.db');
 const DEFAULT_TTL = 60 * 60 * 1000; // 60 minutes in milliseconds
 const DEFAULT_MAX_ENTRIES = 1000; // Maximum number of cache entries (LRU eviction)

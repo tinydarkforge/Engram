@@ -1,6 +1,6 @@
 # Systemwide Codebase Analysis & EPIC Preparation Prompt
 
-> **Use this prompt to have Claude perform a comprehensive codebase analysis and create an EPIC for platform evolution.**
+> **Use this prompt to have AI assistant perform a comprehensive codebase analysis and create an EPIC for platform evolution.**
 >
 > **Last used:** December 12, 2025 - Created issue #570 for DemoProject
 > **Duration:** ~2-3 hours autonomous work
@@ -151,6 +151,6 @@ Add specific focus areas if needed:
 ## Tips
 
 - Run this when you'll be away for 2-3 hours
-- Works best with Claude Code's autonomous mode
+- Works best with AI assistant Code's autonomous mode
 - The analysis is thorough - expect detailed findings
 - Follow up with "decompose the EPIC into GitHub issues" to create actionable tasks

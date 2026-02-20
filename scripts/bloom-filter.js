@@ -22,8 +22,9 @@
 const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
+const { resolveMemexPath } = require('./paths');
 
-const MEMEX_PATH = process.env.MEMEX_PATH || path.join(process.env.HOME, 'code/cirrus/DevOps/Memex');
+const MEMEX_PATH = resolveMemexPath(__dirname);
 const BLOOM_FILTER_PATH = path.join(MEMEX_PATH, '.cache', 'bloom-filter.json');
 
 class BloomFilter {

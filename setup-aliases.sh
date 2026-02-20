@@ -14,8 +14,8 @@ echo "Setting up Memex aliases in $SHELL_RC..."
 if ! grep -q "MEMEX=" "$SHELL_RC"; then
   cat >> "$SHELL_RC" << 'EOF'
 
-# Memex - Claude's Shared Memory
-export MEMEX="$HOME/code/cirrus/DevOps/Memex"
+# Memex - AI assistant's Shared Memory
+export MEMEX="${MEMEX_PATH:-$HOME/code/Memex}"
 alias memex='node $MEMEX/scripts/memex-loader.js'
 alias save-session='node $MEMEX/scripts/save-session.js'
 EOF

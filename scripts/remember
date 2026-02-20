@@ -13,8 +13,9 @@
 const { execFileSync } = require('child_process');
 const path = require('path');
 const fs = require('fs');
+const { resolveMemexPath } = require('./paths');
 
-const MEMEX_PATH = process.env.MEMEX_PATH || path.join(process.env.HOME, 'code/cirrus/DevOps/Memex');
+const MEMEX_PATH = resolveMemexPath(__dirname);
 const SAVE_SESSION = path.join(MEMEX_PATH, 'scripts', 'save-session.js');
 
 /**
