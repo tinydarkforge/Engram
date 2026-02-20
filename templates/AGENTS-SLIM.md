@@ -13,8 +13,8 @@
 ## Deep Queries
 For project history, past decisions, or cross-project knowledge:
 ```bash
-node ~/code/cirrus/DevOps/Memex/scripts/memex-loader.js quick "<query>"
+node ~/code/Memex/scripts/memex-loader.js quick "<query>"
 ```
 
 ---
-*Token-optimized context. Full Memex: ~/code/cirrus/DevOps/Memex*
+*Token-optimized context. Full Memex: ~/code/Memex*

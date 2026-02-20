@@ -1,12 +1,12 @@
 # What is Memex?
 
-> A simple guide to understanding Memex - Claude's memory system.
+> A simple guide to understanding Memex - AI assistant's memory system.
 
 ---
 
 ## The Problem
 
-Every time you start a new Claude session, Claude forgets everything from before. You have to explain the same things again and again:
+Every time you start a new AI assistant session, AI assistant forgets everything from before. You have to explain the same things again and again:
 
 - "What's our commit format?"
 - "How do we deploy?"
@@ -19,34 +19,34 @@ Every time you start a new Claude session, Claude forgets everything from before
 
 ## The Solution: Memex
 
-**Memex is a "memory system" for Claude.**
+**Memex is a "memory system" for AI assistant.**
 
-Think of it like a notebook. Before Memex, Claude woke up with amnesia every day. After Memex, Claude reads the notebook first and knows the rules + history.
+Think of it like a notebook. Before Memex, AI assistant woke up with amnesia every day. After Memex, AI assistant reads the notebook first and knows the rules + history.
 
 ### What Memex Does
 
-1. **CLAUDE.md files** - Instructions that Claude reads automatically when starting
-   - `~/.claude/CLAUDE.md` = Global rules (all projects)
-   - `project/.claude/CLAUDE.md` = Project-specific rules
+1. **AGENTS.md files** - Instructions that AI assistant reads automatically when starting
+   - `~/.agents/AGENTS.md` = Global rules (all projects)
+   - `project/.agents/AGENTS.md` = Project-specific rules
 
 2. **Session memory** - When we finish working, we save what we did to Memex
 
-3. **Smart search** - Claude can search past sessions to find how we solved problems before
+3. **Smart search** - AI assistant can search past sessions to find how we solved problems before
 
 ---
 
 ## How It Works
 
-### When You Start Claude Code
+### When You Start AI assistant Code
 
 ```
-1. Claude wakes up
-2. Claude reads ~/.claude/CLAUDE.md (global rules)
-3. Claude reads project/.claude/CLAUDE.md (project rules)
-4. NOW Claude is ready to help you
+1. AI assistant wakes up
+2. AI assistant reads ~/.agents/AGENTS.md (global rules)
+3. AI assistant reads project/.agents/AGENTS.md (project rules)
+4. NOW AI assistant is ready to help you
 ```
 
-So when you ask something, Claude **already knows**:
+So when you ask something, AI assistant **already knows**:
 - Commit format (`feat:`, `fix:`, etc.)
 - Branch naming (`feature/`, `fix/`, etc.)
 - Workflows (assign issues, update reports, etc.)
@@ -60,11 +60,11 @@ So when you ask something, Claude **already knows**:
 └─────────────────┬───────────────────────┘
                   ▼
 ┌─────────────────────────────────────────┐
-│  📖 Reads CLAUDE.md files automatically │  ← Always happens
+│  📖 Reads AGENTS.md files automatically │  ← Always happens
 └─────────────────┬───────────────────────┘
                   ▼
 ┌─────────────────────────────────────────┐
-│  🧠 Claude now knows the rules          │
+│  🧠 AI assistant now knows the rules          │
 └─────────────────┬───────────────────────┘
                   ▼
 ┌─────────────────────────────────────────┐
@@ -72,12 +72,12 @@ So when you ask something, Claude **already knows**:
 └─────────────────────────────────────────┘
 ```
 
-### What Claude Does NOT Read Automatically
+### What AI assistant Does NOT Read Automatically
 
-The **session history** (past conversations) - Claude only searches those when you ask:
+The **session history** (past conversations) - AI assistant only searches those when you ask:
 
 ```bash
-node ~/code/cirrus/DevOps/Memex/scripts/neural-memory.js query "how did we fix X"
+node ~/code/Memex/scripts/neural-memory.js query "how did we fix X"
 ```
 
 ---
@@ -92,7 +92,7 @@ node ~/code/cirrus/DevOps/Memex/scripts/neural-memory.js query "how did we fix X
 | Explain project structure (~500 tokens) | Already knows (0 tokens) |
 | Explain workflows (~200 tokens) | Already knows (0 tokens) |
 | Explain deployment process (~300 tokens) | Already knows (0 tokens) |
-| **~1,100 tokens wasted per session** | **~200 tokens (CLAUDE.md load)** |
+| **~1,100 tokens wasted per session** | **~200 tokens (AGENTS.md load)** |
 
 **Savings: ~900 tokens per session = ~80% reduction in repeated context**
 
@@ -105,7 +105,7 @@ Over 100 sessions = 90,000 tokens saved
 |------|---------------|------------|
 | Explain standards | 2-5 minutes | 0 minutes |
 | Find past solution | 10-30 minutes searching | 30 seconds (neural search) |
-| Onboard new Claude session | 5-10 minutes | Instant |
+| Onboard new AI assistant session | 5-10 minutes | Instant |
 | Remember what we did last week | Manual notes | `remember` command |
 
 **Average time saved: 15-30 minutes per session**
@@ -124,7 +124,7 @@ Over 100 sessions = 90,000 tokens saved
 - Sessions are saved with `remember` command
 - Past solutions can be searched semantically
 - Team knowledge is not lost when people forget
-- New team members (or Claude sessions) can access history
+- New team members (or AI assistant sessions) can access history
 
 ---
 
@@ -133,25 +133,25 @@ Over 100 sessions = 90,000 tokens saved
 ### Save What You Did
 
 ```bash
-~/code/cirrus/DevOps/Memex/scripts/remember "what you did" --topics tag1,tag2
+~/code/Memex/scripts/remember "what you did" --topics tag1,tag2
 ```
 
 ### Search Past Sessions
 
 ```bash
-node ~/code/cirrus/DevOps/Memex/scripts/neural-memory.js query "your question"
+node ~/code/Memex/scripts/neural-memory.js query "your question"
 ```
 
 ### Get Project Context
 
 ```bash
-node ~/code/cirrus/DevOps/Memex/scripts/neural-memory.js bundle <ProjectName>
+node ~/code/Memex/scripts/neural-memory.js bundle <ProjectName>
 ```
 
 ### Deploy to All Repos
 
 ```bash
-node ~/code/cirrus/DevOps/Memex/scripts/deploy-neural.js
+node ~/code/Memex/scripts/deploy-neural.js
 ```
 
 ---
@@ -159,10 +159,10 @@ node ~/code/cirrus/DevOps/Memex/scripts/deploy-neural.js
 ## Architecture
 
 ```
-~/.claude/CLAUDE.md                    ← Global rules (all projects)
-~/code/cirrus/X/.claude/CLAUDE.md      ← Project-specific rules
+~/.agents/AGENTS.md                    ← Global rules (all projects)
+~/code/<project>/.agents/AGENTS.md      ← Project-specific rules
 
-~/code/cirrus/DevOps/Memex/
+~/code/Memex/
 ├── .neural/
 │   ├── embeddings.msgpack             # Sessions as vectors (for search)
 │   ├── graph.msgpack                  # Concepts linked together
@@ -179,9 +179,9 @@ node ~/code/cirrus/DevOps/Memex/scripts/deploy-neural.js
 
 ## Simple Analogy for Non-Technical People
 
-> **Memex is like giving Claude a company handbook.**
+> **Memex is like giving AI assistant a company handbook.**
 >
-> Before: Every new employee (Claude session) starts on day 1 knowing nothing.
+> Before: Every new employee (AI assistant session) starts on day 1 knowing nothing.
 >
 > After: Every new employee reads the handbook first and knows all the rules, processes, and even some history of past projects.
 

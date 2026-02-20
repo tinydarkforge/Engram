@@ -19,8 +19,8 @@
 
 ## Deep Queries
 ```bash
-node ~/code/cirrus/DevOps/Memex/scripts/memex-loader.js quick "<query>"
+node ~/code/Memex/scripts/memex-loader.js quick "<query>"
 ```
 
 ---
-*Token-optimized. Full Memex: ~/code/cirrus/DevOps/Memex*
+*Token-optimized. Full Memex: ~/code/Memex*

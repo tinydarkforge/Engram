@@ -16,8 +16,9 @@
 const fs = require('fs');
 const path = require('path');
 const { glob } = require('glob');
+const { resolveMemexPath } = require('./paths');
 
-const MEMEX_PATH = process.env.MEMEX_PATH || path.join(process.env.HOME, 'code/cirrus/DevOps/Memex');
+const MEMEX_PATH = resolveMemexPath(__dirname);
 
 class LazyLoader {
   /**

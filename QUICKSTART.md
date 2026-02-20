@@ -8,7 +8,7 @@ Get Memex running in 5 minutes.
 
 ```bash
 # Make scripts executable
-cd ~/code/cirrus/DevOps/Memex
+cd ~/code/Memex
 chmod +x scripts/*.js scripts/*.sh
 
 # Test it works
@@ -35,8 +35,8 @@ Expected output:
 Memex auto-detects projects from git remote. No configuration needed!
 
 ```bash
-cd ~/code/cirrus/CirrusTranslate
-node ~/code/cirrus/DevOps/Memex/scripts/memex-loader.js startup
+cd ~/code/MyProject
+node ~/code/Memex/scripts/memex-loader.js startup
 
 # Output:
 # ✅ Memex Ready (92ms)
@@ -45,12 +45,12 @@ node ~/code/cirrus/DevOps/Memex/scripts/memex-loader.js startup
 
 ### Option B: Manual Config
 
-Create `.claude/memex.json`:
+Create `.agents/memex.json`:
 
 ```json
 {
   "enabled": true,
-  "memex_path": "~/code/cirrus/DevOps/Memex"
+  "memex_path": "~/code/Memex"
 }
 ```
 
@@ -61,10 +61,10 @@ Create `.claude/memex.json`:
 ### Query Memex
 
 ```bash
-# From any Cirrus project directory
+# From any project directory
 
 # Quick answers (from index only - instant)
-node ~/code/cirrus/DevOps/Memex/scripts/memex-loader.js quick "commit format"
+node ~/code/Memex/scripts/memex-loader.js quick "commit format"
 
 # Output:
 {
@@ -78,7 +78,7 @@ node ~/code/cirrus/DevOps/Memex/scripts/memex-loader.js quick "commit format"
 }
 
 # Real-world example - check PR requirements
-node ~/code/cirrus/DevOps/Memex/scripts/memex-loader.js quick "pr"
+node ~/code/Memex/scripts/memex-loader.js quick "pr"
 
 # Output:
 {
@@ -91,7 +91,7 @@ node ~/code/cirrus/DevOps/Memex/scripts/memex-loader.js quick "pr"
 ### Search Projects
 
 ```bash
-node ~/code/cirrus/DevOps/Memex/scripts/memex-loader.js search auth
+node ~/code/Memex/scripts/memex-loader.js search auth
 
 # Output:
 [
@@ -107,7 +107,7 @@ node ~/code/cirrus/DevOps/Memex/scripts/memex-loader.js search auth
 ### List Projects
 
 ```bash
-node ~/code/cirrus/DevOps/Memex/scripts/memex-loader.js list
+node ~/code/Memex/scripts/memex-loader.js list
 
 # Output:
 [
@@ -126,10 +126,10 @@ node ~/code/cirrus/DevOps/Memex/scripts/memex-loader.js list
 ## Step 4: Save Your First Session
 
 ```bash
-cd ~/code/cirrus/CirrusTranslate
+cd ~/code/MyProject
 
 # Quick save
-node ~/code/cirrus/DevOps/Memex/scripts/remember.js \
+node ~/code/Memex/scripts/remember.js \
   "Set up Memex memory system" \
   --topics memex,setup,memory
 
@@ -140,7 +140,7 @@ node ~/code/cirrus/DevOps/Memex/scripts/remember.js \
 ### Interactive Mode
 
 ```bash
-node ~/code/cirrus/DevOps/Memex/scripts/remember.js --interactive
+node ~/code/Memex/scripts/remember.js --interactive
 
 # Prompts:
 # 📝 Recuerda - Save session for CirrusTranslate
@@ -166,7 +166,7 @@ Add to `~/.zshrc` or `~/.bashrc`:
 
 ```bash
 # Memex shortcuts
-export MEMEX_PATH="$HOME/code/cirrus/DevOps/Memex"
+export MEMEX_PATH="$HOME/code/Memex"
 alias memex='node $MEMEX_PATH/scripts/memex-loader.js'
 alias remember='node $MEMEX_PATH/scripts/remember.js'
 
@@ -188,7 +188,7 @@ remember "Your work summary" --topics tag1,tag2
 ### Example 1: After Fixing a Bug
 
 ```bash
-cd ~/code/cirrus/CirrusTranslate
+cd ~/code/MyProject
 
 # You just fixed a Docker deployment bug
 ./scripts/remember "Fixed Prisma deployment failure - moved CLI to dependencies" \
@@ -205,7 +205,7 @@ cd ~/code/cirrus/CirrusTranslate
 ### Example 2: After Implementing a Feature
 
 ```bash
-cd ~/code/cirrus/CirrusTranslate
+cd ~/code/MyProject
 
 # You just added OAuth2 authentication
 ./scripts/remember --interactive
@@ -260,7 +260,7 @@ memex search "docker optimization"
 
 ```bash
 # Working on a new project, need to see how you handled auth before
-cd ~/code/cirrus/NewProject
+cd ~/code/NewProject
 
 memex search "authentication"
 
@@ -323,19 +323,19 @@ remember --interactive
 
 ---
 
-## How Claude Uses It
+## How AI assistant Uses It
 
-When you start Claude in any Cirrus project:
+When you start AI assistant in any Cirrus project:
 
 ```
-1. [10ms] Claude detects project from git remote
+1. [10ms] AI assistant detects project from git remote
 2. [50ms] Loads Memex index.json (5KB)
 3. [40ms] Loads project metadata (2KB)
-4. [Ready] Claude has full context
+4. [Ready] AI assistant has full context
 
 Total: 87ms, 7KB loaded
 
-Now Claude knows:
+Now AI assistant knows:
 ✓ All global standards (commit, PR, branching, code)
 ✓ Current project (tech stack, architecture, conventions)
 ✓ All available projects
@@ -348,13 +348,13 @@ Most questions answered from index alone - no file loading needed!
 
 ## Example Workflows
 
-### Workflow 1: Start Working on CirrusTranslate
+### Workflow 1: Start Working on a Project
 
 ```bash
-cd ~/code/cirrus/CirrusTranslate
-claude
+cd ~/code/MyProject
+your-agent-cli
 
-# Claude auto-loads Memex
+# AI assistant auto-loads Memex
 # You can now ask:
 # - "What's our commit format?"
 # - "What environments do we have?"
@@ -365,17 +365,17 @@ claude
 ### Workflow 2: Learn from Another Project
 
 ```bash
-cd ~/code/cirrus/NewProject
+cd ~/code/NewProject
 
-# Ask Claude:
-"How did we implement authentication in CirrusAuth?"
+# Ask AI assistant:
+"How did we implement authentication in ProjectAuth?"
 
-# Claude:
-# 1. Checks index → CirrusAuth has 'auth' topic
-# 2. Loads CirrusAuth sessions-index.json
+# AI assistant:
+# 1. Checks index → ProjectAuth has 'auth' topic
+# 2. Loads ProjectAuth sessions-index.json
 # 3. Finds OAuth2 session
 # 4. Loads that specific session if needed
-# 5. Answers with context from CirrusAuth
+# 5. Answers with context from ProjectAuth
 ```
 
 ### Workflow 3: Save Session After Work
@@ -433,7 +433,7 @@ remember "Did X" --topics x,y,z
 remember --interactive
 
 # View saved sessions
-cat ~/code/cirrus/DevOps/Memex/summaries/projects/CirrusTranslate/sessions-index.json | jq '.sessions[0]'
+cat ~/code/Memex/summaries/projects/CirrusTranslate/sessions-index.json | jq '.sessions[0]'
 ```
 
 ---
@@ -448,7 +448,7 @@ memex startup
 # Should show: ✅ Memex Ready
 
 # 2. Project detection works
-cd ~/code/cirrus/CirrusTranslate
+cd ~/code/MyProject
 memex startup
 # Should show: Current Project: CirrusTranslate
 
@@ -464,7 +464,7 @@ remember "Test session" --topics test
 ### Check Files Created
 
 ```bash
-tree ~/code/cirrus/DevOps/Memex/
+tree ~/code/Memex/
 
 # Should see:
 # ├── index.json ✓
@@ -500,7 +500,7 @@ If slower than 200ms, check:
 
 **Solution:**
 1. Make sure you're in a git repository: `git remote -v`
-2. Or add `.claude/memex.json` with project name
+2. Or add `.agents/memex.json` with project name
 3. Or use directory name matching project in index.json
 
 ### "Memex index not found"
@@ -510,7 +510,7 @@ If slower than 200ms, check:
 **Solution:**
 ```bash
 # Check path
-ls ~/code/cirrus/DevOps/Memex/index.json
+ls ~/code/Memex/index.json
 
 # Set correct path
 export MEMEX_PATH="/correct/path/to/Memex"

@@ -6,7 +6,7 @@
 
 ## What is Memex?
 
-**Extended Memory for Claude** - A knowledge system that saves 94-98% on Claude API tokens by loading tiny indexes instead of full documentation.
+**Extended Memory for AI assistant** - A knowledge system that saves 94-98% on AI assistant API tokens by loading tiny indexes instead of full documentation.
 
 **Cost savings:** ~$35/month for typical usage
 
@@ -42,7 +42,7 @@ Instead of loading all your docs every time (500KB = 50,000 tokens):
 
 ```bash
 # 1. Test it works
-cd ~/code/cirrus/DevOps/Memex
+cd ~/code/Memex
 node scripts/memex-loader.js startup
 
 # 2. Save your first session

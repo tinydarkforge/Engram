@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * Deploy CLAUDE.md to all repos
+ * Deploy AGENTS.md to all repos
  *
  * Simple deployment - just the essentials:
  * - Standards (commit format, PR requirements)
@@ -15,22 +15,37 @@
 
 const fs = require('fs');
 const path = require('path');
+const { resolveMemexPath, resolveReposRoot } = require('./paths');
 
-const CIRRUS_PATH = path.join(process.env.HOME, 'code/cirrus');
+const MEMEX_PATH = resolveMemexPath(__dirname);
+const REPOS_ROOT = resolveReposRoot(MEMEX_PATH);
 
-// Repos to deploy to
-const REPOS = {
-  'CirrusTranslate': path.join(CIRRUS_PATH, 'CirrusTranslate'),
-  'translate.hellocirrus': path.join(CIRRUS_PATH, 'translatehellocirrus'),
-  'DevOps': path.join(CIRRUS_PATH, 'DevOps'),
-  'Memex': path.join(CIRRUS_PATH, 'DevOps/Memex'),
-  'MIRAGE': path.join(CIRRUS_PATH, 'MIRAGE'),
-  'Aither': path.join(CIRRUS_PATH, 'Aither'),
-  'CLEAR-Render': path.join(CIRRUS_PATH, 'CLEAR-Render'),
-  'FORGE': path.join(CIRRUS_PATH, 'FORGE')
-};
+function discoverRepos() {
+  const indexPath = path.join(MEMEX_PATH, 'index.json');
+  if (!fs.existsSync(indexPath)) return {};
 
-function generateClaudeMd(projectName) {
+  const index = JSON.parse(fs.readFileSync(indexPath, 'utf8'));
+  const repos = {};
+
+  for (const projectName of Object.keys(index.p || {})) {
+    const candidates = [
+      path.join(REPOS_ROOT, projectName),
+      path.join(REPOS_ROOT, projectName.replace(/\./g, '')),
+      path.join(REPOS_ROOT, projectName.toLowerCase()),
+    ];
+
+    const repoPath = candidates.find(p => fs.existsSync(path.join(p, '.git')));
+    if (repoPath) {
+      repos[projectName] = repoPath;
+    }
+  }
+
+  return repos;
+}
+
+const REPOS = discoverRepos();
+
+function generateAgentsMd(projectName) {
   const date = new Date().toISOString().split('T')[0];
 
   return `# ${projectName} Context
@@ -41,16 +56,16 @@ function generateClaudeMd(projectName) {
 - **Branches:** feature/, fix/, hotfix/, release/, chore/, docs/
 
 ## GitHub Issues
-- Assign to Pamperito74, move to "In Progress" when starting
-- Move to "Done", update \`docs/monthly/<MONTH>_<YEAR>.md\` when complete
+- Assign an owner and move to \`In Progress\` when starting
+- Move to \`Done\`, update project changelog/monthly notes when complete
 
 ## Commands
 \`\`\`bash
 # Search git history (semantic)
-node ~/code/cirrus/DevOps/Memex/scripts/neural-memory.js search "your question"
+node ${MEMEX_PATH}/scripts/neural-memory.js search "your question"
 
 # Save session note
-~/code/cirrus/DevOps/Memex/scripts/remember "what you did" --topics tag1,tag2
+${MEMEX_PATH}/scripts/remember "what you did" --topics tag1,tag2
 \`\`\`
 
 ---
@@ -59,7 +74,7 @@ node ~/code/cirrus/DevOps/Memex/scripts/neural-memory.js search "your question"
 }
 
 function deploy() {
-  console.log('🚀 Deploying CLAUDE.md to all repos...\n');
+  console.log('🚀 Deploying AGENTS.md to discovered repos...\n');
 
   let deployed = 0;
   let skipped = 0;
@@ -71,15 +86,9 @@ function deploy() {
       continue;
     }
 
-    const claudeDir = path.join(repoPath, '.claude');
-    const claudeMdPath = path.join(claudeDir, 'CLAUDE.md');
-
-    if (!fs.existsSync(claudeDir)) {
-      fs.mkdirSync(claudeDir, { recursive: true });
-    }
-
-    const content = generateClaudeMd(name);
-    fs.writeFileSync(claudeMdPath, content);
+    const agentsMdPath = path.join(repoPath, 'AGENTS.md');
+    const content = generateAgentsMd(name);
+    fs.writeFileSync(agentsMdPath, content);
 
     console.log(`✅ ${name}`);
     deployed++;
@@ -103,10 +112,10 @@ if (args.includes('--list')) {
   list();
 } else if (args.includes('--help')) {
   console.log(`
-Deploy CLAUDE.md to all repos
+Deploy AGENTS.md to discovered repos
 
 Usage:
-  node deploy-neural.js        Deploy to all repos
+  node deploy-neural.js        Deploy AGENTS.md to all repos
   node deploy-neural.js --list List target repos
 `);
 } else {

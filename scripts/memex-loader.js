@@ -2,7 +2,7 @@
 
 /**
  * Memex Loader v2.0
- * Efficiently loads Memex knowledge for Claude
+ * Efficiently loads Memex knowledge for AI assistant
  * Optimized for token efficiency and speed with abbreviated keys
  */
 
@@ -15,8 +15,9 @@ const PersistentCache = require('./persistent-cache');
 const ManifestManager = require('./manifest-manager');
 const VectorSearch = require('./vector-search');
 const BloomFilter = require('./bloom-filter');
+const { resolveMemexPath } = require('./paths');
 
-const MEMEX_PATH = process.env.MEMEX_PATH || path.join(process.env.HOME, 'code/cirrus/DevOps/Memex');
+const MEMEX_PATH = resolveMemexPath(__dirname);
 
 class Memex {
   constructor() {
@@ -64,7 +65,7 @@ class Memex {
 
   /**
    * PHASE 1: Load index (3-5KB, instant - 50% smaller than v1)
-   * This gives Claude awareness of everything without loading content
+   * This gives AI assistant awareness of everything without loading content
    * Supports MessagePack (37% smaller, 5x faster), gzip, and JSON formats
    * With persistent cache: 30ms → 5ms (6x faster cold starts!)
    */
@@ -159,7 +160,7 @@ class Memex {
       }).trim();
 
       // Extract project name from git URL
-      // git@github.com:Cirrus-Inc/CirrusTranslate.git → CirrusTranslate
+      // Example: git@github.com:org/repo.git → repo
       const match = gitRemote.match(/[:/]([^/]+)\.git$/);
       if (match) {
         const projectName = match[1];
@@ -199,7 +200,7 @@ class Memex {
 
   /**
    * PHASE 3: Load project metadata (2-5KB)
-   * Gives Claude full project context without loading sessions
+   * Gives AI assistant full project context without loading sessions
    */
   loadProjectMetadata(projectName = this.currentProject) {
     if (!projectName || !this.index.p[projectName]) {
@@ -504,7 +505,7 @@ class Memex {
 
   /**
    * Main startup sequence
-   * Returns everything Claude needs in one optimized payload
+   * Returns everything AI assistant needs in one optimized payload
    */
   startup() {
     const startTime = Date.now();
@@ -560,7 +561,7 @@ class Memex {
   }
 
   /**
-   * Generate startup message for Claude
+   * Generate startup message for AI assistant
    */
   getStartupMessage() {
     const result = this.startup();

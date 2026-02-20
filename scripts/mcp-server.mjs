@@ -3,7 +3,7 @@
 /**
  * Memex MCP Server
  *
- * Exposes Neural Memory as tools for Claude via Model Context Protocol.
+ * Exposes Neural Memory as tools for AI assistant via Model Context Protocol.
  *
  * Tools:
  *   - neural_search: Semantic search across all sessions
@@ -15,7 +15,7 @@
  * Usage:
  *   node mcp-server.js              # Start MCP server (stdio)
  *
- * Configure in Claude Code settings:
+ * Configure in AI assistant Code settings:
  *   "mcpServers": {
  *     "memex": {
  *       "command": "node",
@@ -41,8 +41,9 @@ import { createRequire } from 'module';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const require = createRequire(import.meta.url);
+const { resolveMemexPath } = require('./paths.js');
 
-const MEMEX_PATH = process.env.MEMEX_PATH || path.join(process.env.HOME, 'code/cirrus/DevOps/Memex');
+const MEMEX_PATH = resolveMemexPath(__dirname);
 
 // ─────────────────────────────────────────────────────────────
 // Helper Functions
