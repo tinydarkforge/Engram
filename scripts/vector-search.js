@@ -11,7 +11,6 @@
 
 const fs = require('fs');
 const path = require('path');
-const { pipeline } = require('@huggingface/transformers');
 
 const MEMEX_PATH = process.env.MEMEX_PATH || path.join(process.env.HOME, 'code/cirrus/DevOps/Memex');
 const EMBEDDINGS_PATH = path.join(MEMEX_PATH, '.cache', 'embeddings.json');
@@ -28,6 +27,7 @@ class VectorSearch {
    */
   async initialize() {
     if (!this.embedder) {
+      const { pipeline } = require('@huggingface/transformers');
       console.log('🧠 Loading embedding model (all-MiniLM-L6-v2)...');
       this.embedder = await pipeline(
         'feature-extraction',
