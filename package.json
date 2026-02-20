@@ -1,7 +1,7 @@
 {
-  "name": "@cirrus/memex",
+  "name": "memex",
   "version": "3.2.0",
-  "description": "Memex - Memory system for Claude across all Cirrus projects",
+  "description": "Memex - Persistent memory system across projects",
   "main": "scripts/memex-loader.js",
   "scripts": {
     "startup": "node scripts/memex-loader.js startup",
@@ -15,10 +15,10 @@
     "memex",
     "memory",
     "knowledge-base",
-    "claude",
+    "agent",
     "ai"
   ],
-  "author": "Cirrus Inc",
+  "author": "Memex Contributors",
   "license": "UNLICENSED",
   "private": true,
   "dependencies": {

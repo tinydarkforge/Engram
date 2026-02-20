@@ -123,7 +123,7 @@ Only deep dives need full details!
 ## Monthly Savings Calculator
 
 **Your usage:**
-- 100 Claude sessions/month
+- 100 AI assistant sessions/month
 - 5 Memex queries per session
 - = 500 queries/month
 

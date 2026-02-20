@@ -13,8 +13,9 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const { glob } = require('glob');
+const { resolveMemexPath } = require('./paths');
 
-const MEMEX_PATH = process.env.MEMEX_PATH || path.join(process.env.HOME, 'code/cirrus/DevOps/Memex');
+const MEMEX_PATH = resolveMemexPath(__dirname);
 const MANIFEST_PATH = path.join(MEMEX_PATH, '.memex-manifest.json');
 
 class ManifestManager {
