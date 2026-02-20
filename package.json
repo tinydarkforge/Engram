@@ -5,7 +5,7 @@
   "main": "scripts/memex-loader.js",
   "scripts": {
     "startup": "node scripts/memex-loader.js startup",
-    "test": "node scripts/memex-loader.js startup",
+    "test": "node --test tests/*.test.js",
     "manifest": "node scripts/manifest-manager.js generate",
     "bloom:build": "node scripts/bloom-filter.js build",
     "lazy:stats": "node scripts/lazy-loader.js stats",
