@@ -659,6 +659,98 @@ if (require.main === module) {
         console.log(JSON.stringify(legend, null, 2));
         break;
 
+      case 'status': {
+        const startTime = Date.now();
+        const indexResult = memex.loadIndex();
+        memex.detectProject();
+        const loadMs = Date.now() - startTime;
+
+        const issues = [];
+
+        // Version consistency check
+        const pkg = require('../package.json');
+        if (pkg.version !== memex.index.v) {
+          issues.push(`Version mismatch: package.json=${pkg.version}, index=${memex.index.v}`);
+        }
+
+        // Check for missing metadata files
+        for (const [name, proj] of Object.entries(memex.index.p)) {
+          const mfPath = path.join(MEMEX_PATH, proj.mf);
+          if (!fs.existsSync(mfPath)) {
+            issues.push(`Missing metadata: ${proj.mf} (project: ${name})`);
+          }
+        }
+
+        // Cache stats
+        let cacheStats = { total_entries: 0, database_size_kb: 0 };
+        try { cacheStats = memex.persistentCache.getStats(); } catch (e) { /* no cache */ }
+
+        // Bloom filter stats
+        let bloomStats = null;
+        try { if (memex.bloomFilter) bloomStats = memex.bloomFilter.getStats(); } catch (e) { /* no bloom */ }
+
+        // Vector search stats
+        let vectorStats = { total_embeddings: 0, file_size_kb: 0 };
+        try { vectorStats = memex.vectorSearch.getStats(); } catch (e) { /* no vectors */ }
+
+        // Per-project session counts
+        const projectStats = memex.listProjects().map(p => `    ${p.name}: ${p.session_count} sessions (last: ${p.last_updated || 'unknown'})`);
+
+        // Find last saved session across all projects
+        let lastSession = null;
+        for (const [name] of Object.entries(memex.index.p)) {
+          const sessions = memex.listSessions(name);
+          if (sessions.length > 0 && (!lastSession || sessions[0].date > lastSession.date)) {
+            lastSession = { ...sessions[0], project: name };
+          }
+        }
+
+        console.log(`Memex v${memex.index.v} Status`);
+        console.log('='.repeat(40));
+        console.log('');
+        console.log(`Version:        ${memex.index.v}`);
+        console.log(`Load time:      ${loadMs}ms`);
+        console.log(`Index format:   ${indexResult.format}`);
+        console.log(`Index size:     ${indexResult.size_kb}KB`);
+        console.log(`Total sessions: ${indexResult.total_sessions}`);
+        console.log(`Projects:       ${indexResult.projects.length}`);
+        console.log('');
+        console.log('Projects:');
+        projectStats.forEach(s => console.log(s));
+        console.log('');
+        console.log('Cache:');
+        console.log(`    Entries:  ${cacheStats.total_entries}`);
+        console.log(`    DB size:  ${cacheStats.database_size_kb}KB`);
+        if (bloomStats) {
+          console.log('');
+          console.log('Bloom Filter:');
+          console.log(`    Items:      ${bloomStats.items}`);
+          console.log(`    Size:       ${bloomStats.size_bytes} bytes`);
+          console.log(`    Fill ratio: ${bloomStats.fill_ratio}`);
+          console.log(`    Est. FPR:   ${bloomStats.actual_fpr}`);
+        }
+        console.log('');
+        console.log('Embeddings:');
+        console.log(`    Total:    ${vectorStats.total_embeddings}`);
+        console.log(`    Size:     ${vectorStats.file_size_kb}KB`);
+        if (lastSession) {
+          console.log('');
+          console.log(`Last session: ${lastSession.id}`);
+          console.log(`    Date:     ${lastSession.date}`);
+          console.log(`    Project:  ${lastSession.project}`);
+          console.log(`    Summary:  ${lastSession.summary}`);
+        }
+        if (issues.length > 0) {
+          console.log('');
+          console.log('Issues detected:');
+          issues.forEach(i => console.log(`    ! ${i}`));
+        } else {
+          console.log('');
+          console.log('No issues detected.');
+        }
+        break;
+      }
+
       default:
         console.log('Memex v4.0.0 - Token-optimized knowledge base');
         console.log('');
@@ -672,6 +764,7 @@ if (require.main === module) {
         console.log('  quick <query>      - Quick answer from index');
         console.log('  content <file>     - Load specific content file');
         console.log('  expand [context]   - Show legend for abbreviated keys');
+        console.log('  status             - Health check and diagnostics');
     }
   } catch (error) {
     console.error('Error:', error.message);
