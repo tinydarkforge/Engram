@@ -152,4 +152,4 @@ async function connect(options = {}) {
   }
 }
 
-module.exports = { connect, createStub };
+module.exports = { connect, createStub, request, AGENT_ID };
