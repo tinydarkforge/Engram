@@ -1,11 +1,13 @@
 #!/usr/bin/env node
 
 /**
- * Recuerda - Save AI assistant session to Memex
+ * Save Session - Save AI assistant session to Memex
  *
  * Usage:
- *   recuerda "Implemented OAuth2 authentication" --topics auth,oauth,google
- *   recuerda --interactive  (prompts for summary and topics)
+ *   save-session "Implemented OAuth2 authentication" --topics auth,oauth,google
+ *   save-session "Summary" --topics auth --commit        (also git commit)
+ *   save-session "Summary" --topics auth --commit --push (commit + push)
+ *   save-session --interactive                           (prompts for everything)
  */
 
 const fs = require('fs');
@@ -16,7 +18,7 @@ const { resolveMemexPath } = require('./paths');
 
 const MEMEX_PATH = resolveMemexPath(__dirname);
 
-class Recuerda {
+class SessionSaver {
   constructor() {
     this.memex = require('./memex-loader');
     this.loader = new this.memex();
@@ -177,8 +179,10 @@ class Recuerda {
     // Update main index
     this.updateMainIndex();
 
-    // Commit to git
-    this.commitToGit(sessionId, { push: options.push === true });
+    // Commit to git only if explicitly requested
+    if (options.commit) {
+      this.commitToGit(sessionId, { push: options.push === true });
+    }
 
     return {
       session_id: sessionId,
@@ -274,7 +278,7 @@ class Recuerda {
 
     const question = (query) => new Promise(resolve => rl.question(query, resolve));
 
-    console.log(`\n📝 Recuerda - Save session for ${this.currentProject}\n`);
+    console.log(`\n📝 Remember - Save session for ${this.currentProject}\n`);
 
     const summary = await question('Summary (1-2 sentences): ');
     const topicsInput = await question('Topics (comma-separated, e.g., auth,oauth,google): ');
@@ -307,19 +311,20 @@ if (require.main === module) {
   const args = process.argv.slice(2);
 
   try {
-    const recuerda = new Recuerda();
+    const saver = new SessionSaver();
 
     if (args.includes('--interactive') || args.length === 0) {
-      recuerda.interactive();
+      saver.interactive();
     } else {
       const summary = args[0];
       const topicsIndex = args.indexOf('--topics');
       const topics = topicsIndex > -1 && args[topicsIndex + 1]
         ? args[topicsIndex + 1].split(',').map(t => t.trim())
         : [];
+      const commit = args.includes('--commit');
       const push = args.includes('--push');
 
-      recuerda.saveSession(summary, topics, null, { push }).then(result => {
+      saver.saveSession(summary, topics, null, { commit, push }).then(result => {
         console.log(`✅ Session saved: ${result.session_id}`);
       });
     }
@@ -329,4 +334,4 @@ if (require.main === module) {
   }
 }
 
-module.exports = Recuerda;
+module.exports = SessionSaver;

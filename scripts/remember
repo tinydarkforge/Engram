@@ -248,6 +248,8 @@ function gitHookAutoCapture() {
   if (topics) {
     cmdArgs.push('--topics', topics);
   }
+  // Git hook captures should commit since they're triggered by a commit
+  cmdArgs.push('--commit');
 
   try {
     execFileSync(process.execPath, cmdArgs, {

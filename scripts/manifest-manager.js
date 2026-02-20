@@ -92,7 +92,7 @@ class ManifestManager {
     const sessionFiles = await glob('summaries/projects/*/sessions-index.json', { cwd: MEMEX_PATH });
 
     this.manifest = {
-      version: '3.2.0',
+      version: '4.0.0',
       generated_at: new Date().toISOString(),
       files,
       stats: {
