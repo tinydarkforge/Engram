@@ -42,6 +42,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const require = createRequire(import.meta.url);
 const { resolveMemexPath } = require('./paths.js');
+const { readJSON } = require('./safe-json.js');
 
 const MEMEX_PATH = resolveMemexPath(__dirname);
 
@@ -51,13 +52,14 @@ const MEMEX_PATH = resolveMemexPath(__dirname);
 
 function loadIndex() {
   const indexPath = path.join(MEMEX_PATH, 'index.json');
-  return JSON.parse(fs.readFileSync(indexPath, 'utf8'));
+  const data = readJSON(indexPath);
+  if (!data) throw new Error(`Memex index not found at ${indexPath}`);
+  return data;
 }
 
 function loadSessionsIndex(project) {
   const indexPath = path.join(MEMEX_PATH, 'summaries/projects', project, 'sessions-index.json');
-  if (!fs.existsSync(indexPath)) return null;
-  return JSON.parse(fs.readFileSync(indexPath, 'utf8'));
+  return readJSON(indexPath);
 }
 
 function loadGraph() {

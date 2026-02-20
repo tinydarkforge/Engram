@@ -25,6 +25,7 @@ const path = require('path');
 const fs = require('fs');
 const msgpack = require('msgpack-lite');
 const Memex = require('./memex-loader');
+const EventConsumer = require('./event-consumer');
 const { resolveMemexPath } = require('./paths');
 const { readJSON } = require('./safe-json');
 
@@ -253,6 +254,60 @@ app.get('/api/graph', (req, res) => {
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
+});
+
+// ─────────────────────────────────────────────────────────────
+// AgentBridge Event Consumer
+// ─────────────────────────────────────────────────────────────
+
+const consumer = new EventConsumer({
+  memex,
+  bridge: memex._bridge,
+});
+
+// Auto-start if AgentBridge is configured
+consumer.start();
+
+/**
+ * GET /api/agentbridge/status
+ * Show event consumer status and AgentBridge connection info
+ */
+app.get('/api/agentbridge/status', async (req, res) => {
+  try {
+    const consumerStatus = consumer.getStatus();
+
+    let bridgeConnected = false;
+    try {
+      const bridge = await memex._bridge;
+      bridgeConnected = bridge.isConnected();
+    } catch { /* ignore */ }
+
+    res.json({
+      bridge_connected: bridgeConnected,
+      bridge_url: process.env.AGENTBRIDGE_URL || null,
+      consumer: consumerStatus,
+    });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+/**
+ * POST /api/agentbridge/start
+ * Start event polling
+ */
+app.post('/api/agentbridge/start', (req, res) => {
+  const started = consumer.start();
+  res.json({ started, status: consumer.getStatus() });
+});
+
+/**
+ * POST /api/agentbridge/stop
+ * Stop event polling
+ */
+app.post('/api/agentbridge/stop', (req, res) => {
+  consumer.stop();
+  res.json({ stopped: true, status: consumer.getStatus() });
 });
 
 // ─────────────────────────────────────────────────────────────
