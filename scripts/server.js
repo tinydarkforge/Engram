@@ -43,6 +43,22 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, '..', 'web')));
 
 // ─────────────────────────────────────────────────────────────
+// Helpers
+// ─────────────────────────────────────────────────────────────
+
+/** Sanitize project name to prevent path traversal */
+function sanitizeProject(name) {
+  return name.replace(/[^a-zA-Z0-9._-]/g, '');
+}
+
+/** Clamp a numeric limit to a safe range */
+function clampLimit(value, defaultVal, max) {
+  const n = parseInt(value || String(defaultVal), 10);
+  if (isNaN(n) || n < 1) return defaultVal;
+  return Math.min(n, max);
+}
+
+// ─────────────────────────────────────────────────────────────
 // API Routes
 // ─────────────────────────────────────────────────────────────
 
@@ -101,8 +117,8 @@ app.get('/api/projects', (req, res) => {
  */
 app.get('/api/sessions/:project', (req, res) => {
   try {
-    const { project } = req.params;
-    const limit = parseInt(req.query.limit || '100', 10);
+    const project = sanitizeProject(req.params.project);
+    const limit = clampLimit(req.query.limit, 100, 500);
 
     const sessions = memex.listSessions(project);
 
@@ -125,7 +141,7 @@ app.get('/api/sessions/:project', (req, res) => {
  */
 app.get('/api/topics', (req, res) => {
   try {
-    const limit = parseInt(req.query.limit || '30', 10);
+    const limit = clampLimit(req.query.limit, 30, 200);
     const index = memex.index;
 
     const topics = Object.entries(index.t || {})
@@ -153,8 +169,8 @@ app.get('/api/topics', (req, res) => {
  */
 app.get('/api/search', (req, res) => {
   try {
-    const query = req.query.q || '';
-    const limit = parseInt(req.query.limit || '20', 10);
+    const query = (req.query.q || '').slice(0, 500);
+    const limit = clampLimit(req.query.limit, 20, 100);
 
     if (!query.trim()) {
       return res.json({ query: '', results: [], total: 0 });
@@ -175,9 +191,11 @@ app.get('/api/search', (req, res) => {
  */
 app.post('/api/semantic-search', async (req, res) => {
   try {
-    const { query, limit = 10, useDecay = true } = req.body;
+    const query = (req.body.query || '').slice(0, 500);
+    const limit = clampLimit(req.body.limit, 10, 100);
+    const useDecay = req.body.useDecay !== false;
 
-    if (!query || !query.trim()) {
+    if (!query.trim()) {
       return res.json({ query: '', results: [], total: 0 });
     }
 
