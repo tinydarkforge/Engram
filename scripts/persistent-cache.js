@@ -24,7 +24,7 @@ const DEFAULT_MAX_ENTRIES = 1000; // Maximum number of cache entries (LRU evicti
 class PersistentCache {
   constructor(options = {}) {
     this.ttl = options.ttl || DEFAULT_TTL;
-    this.version = options.version || '3.1.0';
+    this.version = options.version || '4.0.0';
     this.maxEntries = options.maxEntries || DEFAULT_MAX_ENTRIES;
     this.db = null;
     this.initializeDatabase();
