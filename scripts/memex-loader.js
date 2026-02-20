@@ -26,11 +26,21 @@ class Memex {
       hot: new Map(),     // Last 10 items, in memory
       warm: new Map(),    // Last 100 items, quick access
     };
-    // Persistent cache for instant cold starts
-    this.persistentCache = new PersistentCache({
-      version: '3.3.0',
-      ttl: 60 * 60 * 1000 // 60 minutes
-    });
+    // Persistent cache for instant cold starts (gracefully degrade if unavailable)
+    try {
+      this.persistentCache = new PersistentCache({
+        version: '3.3.0',
+        ttl: 60 * 60 * 1000 // 60 minutes
+      });
+    } catch (e) {
+      console.warn('⚠️  Persistent cache disabled:', e.message);
+      this.persistentCache = {
+        get: () => null,
+        set: () => {},
+        delete: () => {},
+        clear: () => {},
+      };
+    }
     // Manifest manager for incremental updates
     this.manifestManager = new ManifestManager();
     // Vector search for semantic queries
@@ -300,6 +310,7 @@ class Memex {
       return {
         query,
         results: [],
+        total: 0,
         bloom_filter_skip: true,
         message: `"${query}" definitely not found in Memex (bloom filter)`
       };
@@ -333,7 +344,12 @@ class Memex {
       }
     }
 
-    return results;
+    return {
+      query,
+      results,
+      total: results.length,
+      bloom_filter_skip: false
+    };
   }
 
   /**
