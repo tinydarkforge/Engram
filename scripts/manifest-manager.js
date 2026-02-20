@@ -27,11 +27,19 @@ class ManifestManager {
    * Load existing manifest
    */
   load() {
-    if (fs.existsSync(MANIFEST_PATH)) {
-      this.manifest = JSON.parse(fs.readFileSync(MANIFEST_PATH, 'utf8'));
+    if (!fs.existsSync(MANIFEST_PATH)) return null;
+    try {
+      const data = JSON.parse(fs.readFileSync(MANIFEST_PATH, 'utf8'));
+      if (data.version && data.version !== '4.0.0') {
+        console.warn(`⚠️  Manifest version mismatch: expected 4.0.0, got ${data.version}. Regenerate with: npm run manifest`);
+        return null;
+      }
+      this.manifest = data;
       return this.manifest;
+    } catch (e) {
+      console.warn('⚠️  Failed to load manifest:', e.message);
+      return null;
     }
-    return null;
   }
 
   /**
