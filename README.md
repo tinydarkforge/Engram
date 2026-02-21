@@ -79,16 +79,35 @@ Memex/
 │   └── Topics index
 │
 ├── summaries/projects/           # Lightweight indexes
-│   └── DemoProject/
+│   └── <Project>/
 │       ├── sessions-index.json   # Session summaries
 │       └── sessions/             # Full details (lazy loaded)
 │
-└── scripts/
-    ├── memex-loader.js          # Main loader
-    ├── remember                 # Save sessions
-    ├── lazy-loader.js           # Phase 1: Lazy loading
-    ├── bloom-filter.js          # Phase 1: Bloom filter
-    └── git-hook-capture.sh      # Phase 1: Git hooks
+├── .neural/                      # Binary indexes
+│   ├── bloom.json                # Bloom filter
+│   ├── graph.msgpack             # Concept graph
+│   ├── embeddings.msgpack        # Vector embeddings
+│   └── git-index.msgpack         # Git commit index
+│
+├── scripts/
+│   ├── memex-loader.js           # Main loader + CLI
+│   ├── remember                  # Save sessions (smart wrapper)
+│   ├── save-session.js           # Session creation engine
+│   ├── server.js                 # HTTP server + REST API
+│   ├── mcp-server.mjs            # MCP server for AI tools
+│   ├── mcp-tools.js              # MCP tool implementations
+│   ├── agentbridge-client.js     # AgentBridge integration
+│   ├── event-consumer.js         # AgentBridge event polling
+│   ├── vector-search.js          # Semantic search (embeddings)
+│   ├── index-git.js              # Git commit indexer
+│   ├── bloom-filter.js           # Bloom filter
+│   ├── lazy-loader.js            # Lazy loading
+│   ├── persistent-cache.js       # SQLite cache
+│   ├── safe-json.js              # Safe JSON parsing
+│   └── paths.js                  # Path resolution
+│
+├── tests/                        # 194 tests across 16 files
+└── web/                          # Dashboard UI
 ```
 
 ---
@@ -162,6 +181,14 @@ scripts/git-hook-capture.sh install  # Auto-capture on commit
 - ✅ **Bloom Filters** (#27): 500-1000x faster negative queries
 - ✅ **Git Hooks** (#36): Zero-effort session capture
 
+### v4.0 Features
+- ✅ **HTTP Server + Web Dashboard**: Visual dashboard with search, graph, sessions
+- ✅ **MCP Server**: 7 tools for AI assistants via Model Context Protocol
+- ✅ **AgentBridge Integration**: Inter-agent events (session saved, query requested/result)
+- ✅ **194 Tests**: Comprehensive test coverage across 16 files
+- ✅ **Safe JSON**: Zero unprotected JSON.parse calls, schema validation
+- ✅ **Path Sanitization**: Input validation on all API endpoints
+
 ### Core Features (v3.0-3.2)
 - ✅ **Incremental Updates**: 100x faster (only load changed files)
 - ✅ **Persistent Cache**: SQLite cache survives restarts
@@ -226,27 +253,11 @@ source ~/.zshrc
 
 ## Migration
 
-### From v3.x to v4.0 (MessagePack)
+### From v3.x to v4.0
 
-```bash
-# 1. Migrate to MessagePack (44% smaller files)
-node scripts/migrate-to-msgpack.js migrate
+v4.0 uses MessagePack for binary data (graph, embeddings, git index, bundles). JSON files (index.json, session indexes) remain unchanged. No migration script needed for existing data.
 
-# 2. Verify migration
-node scripts/migrate-to-msgpack.js verify
-
-# 3. Test loader
-node scripts/memex-loader.js startup
-
-# Done!
-```
-
-**Backward compatible - rollback anytime:**
-```bash
-node scripts/migrate-to-msgpack.js rollback
-```
-
-**See [MESSAGEPACK-MIGRATION.md](MESSAGEPACK-MIGRATION.md) for detailed guide**
+**See [MESSAGEPACK-MIGRATION.md](MESSAGEPACK-MIGRATION.md) for format details**
 
 ### From v3.2 to v3.3 (Phase 1)
 
