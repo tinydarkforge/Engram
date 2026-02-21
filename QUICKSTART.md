@@ -1,560 +1,159 @@
-# Memex - Quick Start Guide
+# Getting Started with Memex
 
-Get Memex running in 5 minutes.
-
----
-
-## Step 1: Setup (One Time)
-
-```bash
-# Make scripts executable
-cd ~/code/Memex
-chmod +x scripts/*.js scripts/*.sh
-
-# Test it works
-node scripts/memex-loader.js startup
-```
-
-Expected output:
-```
-✅ Memex Ready (87ms)
-
-📊 Context Loaded:
-  • Global Standards: 5 (commit, PR, branching, code, security)
-  • Current Project: DevOps
-  • Available Projects: 2
-  • Total Sessions: 0
-```
+Memex gives your AI coding assistant (Claude, Cursor, Copilot) a **persistent memory**. It remembers what you built, your project conventions, and decisions across sessions — so your AI stops asking the same questions.
 
 ---
 
-## Step 2: Add to Your Projects
-
-### Option A: Auto-detect (Recommended)
-
-Memex auto-detects projects from git remote. No configuration needed!
+## Install (2 minutes)
 
 ```bash
-cd ~/code/MyProject
-node ~/code/Memex/scripts/memex-loader.js startup
+# Clone
+git clone https://github.com/Pamperito74/Memex.git
+cd Memex
 
-# Output:
-# ✅ Memex Ready (92ms)
-# 🎯 Current Project: DemoProject
+# Install dependencies
+npm install
+
+# Verify it works
+node scripts/memex-loader.js status
 ```
 
-### Option B: Manual Config
-
-Create `.agents/memex.json`:
-
-```json
-{
-  "enabled": true,
-  "memex_path": "~/code/Memex"
-}
+You should see something like:
+```
+Memex v4.0.0 Status
+========================================
+Version:        4.0.0
+Load time:      11ms
 ```
 
 ---
 
-## Step 3: Try It Out
+## Add a Shell Alias (optional but recommended)
 
-### Query Memex
-
-```bash
-# From any project directory
-
-# Quick answers (from index only - instant)
-node ~/code/Memex/scripts/memex-loader.js quick "commit format"
-
-# Output:
-{
-  "format": "<type>(<scope>): <description>",
-  "example": "feat(auth): add OAuth2 login",
-  "types": {
-    "feat": "New feature",
-    "fix": "Bug fix",
-    ...
-  }
-}
-
-# Real-world example - check PR requirements
-node ~/code/Memex/scripts/memex-loader.js quick "pr"
-
-# Output:
-{
-  "format": "<type>(<scope>): <description>",
-  "checks": ["tests", "self-review", "lint", "typecheck", "build"],
-  "approvals": 1
-}
-```
-
-### Search Projects
+Add to your `~/.zshrc` or `~/.bashrc`:
 
 ```bash
-node ~/code/Memex/scripts/memex-loader.js search auth
-
-# Output:
-[
-  {
-    "type": "topic",
-    "topic": "auth",
-    "projects": ["DemoProject"],
-    "session_count": 0
-  }
-]
-```
-
-### List Projects
-
-```bash
-node ~/code/Memex/scripts/memex-loader.js list
-
-# Output:
-[
-  {
-    "name": "DemoProject",
-    "description": "ASL translation platform...",
-    "tech_stack": ["React", "TypeScript", "NestJS", ...],
-    "session_count": 0
-  },
-  ...
-]
-```
-
----
-
-## Step 4: Save Your First Session
-
-```bash
-cd ~/code/MyProject
-
-# Quick save
-node ~/code/Memex/scripts/remember.js \
-  "Set up Memex memory system" \
-  --topics memex,setup,memory
-
-# Output:
-# ✅ Session saved: ct-2025-11-29-memex
-```
-
-### Interactive Mode
-
-```bash
-node ~/code/Memex/scripts/remember.js --interactive
-
-# Prompts:
-# 📝 Remember - Save session for DemoProject
-#
-# Summary (1-2 sentences): Added OAuth2 authentication with Google
-# Topics (comma-separated): auth,oauth,google
-#
-# Do you want to add detailed notes? (y/N): y
-# Enter detailed notes (Ctrl+D when done):
-# [Type your notes, then Ctrl+D]
-#
-# 💾 Saving session...
-# ✅ Session saved: ct-2025-11-29-oauth
-```
-
----
-
-## Step 5: Make It Easier (Optional)
-
-### Add Aliases
-
-Add to `~/.zshrc` or `~/.bashrc`:
-
-```bash
-# Memex shortcuts
-export MEMEX_PATH="$HOME/code/Memex"
+export MEMEX_PATH="$HOME/path/to/Memex"
 alias memex='node $MEMEX_PATH/scripts/memex-loader.js'
-alias remember='node $MEMEX_PATH/scripts/remember.js'
-
-# Reload
-source ~/.zshrc
+alias remember='$MEMEX_PATH/scripts/remember'
 ```
 
-Now you can use:
-
-```bash
-memex startup
-remember "Your work summary" --topics tag1,tag2
-```
+Then `source ~/.zshrc`. Now you can type `memex` instead of `node scripts/memex-loader.js`.
 
 ---
 
-## Real-World Examples
+## Three Things You Can Do
 
-### Example 1: After Fixing a Bug
+### 1. Save what you worked on
+
+After finishing work, save a session:
 
 ```bash
-cd ~/code/MyProject
-
-# You just fixed a Docker deployment bug
-./scripts/remember "Fixed Prisma deployment failure - moved CLI to dependencies" \
-  --topics hotfix,docker,prisma,deployment
-
-# Output:
-# ✅ Session saved: ct-2025-12-03-hotfix
-# ✓ Changes committed to Memex
-# ✓ Pushing to remote (background)...
+remember "Added user authentication with Google OAuth" --topics auth,oauth,google
 ```
 
-**Why this helps:** Next time someone encounters Prisma deployment issues, they can search Memex for "prisma deployment" and instantly find your solution.
-
-### Example 2: After Implementing a Feature
+Or let it auto-detect from your recent git changes:
 
 ```bash
-cd ~/code/MyProject
-
-# You just added OAuth2 authentication
-./scripts/remember --interactive
-
-# Prompts you for:
-# Summary: Implemented OAuth2 authentication with Google provider
-# Topics: auth,oauth,google,security
-# Detailed notes? y
-#
-# Then you can add:
-# - Configured Google Cloud OAuth credentials
-# - Added passport-google-oauth20 strategy
-# - Implemented callback handling in auth controller
-# - Added user profile sync from Google
-# - Tested with 3 different Google accounts
-#
-# ✅ Session saved with full implementation details
+remember --auto
 ```
 
-**Why this helps:** Future auth work can reference this implementation. Other team members can see exactly how OAuth was set up.
-
-### Example 3: After Performance Optimization
+Or install git hooks so it happens automatically on every commit:
 
 ```bash
-# You just optimized Docker builds (10x faster!)
-./scripts/remember "Optimized API Dockerfile with multi-stage build - 10x faster rebuilds" \
-  --topics docker,performance,optimization,dockerfile
-
-# Later, when working on another service:
-memex search "docker optimization"
-
-# Instantly finds your Docker optimization session
-# Shows you the exact techniques you used
+/path/to/Memex/scripts/git-hook-capture.sh install
+# Done. Every commit now auto-saves a session.
 ```
 
-### Example 4: Zero-Effort Mode (Auto-Capture)
+### 2. Search your memory
 
 ```bash
-# After making changes, just run:
-./scripts/remember
-
-# It auto-detects everything:
-# 🔍 Auto-detected changes:
-#   Files: 3
-#   Summary: "Updated bloom-filter.js, memex-loader.js +1 more"
-#   Topics: bloom-filter, cache, project-detection
-#
-# ✅ Session saved automatically!
-```
-
-### Example 5: Cross-Project Learning
-
-```bash
-# Working on a new project, need to see how you handled auth before
-cd ~/code/NewProject
-
-memex search "authentication"
-
-# Finds all auth implementations across ALL projects:
-# - DemoProject: OAuth2 with Google (12/02/25)
-# - ProjectAuth: JWT refresh tokens (11/15/25)
-# - OldProject: Basic auth migration (10/20/25)
-#
-# Load the most relevant one:
-memex load DemoProject
-# Now you have the full OAuth2 implementation details
-```
-
-### Example 6: Before Creating a PR
-
-```bash
-# Check what our PR standards are
-memex quick "pr"
-
-# Output:
-{
-  "checks": ["tests", "self-review", "lint", "typecheck", "build"],
-  "approvals": 1,
-  "format": "<type>(<scope>): <description>"
-}
-
-# Make sure your PR meets all requirements before submitting
-```
-
-### Example 7: Daily Work Pattern
-
-```bash
-# Morning: See what you were working on
-memex startup
-
-# During work: Need commit format
-memex quick "commit"
-
-# After work: Save what you did
-remember "Implemented rate limiting for API endpoints" \
-  --topics api,rate-limiting,redis,performance
-
-# Result: Perfect memory of all your work, zero effort
-```
-
----
-
-## Common Patterns
-
-### Pattern 1: Bug Fix Workflow
-```bash
-memex startup
-memex quick "commit format"
+# Keyword search
 memex search auth
+
+# Quick lookup (instant, from index only)
+memex quick "commit format"
+
+# List all projects
 memex list
 
-remember "Implemented feature X" --topics feature,x
-remember --interactive
+# Full status
+memex status
+```
+
+### 3. Connect it to your AI assistant
+
+**Claude Code (MCP):**
+```bash
+claude mcp add memex -s user -- node /path/to/Memex/scripts/mcp-server.mjs
+```
+
+Now Claude can query your Memex directly — it knows your projects, conventions, and history.
+
+**Other AI tools:** Use the REST API:
+```bash
+# Start the server
+node scripts/server.js
+
+# API available at http://localhost:3000/api/
+# Dashboard at http://localhost:3000/
 ```
 
 ---
 
-## How AI assistant Uses It
+## What Gets Saved?
 
-When you start AI assistant in any Cirrus project:
-
-```
-1. [10ms] AI assistant detects project from git remote
-2. [50ms] Loads Memex index.json (5KB)
-3. [40ms] Loads project metadata (2KB)
-4. [Ready] AI assistant has full context
-
-Total: 87ms, 7KB loaded
-
-Now AI assistant knows:
-✓ All global standards (commit, PR, branching, code)
-✓ Current project (tech stack, architecture, conventions)
-✓ All available projects
-✓ All session summaries
-
-Most questions answered from index alone - no file loading needed!
-```
+Each session captures:
+- **Summary** — what you did in 1-2 sentences
+- **Topics** — tags like `auth`, `docker`, `bugfix`
+- **Project** — which repo this was in
+- **Timestamp** — when it happened
+- **Git info** — commit hash, files changed (if from git hook)
 
 ---
 
-## Example Workflows
+## How It Saves You Money
 
-### Workflow 1: Start Working on a Project
+Without Memex, your AI reads ~50,000 tokens of context every time. With Memex, it reads a 4KB index and gets the answer in ~1,000 tokens.
 
-```bash
-cd ~/code/MyProject
-your-agent-cli
-
-# AI assistant auto-loads Memex
-# You can now ask:
-# - "What's our commit format?"
-# - "What environments do we have?"
-# - "What's our PR process?"
-# All answered instantly from index
-```
-
-### Workflow 2: Learn from Another Project
-
-```bash
-cd ~/code/NewProject
-
-# Ask AI assistant:
-"How did we implement authentication in ProjectAuth?"
-
-# AI assistant:
-# 1. Checks index → ProjectAuth has 'auth' topic
-# 2. Loads ProjectAuth sessions-index.json
-# 3. Finds OAuth2 session
-# 4. Loads that specific session if needed
-# 5. Answers with context from ProjectAuth
-```
-
-### Workflow 3: Save Session After Work
-
-```bash
-# After working on a feature
-remember --interactive
-
-# Summary: Implemented rate limiting for API endpoints
-# Topics: api,rate-limiting,redis,performance
-# Detailed notes: [describe implementation]
-
-# ✅ Saved to Memex
-# ✅ Auto-committed to git
-# ✅ Available to all projects now
-```
+| | Without Memex | With Memex |
+|--|---------------|------------|
+| Tokens per query | 50,000 | 1,000 |
+| Startup time | 1000ms | 46ms |
+| Monthly cost (est.) | $37 | $2 |
 
 ---
 
-## Common Patterns
+## Project Structure
 
-### Quick Checks
-
-```bash
-# Check commit format
-memex quick "commit"
-
-# Check PR requirements
-memex quick "pr"
-
-# Check branching strategy
-memex quick "branch"
 ```
-
-### Cross-Project Search
-
-```bash
-# Find all sessions about authentication
-memex search authentication
-
-# Find projects using React
-memex search react
-
-# Find rate limiting implementations
-memex search "rate limiting"
+Memex/
+├── index.json          # Main knowledge index (4KB, loaded first)
+├── summaries/          # Session data per project
+├── scripts/            # CLI tools, servers, search
+├── tests/              # 195 tests
+└── web/                # Dashboard UI
 ```
-
-### Session Management
-
-```bash
-# Quick session save
-remember "Did X" --topics x,y,z
-
-# Detailed session save
-remember --interactive
-
-# View saved sessions
-cat ~/code/Memex/summaries/projects/DemoProject/sessions-index.json | jq '.sessions[0]'
-```
-
----
-
-## Verification
-
-### Check It's Working
-
-```bash
-# 1. Memex loads successfully
-memex startup
-# Should show: ✅ Memex Ready
-
-# 2. Project detection works
-cd ~/code/MyProject
-memex startup
-# Should show: Current Project: DemoProject
-
-# 3. Quick queries work
-memex quick "commit"
-# Should return commit format
-
-# 4. Session saving works
-remember "Test session" --topics test
-# Should create session file
-```
-
-### Check Files Created
-
-```bash
-tree ~/code/Memex/
-
-# Should see:
-# ├── index.json ✓
-# ├── metadata/projects/DemoProject.json ✓
-# ├── summaries/projects/DemoProject/sessions-index.json ✓
-# └── scripts/memex-loader.js ✓
-```
-
----
-
-## Performance Check
-
-```bash
-# Time the startup
-time memex startup
-
-# Should be:
-# real    0m0.087s  (<100ms)
-```
-
-If slower than 200ms, check:
-- Is index.json small enough? (<10KB)
-- Are you loading content unnecessarily?
-- Is git slow? (git pull in background)
 
 ---
 
 ## Troubleshooting
 
-### "Could not detect project"
+**"Cannot find index.json"**
+Set the `MEMEX_PATH` environment variable to your Memex directory.
 
-**Problem:** Memex can't detect which project you're in
+**"Could not detect project"**
+Run from inside a git repository, or specify the project manually.
 
-**Solution:**
-1. Make sure you're in a git repository: `git remote -v`
-2. Or add `.agents/memex.json` with project name
-3. Or use directory name matching project in index.json
-
-### "Memex index not found"
-
-**Problem:** Can't find index.json
-
-**Solution:**
-```bash
-# Check path
-ls ~/code/Memex/index.json
-
-# Set correct path
-export MEMEX_PATH="/correct/path/to/Memex"
-```
-
-### "Session not saving"
-
-**Problem:** remember fails to save
-
-**Solution:**
-1. Check you're in a recognized project
-2. Check Memex path is correct
-3. Check git is configured: `git config user.name`
+**"remember: command not found"**
+Add the shell alias (see above), or run the script directly: `node scripts/remember.js "your summary"`
 
 ---
 
 ## Next Steps
 
-1. ✅ **You're ready!** Memex is working
-2. 📝 **Start saving sessions** - Use `remember` after each work session
-3. 🌍 **Add global standards** - Extract from DemoProject
-4. 🎯 **Add more projects** - Set up ProjectAuth, etc.
-5. 🔍 **Optional: Embeddings** - Add semantic search
-
----
-
-## Quick Reference Card
-
-```bash
-# Startup
-memex startup                              # Load full context
-memex quick "commit"                       # Quick answer
-memex search <query>                       # Search projects
-memex list                                 # List all projects
-
-# Save sessions
-remember "Summary" --topics tag1,tag2,tag3     # Quick save
-remember --interactive                          # Interactive mode
-
-# View data
-cat $MEMEX_PATH/index.json | jq           # View index
-cat $MEMEX_PATH/summaries/projects/DemoProject/sessions-index.json | jq '.sessions[0]'  # View latest session
-```
-
----
-
-**You're all set! Memex is ready to remember everything.** 🧠✨
+- Run `memex status` to see what Memex knows
+- Save your first session with `remember "what I did" --topics tag1,tag2`
+- Install git hooks in your repos for zero-effort capture
+- Check the [full README](README.md) for architecture details
+- See [CHEATSHEET.md](CHEATSHEET.md) for all commands
