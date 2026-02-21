@@ -1,10 +1,10 @@
 {
   "$schema": "./schemas/index.schema.json",
   "v": "4.0.0",
-  "u": "2025-12-21T03:55:57.233Z",
+  "u": "2026-02-21T10:45:48.046Z",
   "m": {
     "tp": 6,
-    "ts": 11757,
+    "ts": 11758,
     "gs": 5
   },
   "g": {
@@ -224,8 +224,8 @@
         "JavaScript"
       ],
       "a": "library",
-      "sc": 11607,
-      "u": "2025-12-10",
+      "sc": 11608,
+      "u": "2026-02-21",
       "mf": "metadata/projects/Memex.json",
       "tp": [
         "memex",
@@ -573,7 +573,7 @@
         "translate.hellocirrus",
         "DevOps"
       ],
-      "sc": 6
+      "sc": 2
     },
     "bloom-filter": {
       "p": [
@@ -683,7 +683,7 @@
         "translate.hellocirrus",
         "Memex"
       ],
-      "sc": 1
+      "sc": 11596
     },
     "cross-project": {
       "p": [
@@ -709,7 +709,7 @@
         "translate.hellocirrus",
         "Memex"
       ],
-      "sc": 3
+      "sc": 4
     },
     "dependencies": {
       "p": [
@@ -742,7 +742,7 @@
         "translate.hellocirrus",
         "Memex"
       ],
-      "sc": 8
+      "sc": 11600
     },
     "digitalocean": {
       "p": [
@@ -787,7 +787,7 @@
         "DevOps",
         "CirrusTranslate"
       ],
-      "sc": 3
+      "sc": 1
     },
     "aither": {
       "p": [
@@ -1207,6 +1207,42 @@
     "dev-tunnel": {
       "p": [
         "CirrusTranslate"
+      ],
+      "sc": 1
+    },
+    "strategy": {
+      "p": [
+        "Memex"
+      ],
+      "sc": 1
+    },
+    "framework": {
+      "p": [
+        "Memex"
+      ],
+      "sc": 1
+    },
+    "thedarkfactory": {
+      "p": [
+        "Memex"
+      ],
+      "sc": 1
+    },
+    "agentbridge": {
+      "p": [
+        "Memex"
+      ],
+      "sc": 1
+    },
+    "business": {
+      "p": [
+        "Memex"
+      ],
+      "sc": 1
+    },
+    "plan": {
+      "p": [
+        "Memex"
       ],
       "sc": 1
     }
