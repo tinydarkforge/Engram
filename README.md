@@ -1,6 +1,10 @@
 # Memex v4.0.0
 
-**Extended Memory for AI assistant - 94-98% Token Savings**
+[![CI](https://github.com/Pamperito74/Memex/actions/workflows/ci.yml/badge.svg)](https://github.com/Pamperito74/Memex/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Node.js](https://img.shields.io/badge/node-%3E%3D20.0.0-brightgreen.svg)](https://nodejs.org/)
+
+**Persistent memory for AI coding assistants — 94-98% token savings**
 
 Ultra-efficient knowledge system that remembers your project context across sessions.
 
