@@ -149,4 +149,13 @@ describe('server API', () => {
     assert.equal(status, 200);
     assert.deepEqual(json.results, []);
   });
+
+  it('GET /health returns status and uptime', async () => {
+    const { status, json } = await fetch(`${baseUrl}/health`);
+    assert.equal(status, 200);
+    assert.equal(json.status, 'healthy');
+    assert.equal(typeof json.uptime, 'number');
+    assert.ok(json.timestamp);
+    assert.ok(json.version);
+  });
 });

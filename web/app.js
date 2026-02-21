@@ -3,6 +3,17 @@
  */
 
 // ─────────────────────────────────────────────────────────────
+// Utilities
+// ─────────────────────────────────────────────────────────────
+
+/** Escape HTML to prevent XSS */
+function esc(str) {
+  const d = document.createElement('div');
+  d.textContent = str;
+  return d.innerHTML;
+}
+
+// ─────────────────────────────────────────────────────────────
 // State
 // ─────────────────────────────────────────────────────────────
 
@@ -89,8 +100,8 @@ async function loadDashboard() {
   const projectsHtml = stats.projects
     .sort((a, b) => b.sessions - a.sessions)
     .map(p => `
-      <div class="project-item" onclick="viewProject('${p.name}')">
-        <span class="project-name">${p.name}</span>
+      <div class="project-item" onclick="viewProject('${esc(p.name)}')">
+        <span class="project-name">${esc(p.name)}</span>
         <span class="project-sessions">${p.sessions} sessions</span>
       </div>
     `).join('');
@@ -105,7 +116,7 @@ async function loadDashboard() {
     .slice(0, 20)
     .map(t => {
       const cls = t.sessions >= 5 ? 'hot' : t.sessions >= 3 ? 'warm' : '';
-      return `<span class="topic-tag ${cls}" onclick="searchTopic('${t.name}')">${t.name}</span>`;
+      return `<span class="topic-tag ${cls}" onclick="searchTopic('${esc(t.name)}')">${esc(t.name)}</span>`;
     }).join('');
 
   document.getElementById('topics-cloud').innerHTML = topicsHtml || '<div class="empty-state">No topics</div>';
@@ -132,7 +143,7 @@ async function loadBridgeStatus() {
         <span class="bridge-dot ${statusDot}"></span>
         <span>${statusLabel}</span>
       </div>
-      ${data.bridge_url ? `<div class="bridge-row bridge-meta">${data.bridge_url}</div>` : ''}
+      ${data.bridge_url ? `<div class="bridge-row bridge-meta">${esc(data.bridge_url)}</div>` : ''}
       <div class="bridge-row bridge-meta">
         Events: ${consumer.events_processed || 0} processed, ${consumer.errors || 0} errors
       </div>
@@ -161,14 +172,14 @@ async function loadRecentSessions() {
   allSessions.sort((a, b) => new Date(b.date) - new Date(a.date));
 
   const sessionsHtml = allSessions.slice(0, 10).map(s => `
-    <div class="session-item" onclick="viewProject('${s.project}')">
+    <div class="session-item" onclick="viewProject('${esc(s.project)}')">
       <div class="session-header">
-        <span class="session-date">${s.date}</span>
-        <span class="session-project">${s.project}</span>
+        <span class="session-date">${esc(s.date)}</span>
+        <span class="session-project">${esc(s.project)}</span>
       </div>
-      <div class="session-summary">${s.summary}</div>
+      <div class="session-summary">${esc(s.summary)}</div>
       <div class="session-topics">
-        ${(s.topics || []).slice(0, 5).map(t => `<span class="session-topic">${t}</span>`).join('')}
+        ${(s.topics || []).slice(0, 5).map(t => `<span class="session-topic">${esc(t)}</span>`).join('')}
       </div>
     </div>
   `).join('');
@@ -228,13 +239,13 @@ async function performSearch(query, semantic, decay) {
     return `
       <div class="search-result">
         <div class="result-header">
-          <span class="result-project">${project}</span>
-          <span class="result-score">${score}${decay}</span>
+          <span class="result-project">${esc(project)}</span>
+          <span class="result-score">${esc(score)}${esc(decay)}</span>
         </div>
-        <div class="result-summary">${r.summary || r.text_preview || r.session_id}</div>
+        <div class="result-summary">${esc(r.summary || r.text_preview || r.session_id)}</div>
         <div class="result-meta">
-          <span>${r.date || r.session_id}</span>
-          ${(r.topics || []).map(t => `<span>${t}</span>`).join('')}
+          <span>${esc(r.date || r.session_id)}</span>
+          ${(r.topics || []).map(t => `<span>${esc(t)}</span>`).join('')}
         </div>
       </div>
     `;
@@ -338,8 +349,8 @@ async function loadProjectTabs() {
   const html = projectsData.projects
     .sort((a, b) => b.sessions - a.sessions)
     .map(p => `
-      <div class="project-tab" onclick="selectProject('${p.name}')" data-project="${p.name}">
-        <span>${p.name}</span>
+      <div class="project-tab" onclick="selectProject('${esc(p.name)}')" data-project="${esc(p.name)}">
+        <span>${esc(p.name)}</span>
         <span class="count">${p.sessions}</span>
       </div>
     `).join('');
@@ -363,10 +374,10 @@ async function selectProject(name) {
 
   const html = data.sessions.map(s => `
     <div class="session-card">
-      <div class="date">${s.date}</div>
-      <div class="summary">${s.summary}</div>
+      <div class="date">${esc(s.date)}</div>
+      <div class="summary">${esc(s.summary)}</div>
       <div class="topics">
-        ${(s.topics || []).map(t => `<span class="session-topic">${t}</span>`).join('')}
+        ${(s.topics || []).map(t => `<span class="session-topic">${esc(t)}</span>`).join('')}
       </div>
     </div>
   `).join('');

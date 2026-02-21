@@ -85,7 +85,7 @@ app.get('/api/stats', (req, res) => {
       lastUpdated: index.u,
     });
   } catch (e) {
-    res.status(500).json({ error: e.message });
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -107,7 +107,7 @@ app.get('/api/projects', (req, res) => {
       projects: projects.sort((a, b) => b.sessions - a.sessions),
     });
   } catch (e) {
-    res.status(500).json({ error: e.message });
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -131,7 +131,7 @@ app.get('/api/sessions/:project', (req, res) => {
       sessions: sessions.slice(0, limit),
     });
   } catch (e) {
-    res.status(500).json({ error: e.message });
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -159,7 +159,7 @@ app.get('/api/topics', (req, res) => {
       topics,
     });
   } catch (e) {
-    res.status(500).json({ error: e.message });
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -181,7 +181,7 @@ app.get('/api/search', (req, res) => {
 
     res.json(results);
   } catch (e) {
-    res.status(500).json({ error: e.message });
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -207,7 +207,7 @@ app.post('/api/semantic-search', async (req, res) => {
 
     res.json(results);
   } catch (e) {
-    res.status(500).json({ error: e.message });
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -270,7 +270,7 @@ app.get('/api/graph', (req, res) => {
 
     res.json({ nodes, edges });
   } catch (e) {
-    res.status(500).json({ error: e.message });
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -306,7 +306,7 @@ app.get('/api/agentbridge/status', async (req, res) => {
       consumer: consumerStatus,
     });
   } catch (e) {
-    res.status(500).json({ error: e.message });
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -329,15 +329,46 @@ app.post('/api/agentbridge/stop', (req, res) => {
 });
 
 // ─────────────────────────────────────────────────────────────
+// Health Check
+// ─────────────────────────────────────────────────────────────
+
+app.get('/health', (req, res) => {
+  const healthy = !!memex.index;
+  res.status(healthy ? 200 : 503).json({
+    status: healthy ? 'healthy' : 'unhealthy',
+    uptime: Math.floor(process.uptime()),
+    version: memex.index?.v || 'unknown',
+    timestamp: new Date().toISOString(),
+  });
+});
+
+// ─────────────────────────────────────────────────────────────
 // Start
 // ─────────────────────────────────────────────────────────────
 
 if (require.main === module) {
-  app.listen(PORT, () => {
+  const server = app.listen(PORT, () => {
     console.log(`Memex server listening on http://localhost:${PORT}`);
     console.log(`  Dashboard: http://localhost:${PORT}/`);
     console.log(`  API:       http://localhost:${PORT}/api/stats`);
+    console.log(`  Health:    http://localhost:${PORT}/health`);
   });
+
+  // Graceful shutdown
+  function shutdown(signal) {
+    console.log(`\n${signal} received, shutting down...`);
+    consumer.stop();
+    server.close(() => {
+      try { memex.persistentCache.close(); } catch { /* already closed */ }
+      console.log('Shutdown complete');
+      process.exit(0);
+    });
+    // Force exit after 10s
+    setTimeout(() => process.exit(1), 10000).unref();
+  }
+
+  process.on('SIGTERM', () => shutdown('SIGTERM'));
+  process.on('SIGINT', () => shutdown('SIGINT'));
 }
 
 module.exports = app;
