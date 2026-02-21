@@ -1,5 +1,4 @@
 node_modules/
-package-lock.json
 
 # Generated cache and manifest files
 .cache/
