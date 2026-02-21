@@ -1,7 +1,7 @@
 {
   "name": "memex",
   "version": "4.0.0",
-  "description": "Memex - Persistent memory system across projects",
+  "description": "Persistent memory for AI coding assistants - 94-98% token savings",
   "main": "scripts/memex-loader.js",
   "scripts": {
     "start": "node scripts/server.js",
@@ -23,22 +23,28 @@
     "memex",
     "memory",
     "knowledge-base",
+    "mcp",
     "agent",
-    "ai"
+    "ai",
+    "context",
+    "semantic-search"
   ],
-  "author": "Memex Contributors",
-  "license": "UNLICENSED",
-  "private": true,
+  "author": "REDACTED",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Pamperito74/Memex.git"
+  },
   "dependencies": {
     "@huggingface/transformers": "^3.8.1",
     "@modelcontextprotocol/sdk": "^1.24.3",
     "better-sqlite3": "^9.2.2",
     "chalk": "^4.1.2",
     "express": "^5.2.1",
-    "glob": "^10.5.0",
+    "glob": "^13.0.6",
     "msgpack-lite": "^0.1.26"
   },
   "engines": {
-    "node": ">=14.0.0"
+    "node": ">=20.0.0"
   }
 }
