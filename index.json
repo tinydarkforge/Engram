@@ -1,10 +1,10 @@
 {
   "$schema": "./schemas/index.schema.json",
   "v": "4.0.0",
-  "u": "2026-02-21T10:45:48.046Z",
+  "u": "2026-02-21T10:47:23.375Z",
   "m": {
     "tp": 6,
-    "ts": 11758,
+    "ts": 11759,
     "gs": 5
   },
   "g": {
@@ -224,7 +224,7 @@
         "JavaScript"
       ],
       "a": "library",
-      "sc": 11608,
+      "sc": 11609,
       "u": "2026-02-21",
       "mf": "metadata/projects/Memex.json",
       "tp": [
@@ -395,7 +395,8 @@
     "fix": {
       "p": [
         "CirrusTranslate",
-        "DevOps"
+        "DevOps",
+        "Memex"
       ],
       "sc": 1
     },
@@ -742,7 +743,7 @@
         "translate.hellocirrus",
         "Memex"
       ],
-      "sc": 11600
+      "sc": 11601
     },
     "digitalocean": {
       "p": [
