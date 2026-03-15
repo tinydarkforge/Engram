@@ -19,11 +19,19 @@ const agentbridge = require('./agentbridge-client');
 const { readJSON } = require('./safe-json');
 
 const MEMEX_PATH = resolveMemexPath(__dirname);
+const LOCK_TTL_MS = 30 * 1000;
 
 function atomicWriteFileSync(targetPath, content) {
   const dir = path.dirname(targetPath);
-  const tmpPath = path.join(dir, `.tmp-${process.pid}-${Date.now()}-${path.basename(targetPath)}`);
-  fs.writeFileSync(tmpPath, content);
+  fs.mkdirSync(dir, { recursive: true });
+  const tmpPath = path.join(dir, `.tmp-${process.pid}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}-${path.basename(targetPath)}`);
+  const fd = fs.openSync(tmpPath, 'wx');
+  try {
+    fs.writeFileSync(fd, content);
+    fs.fsyncSync(fd);
+  } finally {
+    fs.closeSync(fd);
+  }
   fs.renameSync(tmpPath, targetPath);
 }
 
@@ -39,6 +47,9 @@ async function withFileLock(targetPath, fn, { retries = 20, delayMs = 25 } = {})
     try {
       const fd = fs.openSync(lockPath, 'wx');
       try {
+        const payload = JSON.stringify({ pid: process.pid, started_at: Date.now() });
+        fs.writeFileSync(fd, payload);
+        fs.fsyncSync(fd);
         return await fn();
       } finally {
         fs.closeSync(fd);
@@ -50,6 +61,18 @@ async function withFileLock(targetPath, fn, { retries = 20, delayMs = 25 } = {})
       }
     } catch (e) {
       if (e.code !== 'EEXIST') throw e;
+      try {
+        const stat = fs.statSync(lockPath);
+        const ageMs = Date.now() - stat.mtimeMs;
+        if (ageMs > LOCK_TTL_MS) {
+          fs.unlinkSync(lockPath);
+          continue;
+        }
+      } catch (err) {
+        if (err.code !== 'ENOENT') {
+          // ignore and fall through to retry
+        }
+      }
       if (attempt === retries) throw new Error(`Lock timeout for ${path.basename(targetPath)}`);
       await new Promise(resolve => setTimeout(resolve, delayMs));
     }

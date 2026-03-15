@@ -216,6 +216,33 @@ describe('SessionSaver', () => {
       assert.equal(commitCalled, true, 'commitToGit should be called');
       assert.equal(pushOption.push, false, 'push should be false');
     });
+
+    it('handles concurrent saves without corrupting index', async () => {
+      const indexPath = path.join(fixturePath, 'summaries', 'projects', 'TestSaveProject', 'sessions-index.json');
+      let startingTotal = 0;
+      if (fs.existsSync(indexPath)) {
+        const existingIndex = JSON.parse(fs.readFileSync(indexPath, 'utf8'));
+        startingTotal = existingIndex.total_sessions || 0;
+      }
+
+      const saverA = Object.create(SessionSaver.prototype);
+      saverA.currentProject = 'TestSaveProject';
+      const saverB = Object.create(SessionSaver.prototype);
+      saverB.currentProject = 'TestSaveProject';
+
+      const [resultA, resultB] = await Promise.all([
+        saverA.saveSession('Concurrent A', ['api']),
+        saverB.saveSession('Concurrent B', ['api']),
+      ]);
+
+      assert.ok(resultA.session_id);
+      assert.ok(resultB.session_id);
+      assert.notEqual(resultA.session_id, resultB.session_id, 'session IDs should be unique');
+
+      const sessionsIndex = JSON.parse(fs.readFileSync(indexPath, 'utf8'));
+      assert.equal(sessionsIndex.total_sessions, startingTotal + 2);
+      assert.equal(sessionsIndex.sessions.length, startingTotal + 2);
+    });
   });
 
   describe('updateMainIndex()', () => {
