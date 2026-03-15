@@ -295,8 +295,8 @@ function searchSessions(query, project = null, limit = 10) {
     return { error: 'query is required' };
   }
 
+  const results = [];
   const projectsDir = path.join(MEMEX_PATH, 'summaries/projects');
-  if (!fs.existsSync(projectsDir)) return { query, total: 0, results: [] };
 
   let projectDirs = [];
   if (project) {
@@ -305,18 +305,24 @@ function searchSessions(query, project = null, limit = 10) {
       return { query, project, total: 0, results: [] };
     }
     projectDirs = [resolved];
-  } else {
+  } else if (fs.existsSync(projectsDir)) {
     projectDirs = fs.readdirSync(projectsDir);
   }
 
-  const results = [];
+  const memex = getMemexLoader();
 
   for (const projectDirName of projectDirs) {
-    const indexPath = path.join(projectsDir, projectDirName, 'sessions-index.json');
-    const sessionsIndex = readJSON(indexPath);
-    if (!sessionsIndex?.sessions) continue;
+    let sessions = [];
+    try {
+      memex.loadIndex();
+      sessions = memex.listSessions(projectDirName) || [];
+    } catch {
+      const indexPath = path.join(projectsDir, projectDirName, 'sessions-index.json');
+      const sessionsIndex = readJSON(indexPath);
+      sessions = sessionsIndex?.sessions || [];
+    }
 
-    for (const session of sessionsIndex.sessions) {
+    for (const session of sessions) {
       const summary = typeof session.summary === 'string' ? session.summary : '';
       const topics = Array.isArray(session.topics) ? session.topics : [];
       const summaryMatch = summary.toLowerCase().includes(normalizedQuery);

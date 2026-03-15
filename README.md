@@ -28,6 +28,11 @@ node scripts/memex-loader.js quick "commit format"
 **See [QUICKSTART.md](QUICKSTART.md) for details**
 **Remote MCP setup:** see [docs/remote-setup.md](docs/remote-setup.md)
 
+If `memex status` shows warnings:
+- Run `npm run migrate` for schema version updates
+- Missing `metadata/projects/*.json` files are optional but recommended
+- Metrics start after first `remember` or `neural_search`
+
 ---
 
 ## What Makes Memex Special?
