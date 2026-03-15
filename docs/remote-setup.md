@@ -34,6 +34,23 @@ Auth options supported by the server:
 - `Authorization: Bearer <MCP_API_KEY>`
 - `X-API-Key: <MCP_API_KEY>`
 
+## 2.5 Test from another machine
+
+From a different machine on the same network:
+
+```bash
+curl -i \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <MCP_API_KEY>" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}' \
+  http://<server-ip>:3000/mcp
+```
+
+You should get a JSON-RPC response listing tools. If you get:
+- `401` → missing API key
+- `403` → wrong API key
+- connection refused → firewall or bind address issue
+
 ## 3. Reverse proxy (recommended for TLS)
 
 Example nginx config:
@@ -65,9 +82,63 @@ If you only want access inside your local network:
 - Do not expose the port publicly
 - Optionally configure a firewall allowlist for your LAN subnet
 
+## 5. Run as a systemd service (Linux)
+
+Create a dedicated user:
+```bash
+sudo useradd -r -s /bin/false memex
+```
+
+Install Memex to `/opt/memex` (or your preferred path) and set ownership:
+```bash
+sudo mkdir -p /opt/memex
+sudo chown -R memex:memex /opt/memex
+```
+
+Create `/etc/systemd/system/memex-mcp.service`:
+```ini
+[Unit]
+Description=Memex MCP HTTP Server
+After=network.target
+
+[Service]
+Type=simple
+User=memex
+Group=memex
+WorkingDirectory=/opt/memex
+Environment=NODE_ENV=production
+Environment=MEMEX_PATH=/opt/memex
+Environment=MCP_API_KEY=replace-me
+Environment=MCP_BIND_ADDR=0.0.0.0
+Environment=MCP_PORT=3000
+ExecStart=/usr/bin/node /opt/memex/scripts/mcp-server-http.mjs
+Restart=on-failure
+RestartSec=3
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+ReadWritePaths=/opt/memex
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Enable and start:
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable memex-mcp
+sudo systemctl start memex-mcp
+sudo systemctl status memex-mcp
+```
+
+Firewall (example for UFW):
+```bash
+sudo ufw allow 3000/tcp
+```
+
 ## Troubleshooting
 
 - `401 Unauthorized`: missing `MCP_API_KEY`
 - `403 Forbidden`: invalid API key
 - Connection hangs: ensure proxy buffering is disabled for `/mcp`
-
