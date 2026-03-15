@@ -15,6 +15,11 @@ MCP_API_KEY="replace-me" MCP_BIND_ADDR=192.168.1.10 MCP_PORT=3000 node scripts/m
 MCP_API_KEY="replace-me" MCP_BIND_ADDR=0.0.0.0 MCP_PORT=3000 node scripts/mcp-server-http.mjs
 ```
 
+Optional host allowlist:
+```bash
+MCP_ALLOWED_HOSTS="memex.yourdomain.com,172.31.141.155"
+```
+
 ## 2. Connect a client
 
 Claude Desktop or any MCP client can connect with a simple URL:
