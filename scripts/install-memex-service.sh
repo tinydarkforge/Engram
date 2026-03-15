@@ -16,6 +16,9 @@ usage() {
   echo "  --domain NAME       Domain for nginx server_name (required for --setup-nginx)"
   echo "  --ssl-cert PATH     TLS certificate path (default: /etc/ssl/certs/fullchain.pem)"
   echo "  --ssl-key PATH      TLS key path (default: /etc/ssl/private/privkey.pem)"
+  echo "  --setup-certbot     Install certbot and request TLS certs (requires --domain and --email)"
+  echo "  --email ADDRESS     Email for certbot registration"
+  echo "  --all               Run setup-ufw + setup-nginx + setup-certbot"
 }
 
 MEMEX_PATH="$MEMEX_PATH_DEFAULT"
@@ -25,9 +28,11 @@ MCP_BIND_ADDR="0.0.0.0"
 MCP_API_KEY=""
 SETUP_UFW="false"
 SETUP_NGINX="false"
+SETUP_CERTBOT="false"
 NGINX_DOMAIN=""
 NGINX_SSL_CERT="/etc/ssl/certs/fullchain.pem"
 NGINX_SSL_KEY="/etc/ssl/private/privkey.pem"
+CERTBOT_EMAIL=""
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -59,8 +64,16 @@ while [[ $# -gt 0 ]]; do
       SETUP_NGINX="true"
       shift 1
       ;;
+    --setup-certbot)
+      SETUP_CERTBOT="true"
+      shift 1
+      ;;
     --domain)
       NGINX_DOMAIN="$2"
+      shift 2
+      ;;
+    --email)
+      CERTBOT_EMAIL="$2"
       shift 2
       ;;
     --ssl-cert)
@@ -70,6 +83,12 @@ while [[ $# -gt 0 ]]; do
     --ssl-key)
       NGINX_SSL_KEY="$2"
       shift 2
+      ;;
+    --all)
+      SETUP_UFW="true"
+      SETUP_NGINX="true"
+      SETUP_CERTBOT="true"
+      shift 1
       ;;
     -h|--help)
       usage
@@ -93,6 +112,14 @@ if [[ "$SETUP_NGINX" == "true" && -z "$NGINX_DOMAIN" ]]; then
   echo "Error: --domain is required when --setup-nginx is used"
   usage
   exit 1
+fi
+
+if [[ "$SETUP_CERTBOT" == "true" ]]; then
+  if [[ -z "$NGINX_DOMAIN" || -z "$CERTBOT_EMAIL" ]]; then
+    echo "Error: --domain and --email are required when --setup-certbot is used"
+    usage
+    exit 1
+  fi
 fi
 
 if [[ $EUID -ne 0 ]]; then
@@ -180,4 +207,23 @@ EOF
   nginx -t
   systemctl reload nginx
   echo "nginx configured for ${NGINX_DOMAIN}"
+fi
+
+if [[ "$SETUP_CERTBOT" == "true" ]]; then
+  if ! command -v certbot >/dev/null 2>&1; then
+    if command -v apt-get >/dev/null 2>&1; then
+      apt-get update
+      apt-get install -y certbot python3-certbot-nginx
+    elif command -v yum >/dev/null 2>&1; then
+      yum install -y certbot python3-certbot-nginx
+    fi
+  fi
+
+  if ! command -v certbot >/dev/null 2>&1; then
+    echo "certbot install failed or unavailable. Skipping certbot."
+    exit 1
+  fi
+
+  certbot --nginx -d "$NGINX_DOMAIN" --non-interactive --agree-tos -m "$CERTBOT_EMAIL"
+  echo "certbot completed for ${NGINX_DOMAIN}"
 fi
