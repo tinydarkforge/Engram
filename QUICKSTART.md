@@ -14,6 +14,9 @@ cd Memex
 # Install dependencies
 npm install
 
+# Initialize Memex (first-time setup)
+npm run setup
+
 # Verify it works
 node scripts/memex-loader.js status
 ```
