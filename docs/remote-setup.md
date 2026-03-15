@@ -46,12 +46,25 @@ From a different machine on the same network:
 ```bash
 curl -i \
   -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
   -H "Authorization: Bearer <MCP_API_KEY>" \
-  -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}' \
+  -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"curl","version":"0.0.1"}}}' \
   http://<server-ip>:3000/mcp
 ```
 
-You should get a JSON-RPC response listing tools. If you get:
+You should get a response with an `mcp-session-id` header. Then list tools:
+
+```bash
+curl -i \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
+  -H "Authorization: Bearer <MCP_API_KEY>" \
+  -H "Mcp-Session-Id: <SESSION_ID>" \
+  -d '{"jsonrpc":"2.0","id":2,"method":"tools/list"}' \
+  http://<server-ip>:3000/mcp
+```
+
+If you get:
 - `401` → missing API key
 - `403` → wrong API key
 - connection refused → firewall or bind address issue
