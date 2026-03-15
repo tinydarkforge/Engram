@@ -20,6 +20,12 @@ const { resolveMemexPath } = require('./paths');
 const { readJSON } = require('./safe-json');
 
 const MEMEX_PATH = resolveMemexPath(__dirname);
+const SILENT = process.env.MEMEX_SILENT === '1' || process.env.NODE_ENV === 'test';
+const log = (...args) => {
+  if (!SILENT) {
+    console.log(...args);
+  }
+};
 
 class LazyLoader {
   /**
@@ -30,7 +36,7 @@ class LazyLoader {
    * - sessions/{id}.json: Full session details (loaded on-demand)
    */
   async convertToLazyFormat() {
-    console.log('🔄 Converting to lazy-loading format...');
+    log('🔄 Converting to lazy-loading format...');
 
     const sessionIndexFiles = await glob('summaries/projects/*/sessions-index.json', {
       cwd: MEMEX_PATH
@@ -102,15 +108,15 @@ class LazyLoader {
       const sizeAfter = Buffer.byteLength(JSON.stringify(lightIndex));
       totalSizeAfter += sizeAfter;
 
-      console.log(`  ✓ ${path.basename(path.dirname(fullPath))}: ${fullIndex.sessions.length} sessions`);
-      console.log(`    ${Math.round(sizeBefore / 1024)}KB → ${Math.round(sizeAfter / 1024)}KB (${Math.round((1 - sizeAfter/sizeBefore) * 100)}% reduction)`);
+      log(`  ✓ ${path.basename(path.dirname(fullPath))}: ${fullIndex.sessions.length} sessions`);
+      log(`    ${Math.round(sizeBefore / 1024)}KB → ${Math.round(sizeAfter / 1024)}KB (${Math.round((1 - sizeAfter/sizeBefore) * 100)}% reduction)`);
     }
 
-    console.log(`\n✅ Conversion complete`);
-    console.log(`   • Sessions: ${totalSessions}`);
-    console.log(`   • Before: ${Math.round(totalSizeBefore / 1024)}KB`);
-    console.log(`   • After: ${Math.round(totalSizeAfter / 1024)}KB`);
-    console.log(`   • Saved: ${Math.round((totalSizeBefore - totalSizeAfter) / 1024)}KB (${Math.round((1 - totalSizeAfter/totalSizeBefore) * 100)}%)`);
+    log(`\n✅ Conversion complete`);
+    log(`   • Sessions: ${totalSessions}`);
+    log(`   • Before: ${Math.round(totalSizeBefore / 1024)}KB`);
+    log(`   • After: ${Math.round(totalSizeAfter / 1024)}KB`);
+    log(`   • Saved: ${Math.round((totalSizeBefore - totalSizeAfter) / 1024)}KB (${Math.round((1 - totalSizeAfter/totalSizeBefore) * 100)}%)`);
 
     return {
       total_sessions: totalSessions,
@@ -181,7 +187,7 @@ class LazyLoader {
    * Revert to full format (for testing/rollback)
    */
   async revertToFullFormat() {
-    console.log('🔄 Reverting to full format...');
+    log('🔄 Reverting to full format...');
 
     const sessionIndexFiles = await glob('summaries/projects/*/sessions-index.json', {
       cwd: MEMEX_PATH
@@ -193,7 +199,7 @@ class LazyLoader {
       if (!lightIndex) continue;
 
       if (!lightIndex._lazy_loading_enabled) {
-        console.log(`  ⊘ ${path.basename(path.dirname(fullPath))}: Not in lazy format, skipping`);
+        log(`  ⊘ ${path.basename(path.dirname(fullPath))}: Not in lazy format, skipping`);
         continue;
       }
 
@@ -226,10 +232,10 @@ class LazyLoader {
       delete fullIndex._session_details_path;
 
       fs.writeFileSync(fullPath, JSON.stringify(fullIndex, null, 2));
-      console.log(`  ✓ ${path.basename(path.dirname(fullPath))}: Reverted to full format`);
+      log(`  ✓ ${path.basename(path.dirname(fullPath))}: Reverted to full format`);
     }
 
-    console.log('✅ Reverted to full format');
+    log('✅ Reverted to full format');
   }
 }
 
