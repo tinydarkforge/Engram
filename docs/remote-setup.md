@@ -160,6 +160,24 @@ sudo /opt/memex/scripts/install-memex-service.sh \
   --user memex
 ```
 
+Optional add-ons:
+```bash
+sudo /opt/memex/scripts/install-memex-service.sh \
+  --memex-path /opt/memex \
+  --api-key replace-me \
+  --setup-ufw
+```
+
+```bash
+sudo /opt/memex/scripts/install-memex-service.sh \
+  --memex-path /opt/memex \
+  --api-key replace-me \
+  --setup-nginx \
+  --domain memex.yourdomain.com \
+  --ssl-cert /etc/ssl/certs/fullchain.pem \
+  --ssl-key /etc/ssl/private/privkey.pem
+```
+
 ## 6. Run as systemd with an env file (Linux)
 
 Create `/etc/memex/memex.env`:
