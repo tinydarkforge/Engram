@@ -47,6 +47,8 @@ const {
   getBundle,
   listProjects,
   recentSessions,
+  searchSessions,
+  getSession,
   getTopics,
   queryConcept,
   crossProjectSearch,
@@ -154,6 +156,47 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
         }
       },
       {
+        name: 'get_session',
+        description: 'Get full session details by project and session ID.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            project: {
+              type: 'string',
+              description: 'Project name (e.g., "Memex", "DemoProject", "DevOps")'
+            },
+            session_id: {
+              type: 'string',
+              description: 'Session ID to retrieve'
+            }
+          },
+          required: ['project', 'session_id']
+        }
+      },
+      {
+        name: 'search_sessions',
+        description: 'Keyword search across sessions by summary and topics.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            query: {
+              type: 'string',
+              description: 'Keyword query to search for'
+            },
+            project: {
+              type: 'string',
+              description: 'Optional project name to scope results'
+            },
+            limit: {
+              type: 'number',
+              description: 'Maximum results to return (default: 10)',
+              default: 10
+            }
+          },
+          required: ['query']
+        }
+      },
+      {
         name: 'list_projects',
         description: 'List all projects indexed in Neural Memory with session counts.',
         inputSchema: {
@@ -243,6 +286,14 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
     case 'get_bundle':
       result = getBundle(args.project);
+      break;
+
+    case 'get_session':
+      result = getSession(args.project, args.session_id);
+      break;
+
+    case 'search_sessions':
+      result = searchSessions(args.query, args.project, args.limit || 10);
       break;
 
     case 'list_projects':
