@@ -93,6 +93,9 @@ claude mcp add memex -s user -- node /path/to/Memex/scripts/mcp-server.mjs
 
 Now Claude can query your Memex directly — it knows your projects, conventions, and history.
 
+**Remote MCP (Streamable HTTP):**
+See [docs/remote-setup.md](docs/remote-setup.md) for running the HTTP server and connecting over the network.
+
 **Other AI tools:** Use the REST API:
 ```bash
 # Start the server
