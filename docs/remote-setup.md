@@ -178,6 +178,16 @@ sudo /opt/memex/scripts/install-memex-service.sh \
   --ssl-key /etc/ssl/private/privkey.pem
 ```
 
+All-in-one (service + UFW + nginx + certbot):
+```bash
+sudo /opt/memex/scripts/install-memex-service.sh \
+  --memex-path /opt/memex \
+  --api-key replace-me \
+  --all \
+  --domain memex.yourdomain.com \
+  --email admin@yourdomain.com
+```
+
 ## 6. Run as systemd with an env file (Linux)
 
 Create `/etc/memex/memex.env`:
