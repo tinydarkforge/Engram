@@ -9,6 +9,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { execFileSync } = require('child_process');
 const { resolveMemexPath, resolveProjectDirName } = require('./paths');
 const { readJSON } = require('./safe-json');
 
@@ -414,6 +415,60 @@ async function crossProjectSearch(query, limit = 20) {
   }
 }
 
+function rebuildIndex(args = {}) {
+  const options = args && typeof args === 'object' ? args : {};
+  const doBloom = options.bloom !== false;
+  const doGit = options.git === true;
+  const doEmbeddings = options.embeddings === true;
+
+  const results = {
+    bloom: null,
+    git: null,
+    embeddings: null
+  };
+
+  try {
+    if (doBloom) {
+      execFileSync(process.execPath, [path.join(__dirname, 'bloom-filter.js'), 'build'], {
+        cwd: MEMEX_PATH,
+        stdio: 'ignore'
+      });
+      results.bloom = 'rebuilt';
+    }
+  } catch (e) {
+    results.bloom = `error: ${e.message}`;
+  }
+
+  try {
+    if (doGit) {
+      execFileSync(process.execPath, [path.join(__dirname, 'index-git.js'), 'build'], {
+        cwd: MEMEX_PATH,
+        stdio: 'ignore'
+      });
+      results.git = 'rebuilt';
+    }
+  } catch (e) {
+    results.git = `error: ${e.message}`;
+  }
+
+  try {
+    if (doEmbeddings) {
+      execFileSync(process.execPath, [path.join(__dirname, 'vector-search.js'), 'generate'], {
+        cwd: MEMEX_PATH,
+        stdio: 'ignore'
+      });
+      results.embeddings = 'rebuilt';
+    }
+  } catch (e) {
+    results.embeddings = `error: ${e.message}`;
+  }
+
+  return {
+    ok: true,
+    results
+  };
+}
+
 function getStats() {
   const index = loadIndex();
   return {
@@ -454,6 +509,7 @@ module.exports = {
   queryConcept,
   crossProjectSearch,
   remember,
+  rebuildIndex,
   getStats,
   getGraphSummary,
 };

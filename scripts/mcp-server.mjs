@@ -55,6 +55,7 @@ const {
   queryConcept,
   crossProjectSearch,
   remember,
+  rebuildIndex,
   getStats,
   getGraphSummary,
 } = require('./mcp-tools.js');
@@ -268,6 +269,30 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           },
           required: ['query']
         }
+      },
+      {
+        name: 'rebuild_index',
+        description: 'Rebuild Memex indexes (bloom, git, embeddings).',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            bloom: {
+              type: 'boolean',
+              description: 'Rebuild Bloom filter (default: true)',
+              default: true
+            },
+            git: {
+              type: 'boolean',
+              description: 'Rebuild git index (default: false)',
+              default: false
+            },
+            embeddings: {
+              type: 'boolean',
+              description: 'Regenerate embeddings (default: false)',
+              default: false
+            }
+          }
+        }
       }
     ]
   };
@@ -331,6 +356,10 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
     case 'cross_project_search':
       result = await crossProjectSearch(args.query, args.limit || 20);
+      break;
+
+    case 'rebuild_index':
+      result = rebuildIndex(args || {});
       break;
 
     default:
