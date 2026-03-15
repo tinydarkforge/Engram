@@ -690,6 +690,7 @@ if (require.main === module) {
 
       case 'status': {
         (async () => {
+          const suppressIssues = process.argv.includes('--no-issues');
           const startTime = Date.now();
           const indexPath = path.join(MEMEX_PATH, 'index.json');
           const indexGzipPath = path.join(MEMEX_PATH, 'index.json.gz');
@@ -856,12 +857,16 @@ if (require.main === module) {
             console.log(`    Summary:  ${lastSession.summary}`);
           }
           if (issues.length > 0) {
-            console.log('');
-            console.log('Issues detected:');
-            issues.forEach(i => console.log(`    ! ${i}`));
+            if (!suppressIssues) {
+              console.log('');
+              console.log('Issues detected:');
+              issues.forEach(i => console.log(`    ! ${i}`));
+            }
           } else {
-            console.log('');
-            console.log('No issues detected.');
+            if (!suppressIssues) {
+              console.log('');
+              console.log('No issues detected.');
+            }
           }
         })();
         return;

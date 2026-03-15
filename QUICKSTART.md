@@ -29,6 +29,12 @@ Version:        4.0.0
 Load time:      11ms
 ```
 
+If you see warnings:
+- **Schema version behind:** run `npm run migrate`
+- **Missing metadata:** create minimal `metadata/projects/<Project>.json` (optional but recommended)
+- **Metrics are zero:** counters only start after running `remember` or `neural_search`
+- **Embeddings = 0:** run `node scripts/vector-search.js generate` or use `rebuild_index` with `embeddings: true`
+
 ---
 
 ## Add a Shell Alias (optional but recommended)
