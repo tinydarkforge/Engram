@@ -15,7 +15,8 @@ Ultra-efficient knowledge system that remembers your project context across sess
 ```bash
 # 1. Setup (one-time)
 cd ~/code/Memex
-node scripts/memex-loader.js startup
+npm install
+npm run setup
 
 # 2. Save a session
 ./scripts/remember "Implemented feature X" --topics feature,x

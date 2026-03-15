@@ -691,7 +691,37 @@ if (require.main === module) {
       case 'status': {
         (async () => {
           const startTime = Date.now();
-          const indexResult = memex.loadIndex();
+          const indexPath = path.join(MEMEX_PATH, 'index.json');
+          const indexGzipPath = path.join(MEMEX_PATH, 'index.json.gz');
+          const indexMsgpackPath = path.join(MEMEX_PATH, 'index.msgpack');
+          const hasIndex = fs.existsSync(indexPath) || fs.existsSync(indexGzipPath) || fs.existsSync(indexMsgpackPath);
+
+          if (!hasIndex) {
+            console.log('Memex Status');
+            console.log('='.repeat(40));
+            console.log('');
+            console.log('Index not found.');
+            console.log('');
+            console.log('Next steps:');
+            console.log('  1. Run: npm run setup');
+            console.log(`  2. Ensure MEMEX_PATH points to your Memex directory (currently: ${MEMEX_PATH})`);
+            return;
+          }
+
+          let indexResult;
+          try {
+            indexResult = memex.loadIndex();
+          } catch (e) {
+            console.log('Memex Status');
+            console.log('='.repeat(40));
+            console.log('');
+            console.log(`Failed to load index: ${e.message}`);
+            console.log('');
+            console.log('Next steps:');
+            console.log('  1. Run: npm run setup');
+            console.log(`  2. Verify index files exist under ${MEMEX_PATH}`);
+            return;
+          }
           memex.detectProject();
           const loadMs = Date.now() - startTime;
 
