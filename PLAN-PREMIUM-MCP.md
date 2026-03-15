@@ -425,17 +425,21 @@ This section captures corner cases and failure modes that must be addressed as t
 - **Multi-process index writes:** Atomic rename only protects a single writer. Mitigation: move index data to SQLite earlier, enforce a single writer, or implement file locking with conflict detection.
 - **Session ID collisions:** Timestamp IDs can collide under concurrency or across machines. Mitigation: use ULID/UUID for IDs.
 - **Metrics file corruption:** Concurrent updates to `.cache/metrics.json` can corrupt the file. Mitigation: atomic writes plus a mutex, or move metrics into SQLite.
+- **Stale locks after crashes:** Lock files can block writes forever if a process dies mid-write. Mitigation: lock TTL + stale lock recovery, and lock creation in the same directory as the target.
+- **Atomic writes across filesystems:** `rename` is only atomic within a filesystem. Mitigation: write temp files next to target file, then `fsync` temp before rename for critical indexes.
 
 ### Filesystem & Naming
 
 - **Case-insensitive filesystems:** Project names that differ by case collide on macOS. Mitigation: normalize a storage slug (e.g., lower-case) and store the display name separately.
 - **Path traversal edge cases:** Validation must reject `..` and path separators before any file IO.
+- **Project slug collisions:** Case-insensitive filesystems can map distinct names to the same slug. Mitigation: detect collisions and return a structured error if a different display name maps to an existing slug.
 
 ### Search & Indexing
 
 - **Bloom filter staleness:** Updates/deletes cannot be removed, increasing false positives. Mitigation: periodic rebuilds or replace with FTS; consider dropping Bloom filter at <1k sessions.
 - **Linear scan performance:** `neural_search` targets may fail as sessions grow. Mitigation: cache embeddings in memory and add ANN (e.g., HNSW or sqlite-vec) past a threshold.
 - **Embedding version drift:** Store `embedding_model` and `embedding_version` per session to support future upgrades.
+- **Multi-process in-memory divergence:** Singleton ANN index per process can diverge in multi-instance deployments. Mitigation: shared index storage, single-writer mode, or explicit documentation that multi-instance without shared index is eventually inconsistent.
 
 ### Network Transport (PR 6)
 
