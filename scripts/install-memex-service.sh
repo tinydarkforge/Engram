@@ -11,6 +11,11 @@ usage() {
   echo "  --port PORT         MCP port (default: 3000)"
   echo "  --bind ADDR         Bind address (default: 0.0.0.0)"
   echo "  --api-key KEY       MCP API key (required)"
+  echo "  --setup-ufw         Configure UFW allow rules for MCP port"
+  echo "  --setup-nginx       Install nginx and configure TLS proxy (requires --domain)"
+  echo "  --domain NAME       Domain for nginx server_name (required for --setup-nginx)"
+  echo "  --ssl-cert PATH     TLS certificate path (default: /etc/ssl/certs/fullchain.pem)"
+  echo "  --ssl-key PATH      TLS key path (default: /etc/ssl/private/privkey.pem)"
 }
 
 MEMEX_PATH="$MEMEX_PATH_DEFAULT"
@@ -18,6 +23,11 @@ SERVICE_USER="memex"
 MCP_PORT="3000"
 MCP_BIND_ADDR="0.0.0.0"
 MCP_API_KEY=""
+SETUP_UFW="false"
+SETUP_NGINX="false"
+NGINX_DOMAIN=""
+NGINX_SSL_CERT="/etc/ssl/certs/fullchain.pem"
+NGINX_SSL_KEY="/etc/ssl/private/privkey.pem"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -41,6 +51,26 @@ while [[ $# -gt 0 ]]; do
       MCP_API_KEY="$2"
       shift 2
       ;;
+    --setup-ufw)
+      SETUP_UFW="true"
+      shift 1
+      ;;
+    --setup-nginx)
+      SETUP_NGINX="true"
+      shift 1
+      ;;
+    --domain)
+      NGINX_DOMAIN="$2"
+      shift 2
+      ;;
+    --ssl-cert)
+      NGINX_SSL_CERT="$2"
+      shift 2
+      ;;
+    --ssl-key)
+      NGINX_SSL_KEY="$2"
+      shift 2
+      ;;
     -h|--help)
       usage
       exit 0
@@ -55,6 +85,12 @@ done
 
 if [[ -z "$MCP_API_KEY" ]]; then
   echo "Error: --api-key is required"
+  usage
+  exit 1
+fi
+
+if [[ "$SETUP_NGINX" == "true" && -z "$NGINX_DOMAIN" ]]; then
+  echo "Error: --domain is required when --setup-nginx is used"
   usage
   exit 1
 fi
@@ -92,3 +128,56 @@ systemctl restart memex-mcp
 echo "Memex MCP service installed and started."
 systemctl status memex-mcp --no-pager
 
+if [[ "$SETUP_UFW" == "true" ]]; then
+  if command -v ufw >/dev/null 2>&1; then
+    ufw allow "${MCP_PORT}/tcp"
+    ufw reload || true
+    echo "UFW rule added for port ${MCP_PORT}"
+  else
+    echo "UFW not installed; skipping firewall configuration."
+  fi
+fi
+
+if [[ "$SETUP_NGINX" == "true" ]]; then
+  if ! command -v nginx >/dev/null 2>&1; then
+    if command -v apt-get >/dev/null 2>&1; then
+      apt-get update
+      apt-get install -y nginx
+    elif command -v yum >/dev/null 2>&1; then
+      yum install -y nginx
+    fi
+  fi
+
+  if ! command -v nginx >/dev/null 2>&1; then
+    echo "nginx install failed or unavailable. Skipping nginx config."
+    exit 1
+  fi
+
+  NGINX_SITE_PATH="/etc/nginx/sites-available/memex-mcp"
+  cat > "$NGINX_SITE_PATH" <<EOF
+server {
+  listen 443 ssl;
+  server_name ${NGINX_DOMAIN};
+
+  ssl_certificate     ${NGINX_SSL_CERT};
+  ssl_certificate_key ${NGINX_SSL_KEY};
+
+  location /mcp {
+    proxy_pass http://127.0.0.1:${MCP_PORT}/mcp;
+    proxy_http_version 1.1;
+    proxy_set_header Host \$host;
+    proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto \$scheme;
+    proxy_buffering off;
+  }
+}
+EOF
+
+  if [[ -d /etc/nginx/sites-enabled ]]; then
+    ln -sf "$NGINX_SITE_PATH" /etc/nginx/sites-enabled/memex-mcp
+  fi
+
+  nginx -t
+  systemctl reload nginx
+  echo "nginx configured for ${NGINX_DOMAIN}"
+fi
