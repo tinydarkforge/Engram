@@ -9,7 +9,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { resolveMemexPath } = require('./paths');
+const { resolveMemexPath, resolveProjectDirName } = require('./paths');
 const { readJSON } = require('./safe-json');
 
 const MEMEX_PATH = resolveMemexPath(__dirname);
@@ -26,8 +26,8 @@ function loadIndex() {
 }
 
 function loadSessionsIndex(project) {
-  const sanitized = project.replace(/[^a-zA-Z0-9._-]/g, '');
-  const indexPath = path.join(MEMEX_PATH, 'summaries/projects', sanitized, 'sessions-index.json');
+  const projectDirName = resolveProjectDirName(MEMEX_PATH, project);
+  const indexPath = path.join(MEMEX_PATH, 'summaries/projects', projectDirName, 'sessions-index.json');
   return readJSON(indexPath);
 }
 
@@ -39,7 +39,7 @@ function loadGraph() {
 }
 
 function loadBundle(projectName) {
-  const sanitized = projectName.replace(/[^a-zA-Z0-9._-]/g, '');
+  const sanitized = resolveProjectDirName(MEMEX_PATH, projectName) || projectName.replace(/[^a-zA-Z0-9._-]/g, '');
   const msgpack = require('msgpack-lite');
   const bundlePath = path.join(MEMEX_PATH, '.neural/bundles', `${sanitized}.msgpack`);
   if (!fs.existsSync(bundlePath)) return null;
@@ -50,11 +50,21 @@ function loadBundle(projectName) {
 // Tool Implementations
 // ─────────────────────────────────────────────────────────────
 
+const VectorSearch = require('./vector-search.js');
+const vectorSearch = new VectorSearch();
+let vectorSearchReady = null;
+
+async function getVectorSearch() {
+  if (!vectorSearchReady) {
+    vectorSearchReady = vectorSearch.initialize();
+  }
+  await vectorSearchReady;
+  return vectorSearch;
+}
+
 async function neuralSearch(query, limit = 10, useDecay = true) {
   try {
-    const VectorSearch = require('./vector-search.js');
-    const vs = new VectorSearch();
-    await vs.initialize();
+    const vs = await getVectorSearch();
 
     const results = await vs.search(query, {
       limit,
@@ -79,6 +89,113 @@ async function neuralSearch(query, limit = 10, useDecay = true) {
     };
   } catch (e) {
     return { error: e.message };
+  }
+}
+
+const RESERVED_PROJECTS = new Set(['__global__', '__test__', '__system__']);
+
+function buildValidationError(code, message, field, value) {
+  return {
+    error: true,
+    code,
+    message,
+    field,
+    value: String(value ?? '').slice(0, 100)
+  };
+}
+
+function validateRememberInput(args) {
+  if (!args || typeof args !== 'object') {
+    return buildValidationError('MEMEX_ERR_SUMMARY_REQUIRED', 'summary is required', 'summary', '');
+  }
+
+  const summary = typeof args.summary === 'string' ? args.summary.trim() : '';
+  if (!summary) {
+    return buildValidationError('MEMEX_ERR_SUMMARY_REQUIRED', 'summary is required', 'summary', args.summary);
+  }
+  if (summary.length > 1000) {
+    return buildValidationError('MEMEX_ERR_SUMMARY_TOO_LONG', `summary must be 1000 characters or fewer (got ${summary.length})`, 'summary', summary);
+  }
+
+  const topics = Array.isArray(args.topics) ? args.topics.map(t => (typeof t === 'string' ? t.trim() : '')).filter(Boolean) : [];
+  if (topics.length === 0) {
+    return buildValidationError('MEMEX_ERR_TOPICS_REQUIRED', 'topics must be a non-empty array', 'topics', args.topics);
+  }
+  if (topics.length > 20) {
+    return buildValidationError('MEMEX_ERR_TOPICS_TOO_MANY', 'topics must contain 20 or fewer items', 'topics', topics.length);
+  }
+  for (let i = 0; i < topics.length; i++) {
+    if (topics[i].length > 50) {
+      return buildValidationError('MEMEX_ERR_TOPIC_TOO_LONG', `each topic must be 50 characters or fewer (got '${topics[i].slice(0, 10)}...' at index ${i})`, 'topics', topics[i]);
+    }
+  }
+
+  const projectRaw = typeof args.project === 'string' ? args.project.trim() : '';
+  if (!projectRaw) {
+    return buildValidationError('MEMEX_ERR_PROJECT_REQUIRED', 'project is required when calling remember via MCP', 'project', args.project);
+  }
+  if (projectRaw.length > 100) {
+    return buildValidationError('MEMEX_ERR_PROJECT_TOO_LONG', 'project name must be 100 characters or fewer', 'project', projectRaw);
+  }
+  if (projectRaw.includes('..')) {
+    return buildValidationError('MEMEX_ERR_PROJECT_INVALID_CHARS', 'project name may only contain letters, numbers, dots, underscores, and hyphens', 'project', projectRaw);
+  }
+  if (/[^a-zA-Z0-9._-]/.test(projectRaw)) {
+    return buildValidationError('MEMEX_ERR_PROJECT_INVALID_CHARS', 'project name may only contain letters, numbers, dots, underscores, and hyphens', 'project', projectRaw);
+  }
+  if (RESERVED_PROJECTS.has(projectRaw)) {
+    return buildValidationError('MEMEX_ERR_PROJECT_RESERVED', `project name '${projectRaw}' is reserved`, 'project', projectRaw);
+  }
+
+  const keyDecisions = Array.isArray(args.key_decisions) ? args.key_decisions : [];
+  const learnings = Array.isArray(args.learnings) ? args.learnings : [];
+
+  return {
+    summary,
+    topics,
+    project: projectRaw,
+    key_decisions: keyDecisions,
+    learnings
+  };
+}
+
+async function remember(args) {
+  try {
+    const validated = validateRememberInput(args);
+    if (validated.error) return validated;
+
+    const SessionSaver = require('./save-session.js');
+    const saver = new SessionSaver({ project: validated.project });
+
+    const result = await saver.saveSession(
+      validated.summary,
+      validated.topics,
+      null,
+      {
+        commit: false,
+        include_git_changes: false,
+        key_decisions: validated.key_decisions,
+        learnings: validated.learnings
+      }
+    );
+
+    let embeddingGenerated = false;
+    try {
+      const vs = await getVectorSearch();
+      const embeddingResult = await vs.addSessionEmbedding(result.session, { persist: true });
+      embeddingGenerated = embeddingResult.embedded === true;
+    } catch (e) {
+      embeddingGenerated = false;
+    }
+
+    return {
+      session_id: result.session_id,
+      project: result.project,
+      saved: true,
+      embedding_generated: embeddingGenerated
+    };
+  } catch (e) {
+    return buildValidationError('MEMEX_ERR_WRITE_FAILED', `failed to save session: ${e.message}`, 'session', '');
   }
 }
 
@@ -247,6 +364,7 @@ module.exports = {
   getTopics,
   queryConcept,
   crossProjectSearch,
+  remember,
   getStats,
   getGraphSummary,
 };

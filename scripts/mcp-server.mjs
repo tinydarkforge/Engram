@@ -50,6 +50,7 @@ const {
   getTopics,
   queryConcept,
   crossProjectSearch,
+  remember,
   getStats,
   getGraphSummary,
 } = require('./mcp-tools.js');
@@ -75,6 +76,45 @@ const server = new Server(
 server.setRequestHandler(ListToolsRequestSchema, async () => {
   return {
     tools: [
+      {
+        name: 'remember',
+        description: 'Save a memory or session to Memex. Call at end of session, after completing a feature, or when recording a decision.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            summary: {
+              type: 'string',
+              description: '1-3 sentence summary of what was done or learned.',
+              maxLength: 1000
+            },
+            topics: {
+              type: 'array',
+              items: { type: 'string' },
+              description: '2-8 topic tags, e.g. [\'auth\', \'jwt\', \'security\']',
+              maxItems: 20
+            },
+            project: {
+              type: 'string',
+              description: 'Project name. Required when called via MCP (no cwd context available).'
+            },
+            key_decisions: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  decision: { type: 'string' },
+                  rationale: { type: 'string' }
+                }
+              }
+            },
+            learnings: {
+              type: 'array',
+              items: { type: 'string' }
+            }
+          },
+          required: ['summary', 'topics', 'project']
+        }
+      },
       {
         name: 'neural_search',
         description: 'Semantic search across all Neural Memory sessions. Finds sessions by meaning, not just keywords. Use this to find relevant past work, learnings, and context.',
@@ -193,6 +233,10 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
   let result;
 
   switch (name) {
+    case 'remember':
+      result = await remember(args);
+      break;
+
     case 'neural_search':
       result = await neuralSearch(args.query, args.limit || 10, args.use_decay !== false);
       break;

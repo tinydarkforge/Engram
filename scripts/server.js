@@ -32,9 +32,8 @@ const { readJSON } = require('./safe-json');
 const MEMEX_PATH = resolveMemexPath(__dirname);
 const PORT = parseInt(process.env.PORT || '3000', 10);
 
-// Initialize Memex
+// Initialize Memex (lazy index load)
 const memex = new Memex();
-memex.loadIndex();
 
 const app = express();
 app.use(express.json());
@@ -58,9 +57,27 @@ function clampLimit(value, defaultVal, max) {
   return Math.min(n, max);
 }
 
+function ensureIndexLoaded() {
+  if (!memex.index) {
+    memex.loadIndex();
+  }
+}
+
 // ─────────────────────────────────────────────────────────────
 // API Routes
 // ─────────────────────────────────────────────────────────────
+
+app.use('/api', (req, res, next) => {
+  if (req.path.startsWith('/agentbridge')) {
+    return next();
+  }
+  try {
+    ensureIndexLoaded();
+    next();
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
 
 /**
  * GET /api/stats
