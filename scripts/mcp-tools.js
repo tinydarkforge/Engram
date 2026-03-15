@@ -53,6 +53,7 @@ function loadBundle(projectName) {
 const VectorSearch = require('./vector-search.js');
 const vectorSearch = new VectorSearch();
 let vectorSearchReady = null;
+let memexLoader = null;
 
 async function getVectorSearch() {
   if (!vectorSearchReady) {
@@ -60,6 +61,14 @@ async function getVectorSearch() {
   }
   await vectorSearchReady;
   return vectorSearch;
+}
+
+function getMemexLoader() {
+  if (!memexLoader) {
+    const Memex = require('./memex-loader');
+    memexLoader = new Memex();
+  }
+  return memexLoader;
 }
 
 async function neuralSearch(query, limit = 10, useDecay = true) {
@@ -260,6 +269,84 @@ function recentSessions(limit = 10) {
   };
 }
 
+function searchSessions(query, project = null, limit = 10) {
+  const normalizedQuery = typeof query === 'string' ? query.trim().toLowerCase() : '';
+  if (!normalizedQuery) {
+    return { error: 'query is required' };
+  }
+
+  const projectsDir = path.join(MEMEX_PATH, 'summaries/projects');
+  if (!fs.existsSync(projectsDir)) return { query, total: 0, results: [] };
+
+  let projectDirs = [];
+  if (project) {
+    const resolved = resolveProjectDirName(MEMEX_PATH, project);
+    if (!resolved) {
+      return { query, project, total: 0, results: [] };
+    }
+    projectDirs = [resolved];
+  } else {
+    projectDirs = fs.readdirSync(projectsDir);
+  }
+
+  const results = [];
+
+  for (const projectDirName of projectDirs) {
+    const indexPath = path.join(projectsDir, projectDirName, 'sessions-index.json');
+    const sessionsIndex = readJSON(indexPath);
+    if (!sessionsIndex?.sessions) continue;
+
+    for (const session of sessionsIndex.sessions) {
+      const summary = typeof session.summary === 'string' ? session.summary : '';
+      const topics = Array.isArray(session.topics) ? session.topics : [];
+      const summaryMatch = summary.toLowerCase().includes(normalizedQuery);
+      const topicsMatch = topics.some(topic => typeof topic === 'string' && topic.toLowerCase().includes(normalizedQuery));
+      if (!summaryMatch && !topicsMatch) continue;
+
+      results.push({
+        project: session.project_display || session.project || projectDirName,
+        id: session.id,
+        date: session.date,
+        summary,
+        topics
+      });
+    }
+  }
+
+  results.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+  return {
+    query,
+    total: results.length,
+    results: results.slice(0, limit)
+  };
+}
+
+function getSession(project, sessionId) {
+  const projectName = typeof project === 'string' ? project.trim() : '';
+  const id = typeof sessionId === 'string' ? sessionId.trim() : '';
+
+  if (!projectName) {
+    return buildValidationError('MEMEX_ERR_PROJECT_REQUIRED', 'project is required', 'project', project);
+  }
+  if (!id) {
+    return buildValidationError('MEMEX_ERR_SESSION_NOT_FOUND', 'session_id is required', 'session_id', sessionId);
+  }
+
+  const memex = getMemexLoader();
+  const session = memex.loadSessionDetails(projectName, id);
+  if (!session) {
+    return buildValidationError(
+      'MEMEX_ERR_SESSION_NOT_FOUND',
+      `session '${id}' not found in project '${projectName}'`,
+      'session_id',
+      id
+    );
+  }
+
+  return session;
+}
+
 function getTopics(limit = 30) {
   const index = loadIndex();
   const topics = Object.entries(index.t || {})
@@ -358,6 +445,8 @@ module.exports = {
   loadGraph,
   loadBundle,
   neuralSearch,
+  getSession,
+  searchSessions,
   getBundle,
   listProjects,
   recentSessions,

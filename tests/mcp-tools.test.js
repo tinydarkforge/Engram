@@ -55,6 +55,19 @@ describe('MCP Tools', () => {
       ],
     };
     fs.writeFileSync(path.join(testProjDir, 'sessions-index.json'), JSON.stringify(sessionsIndex));
+    const sessionsDir = path.join(testProjDir, 'sessions');
+    fs.mkdirSync(sessionsDir, { recursive: true });
+    const sessionDetails = {
+      id: 'tp-001',
+      project: 'TestProject',
+      date: '2025-12-20',
+      summary: 'Added auth flow',
+      topics: ['auth'],
+      key_decisions: [{ decision: 'Use JWT', rationale: 'Stateless auth' }],
+      learnings: ['Token rotation matters'],
+      outcomes: { completed: ['Auth wired'] }
+    };
+    fs.writeFileSync(path.join(sessionsDir, 'tp-001.json'), JSON.stringify(sessionDetails));
 
     // Create summaries/projects/AnotherProject/sessions-index.json
     const anotherProjDir = path.join(tmpDir, 'summaries', 'projects', 'AnotherProject');
@@ -287,6 +300,35 @@ describe('MCP Tools', () => {
     it('returns error when git index is missing', async () => {
       const result = await tools.crossProjectSearch('test query');
       assert.ok(result.error || result.results !== undefined || result.by_project !== undefined);
+    });
+  });
+
+  describe('getSession()', () => {
+    it('returns session details when found', () => {
+      const result = tools.getSession('TestProject', 'tp-001');
+      assert.equal(result.id, 'tp-001');
+      assert.equal(result.project, 'TestProject');
+      assert.equal(result.summary, 'Added auth flow');
+      assert.ok(Array.isArray(result.key_decisions));
+    });
+
+    it('returns structured error when session is missing', () => {
+      const result = tools.getSession('TestProject', 'tp-999');
+      assert.equal(result.error, true);
+      assert.equal(result.code, 'MEMEX_ERR_SESSION_NOT_FOUND');
+    });
+  });
+
+  describe('searchSessions()', () => {
+    it('finds sessions by summary keyword', () => {
+      const result = tools.searchSessions('auth');
+      assert.equal(result.total, 1);
+      assert.equal(result.results[0].id, 'tp-001');
+    });
+
+    it('respects project filter', () => {
+      const result = tools.searchSessions('docker', 'AnotherProject');
+      assert.equal(result.total, 0);
     });
   });
 });
