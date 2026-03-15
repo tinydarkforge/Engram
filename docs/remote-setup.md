@@ -132,6 +132,9 @@ sudo systemctl start memex-mcp
 sudo systemctl status memex-mcp
 ```
 
+Template file:
+- `scripts/memex-mcp.service.template` (copy to `/etc/systemd/system/memex-mcp.service`)
+
 Firewall (example for UFW):
 ```bash
 sudo ufw allow 3000/tcp
@@ -195,6 +198,20 @@ Reload nginx:
 ```bash
 sudo nginx -t
 sudo systemctl reload nginx
+```
+
+## 8. Firewall checklist
+
+- Allow only the MCP port from trusted IPs/subnets
+- Deny public access if running LAN-only
+- Keep SSH access restricted
+
+Example (UFW):
+```bash
+sudo ufw default deny incoming
+sudo ufw allow 22/tcp
+sudo ufw allow from 192.168.0.0/16 to any port 3000 proto tcp
+sudo ufw enable
 ```
 
 ## Troubleshooting
