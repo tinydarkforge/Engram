@@ -10,6 +10,7 @@ const fs = require('fs');
 const path = require('path');
 const { execFileSync } = require('child_process');
 const { resolveMemexPath } = require('./paths');
+const { runMigrations } = require('./migrations');
 
 const MEMEX_PATH = resolveMemexPath(__dirname);
 const pkg = require('../package.json');
@@ -70,6 +71,7 @@ function main() {
   ensureDir(path.join(MEMEX_PATH, 'metadata', 'projects'));
 
   const createdIndex = writeIndexIfMissing();
+  runMigrations();
 
   try {
     runNodeScript(path.join(__dirname, 'manifest-manager.js'), ['generate']);
@@ -99,4 +101,3 @@ if (require.main === module) {
     process.exit(1);
   }
 }
-

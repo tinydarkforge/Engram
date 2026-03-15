@@ -9,6 +9,7 @@
     "test": "node --test tests/*.test.js",
     "status": "node scripts/memex-loader.js status",
     "setup": "node scripts/setup.js",
+    "migrate": "node scripts/migrate.js",
     "mcp:http": "node scripts/mcp-server-http.mjs",
     "search": "node scripts/memex-loader.js search",
     "semantic": "node scripts/memex-loader.js semantic",

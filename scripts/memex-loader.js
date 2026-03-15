@@ -727,6 +727,17 @@ if (require.main === module) {
 
           const issues = [];
 
+          // Schema version check
+          try {
+            const { CURRENT_SCHEMA_VERSION, getSchemaVersion } = require('./migrations');
+            const schemaVersion = getSchemaVersion(memex.index);
+            if (schemaVersion < CURRENT_SCHEMA_VERSION) {
+              issues.push(`Schema version ${schemaVersion} is behind ${CURRENT_SCHEMA_VERSION}. Run: npm run migrate`);
+            }
+          } catch (e) {
+            issues.push(`Schema version check failed: ${e.message}`);
+          }
+
           // Version consistency check
           const pkg = require('../package.json');
           if (pkg.version !== memex.index.v) {
