@@ -140,6 +140,26 @@ Firewall (example for UFW):
 sudo ufw allow 3000/tcp
 ```
 
+## 5.1 One-shot install script (Linux)
+
+Run the helper script to create the service, env file, and user:
+
+```bash
+sudo /opt/memex/scripts/install-memex-service.sh \
+  --memex-path /opt/memex \
+  --api-key replace-me \
+  --port 3000 \
+  --bind 0.0.0.0
+```
+
+You can change the service user:
+```bash
+sudo /opt/memex/scripts/install-memex-service.sh \
+  --memex-path /opt/memex \
+  --api-key replace-me \
+  --user memex
+```
+
 ## 6. Run as systemd with an env file (Linux)
 
 Create `/etc/memex/memex.env`:
