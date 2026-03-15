@@ -12,6 +12,7 @@ describe('LazyLoader', () => {
 
   before(() => {
     tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'memex-lazy-'));
+    process.env.MEMEX_SILENT = '1';
 
     // Create Memex structure with sessions
     const projDir = path.join(tmpDir, 'summaries', 'projects', 'TestProject');
@@ -63,6 +64,7 @@ describe('LazyLoader', () => {
 
   after(() => {
     delete process.env.MEMEX_PATH;
+    delete process.env.MEMEX_SILENT;
     fs.rmSync(tmpDir, { recursive: true, force: true });
   });
 
