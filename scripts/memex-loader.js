@@ -15,7 +15,7 @@ const PersistentCache = require('./persistent-cache');
 const ManifestManager = require('./manifest-manager');
 const VectorSearch = require('./vector-search');
 const BloomFilter = require('./bloom-filter');
-const { resolveMemexPath } = require('./paths');
+const { resolveMemexPath, resolveProjectDirName } = require('./paths');
 const agentbridge = require('./agentbridge-client');
 const { readJSON, validateIndex } = require('./safe-json');
 
@@ -442,10 +442,11 @@ class Memex {
     }
 
     // Load from file
+    const projectDirName = resolveProjectDirName(MEMEX_PATH, projectName);
     const detailsPath = path.join(
       MEMEX_PATH,
       'summaries/projects',
-      projectName,
+      projectDirName,
       'sessions',
       `${sessionId}.json`
     );
@@ -455,7 +456,7 @@ class Memex {
       const indexPath = path.join(
         MEMEX_PATH,
         'summaries/projects',
-        projectName,
+        projectDirName,
         'sessions-index.json'
       );
 
@@ -491,10 +492,11 @@ class Memex {
    * Returns only id, date, summary, topics (no heavy details)
    */
   listSessions(projectName) {
+    const projectDirName = resolveProjectDirName(MEMEX_PATH, projectName);
     const indexPath = path.join(
       MEMEX_PATH,
       'summaries/projects',
-      projectName,
+      projectDirName,
       'sessions-index.json'
     );
 

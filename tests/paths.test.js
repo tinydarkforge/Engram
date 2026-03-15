@@ -9,6 +9,8 @@ describe('paths', () => {
   let originalReposRoot;
   let resolveMemexPath;
   let resolveReposRoot;
+  let resolveProjectDirName;
+  let normalizeProjectSlug;
 
   before(() => {
     originalMemexPath = process.env.MEMEX_PATH;
@@ -19,7 +21,7 @@ describe('paths', () => {
       .filter(k => k.includes('paths'))
       .forEach(k => delete require.cache[k]);
 
-    ({ resolveMemexPath, resolveReposRoot } = require('../scripts/paths'));
+    ({ resolveMemexPath, resolveReposRoot, resolveProjectDirName, normalizeProjectSlug } = require('../scripts/paths'));
   });
 
   after(() => {
@@ -67,6 +69,19 @@ describe('paths', () => {
       delete process.env.MEMEX_REPOS_ROOT;
       const result = resolveReposRoot('/code/org/Memex');
       assert.equal(result, path.resolve('/code/org'));
+    });
+  });
+
+  describe('project slug utilities', () => {
+    it('normalizeProjectSlug() lowercases and replaces invalid chars', () => {
+      const result = normalizeProjectSlug('My Project! 2026');
+      assert.equal(result, 'my-project-2026');
+    });
+
+    it('resolveProjectDirName() returns slug when exact dir not present', () => {
+      const memexPath = '/tmp/memex';
+      const result = resolveProjectDirName(memexPath, 'MyProject');
+      assert.equal(result, 'myproject');
     });
   });
 });

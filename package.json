@@ -8,6 +8,7 @@
     "startup": "node scripts/memex-loader.js startup",
     "test": "node --test tests/*.test.js",
     "status": "node scripts/memex-loader.js status",
+    "mcp:http": "node scripts/mcp-server-http.mjs",
     "search": "node scripts/memex-loader.js search",
     "semantic": "node scripts/memex-loader.js semantic",
     "manifest": "node scripts/manifest-manager.js generate",
