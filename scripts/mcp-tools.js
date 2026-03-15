@@ -12,6 +12,7 @@ const path = require('path');
 const { execFileSync } = require('child_process');
 const { resolveMemexPath, resolveProjectDirName } = require('./paths');
 const { readJSON } = require('./safe-json');
+const { updateMetrics } = require('./metrics');
 
 const MEMEX_PATH = resolveMemexPath(__dirname);
 
@@ -74,6 +75,7 @@ function getMemexLoader() {
 
 async function neuralSearch(query, limit = 10, useDecay = true) {
   try {
+    const startedAt = Date.now();
     const vs = await getVectorSearch();
 
     const results = await vs.search(query, {
@@ -91,12 +93,18 @@ async function neuralSearch(query, limit = 10, useDecay = true) {
       };
     });
 
-    return {
+    const payload = {
       query,
       total: results.total_matches,
       decay_enabled: useDecay,
       results: enriched
     };
+    updateMetrics((metrics) => {
+      metrics.neural_search_calls_total += 1;
+      metrics.last_search_at = new Date().toISOString();
+      return metrics;
+    }).catch(() => {});
+    return payload;
   } catch (e) {
     return { error: e.message };
   }
@@ -198,13 +206,24 @@ async function remember(args) {
       embeddingGenerated = false;
     }
 
-    return {
+    const payload = {
       session_id: result.session_id,
       project: result.project,
       saved: true,
       embedding_generated: embeddingGenerated
     };
+    updateMetrics((metrics) => {
+      metrics.remember_calls_total += 1;
+      metrics.sessions_total += 1;
+      metrics.last_remember_at = new Date().toISOString();
+      return metrics;
+    }).catch(() => {});
+    return payload;
   } catch (e) {
+    updateMetrics((metrics) => {
+      metrics.remember_failures_total += 1;
+      return metrics;
+    }).catch(() => {});
     return buildValidationError('MEMEX_ERR_WRITE_FAILED', `failed to save session: ${e.message}`, 'session', '');
   }
 }
