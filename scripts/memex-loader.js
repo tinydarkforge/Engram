@@ -764,6 +764,15 @@ if (require.main === module) {
           let vectorStats = { total_embeddings: 0, file_size_kb: 0 };
           try { vectorStats = memex.vectorSearch.getStats(); } catch (e) { /* no vectors */ }
 
+          // Metrics
+          let metrics = null;
+          try {
+            const { readMetricsSync } = require('./metrics');
+            metrics = readMetricsSync();
+          } catch (e) {
+            metrics = null;
+          }
+
           // Per-project session counts
           const projectStats = memex.listProjects().map(p => `    ${p.name}: ${p.session_count} sessions (last: ${p.last_updated || 'unknown'})`);
 
@@ -822,6 +831,20 @@ if (require.main === module) {
           console.log('Embeddings:');
           console.log(`    Total:    ${vectorStats.total_embeddings}`);
           console.log(`    Size:     ${vectorStats.file_size_kb}KB`);
+          if (metrics) {
+            console.log('');
+            console.log('Metrics:');
+            console.log(`    remember calls: ${metrics.remember_calls_total}`);
+            console.log(`    remember failures: ${metrics.remember_failures_total}`);
+            console.log(`    neural_search calls: ${metrics.neural_search_calls_total}`);
+            console.log(`    sessions total: ${metrics.sessions_total}`);
+            if (metrics.last_remember_at) {
+              console.log(`    last remember: ${metrics.last_remember_at}`);
+            }
+            if (metrics.last_search_at) {
+              console.log(`    last search: ${metrics.last_search_at}`);
+            }
+          }
           console.log('');
           console.log('AgentBridge:');
           console.log(`    Status:   ${bridgeStatus}`);
