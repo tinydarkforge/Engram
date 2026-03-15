@@ -137,6 +137,66 @@ Firewall (example for UFW):
 sudo ufw allow 3000/tcp
 ```
 
+## 6. Run as systemd with an env file (Linux)
+
+Create `/etc/memex/memex.env`:
+```bash
+sudo mkdir -p /etc/memex
+sudo tee /etc/memex/memex.env >/dev/null <<'EOF'
+NODE_ENV=production
+MEMEX_PATH=/opt/memex
+MCP_API_KEY=replace-me
+MCP_BIND_ADDR=0.0.0.0
+MCP_PORT=3000
+EOF
+```
+
+Update the service file to use the env file:
+```ini
+[Service]
+EnvironmentFile=/etc/memex/memex.env
+```
+
+Reload and restart:
+```bash
+sudo systemctl daemon-reload
+sudo systemctl restart memex-mcp
+```
+
+## 7. Nginx TLS + auth (recommended)
+
+Example nginx config with proxy buffering disabled:
+
+```nginx
+server {
+  listen 443 ssl;
+  server_name memex.yourdomain.com;
+
+  ssl_certificate     /etc/ssl/certs/fullchain.pem;
+  ssl_certificate_key /etc/ssl/private/privkey.pem;
+
+  # Optional: IP allowlist
+  # allow 192.168.0.0/16;
+  # allow 10.0.0.0/8;
+  # deny all;
+
+  location /mcp {
+    proxy_pass http://127.0.0.1:3000/mcp;
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_buffering off;
+  }
+}
+```
+
+Reload nginx:
+```bash
+sudo nginx -t
+sudo systemctl reload nginx
+```
+
 ## Troubleshooting
 
 - `401 Unauthorized`: missing `MCP_API_KEY`
