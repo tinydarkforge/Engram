@@ -29,6 +29,8 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
+  ListPromptsRequestSchema,
+  GetPromptRequestSchema,
   ListResourcesRequestSchema,
   ReadResourceRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js';
@@ -56,6 +58,7 @@ const {
   getStats,
   getGraphSummary,
 } = require('./mcp-tools.js');
+const { listPrompts, renderPrompt } = require('./mcp-prompts.js');
 
 // ─────────────────────────────────────────────────────────────
 // MCP Server Setup
@@ -70,6 +73,7 @@ const server = new Server(
     capabilities: {
       tools: {},
       resources: {},
+      prompts: {},
     },
   }
 );
@@ -267,6 +271,19 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       }
     ]
   };
+});
+
+// List available prompts
+server.setRequestHandler(ListPromptsRequestSchema, async () => {
+  return {
+    prompts: listPrompts()
+  };
+});
+
+// Get prompt by name
+server.setRequestHandler(GetPromptRequestSchema, async (request) => {
+  const { name, arguments: args } = request.params;
+  return renderPrompt(name, args || {});
 });
 
 // Handle tool calls
