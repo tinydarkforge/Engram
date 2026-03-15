@@ -443,6 +443,12 @@ const allowedHosts = MCP_ALLOWED_HOSTS
 const app = createMcpExpressApp({ host: MCP_BIND_ADDR, allowedHosts: allowedHosts && allowedHosts.length ? allowedHosts : undefined });
 const transports = new Map();
 
+function isInitRequest(body) {
+  if (isInitializeRequest(body)) return true;
+  if (body && typeof body === 'object' && body.method === 'initialize') return true;
+  return false;
+}
+
 const mcpPostHandler = async (req, res) => {
   const sessionId = getHeader(req, 'mcp-session-id');
 
@@ -451,7 +457,7 @@ const mcpPostHandler = async (req, res) => {
 
     if (sessionId && transports.has(sessionId)) {
       transport = transports.get(sessionId);
-    } else if (!sessionId && isInitializeRequest(req.body)) {
+    } else if (!sessionId && isInitRequest(req.body)) {
       transport = new StreamableHTTPServerTransport({
         sessionIdGenerator: () => randomUUID(),
         onsessioninitialized: (sid) => {
