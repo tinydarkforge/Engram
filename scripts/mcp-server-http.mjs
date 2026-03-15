@@ -47,6 +47,7 @@ const { listPrompts, renderPrompt } = require('./mcp-prompts.js');
 const MCP_PORT = process.env.MCP_PORT ? parseInt(process.env.MCP_PORT, 10) : 3000;
 const MCP_BIND_ADDR = process.env.MCP_BIND_ADDR || '127.0.0.1';
 const MCP_API_KEY = process.env.MCP_API_KEY || '';
+const MCP_ALLOWED_HOSTS = process.env.MCP_ALLOWED_HOSTS || '';
 
 function createServer() {
   const server = new Server(
@@ -436,7 +437,10 @@ function requireApiKey(req, res, next) {
   next();
 }
 
-const app = createMcpExpressApp();
+const allowedHosts = MCP_ALLOWED_HOSTS
+  ? MCP_ALLOWED_HOSTS.split(',').map((h) => h.trim()).filter(Boolean)
+  : null;
+const app = createMcpExpressApp({ host: MCP_BIND_ADDR, allowedHosts: allowedHosts && allowedHosts.length ? allowedHosts : undefined });
 const transports = new Map();
 
 const mcpPostHandler = async (req, res) => {
