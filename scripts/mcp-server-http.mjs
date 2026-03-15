@@ -13,6 +13,8 @@ import { createMcpExpressApp } from '@modelcontextprotocol/sdk/server/express.js
 import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
+  ListPromptsRequestSchema,
+  GetPromptRequestSchema,
   ListResourcesRequestSchema,
   ReadResourceRequestSchema,
   isInitializeRequest,
@@ -39,6 +41,7 @@ const {
   getStats,
   getGraphSummary,
 } = require('./mcp-tools.js');
+const { listPrompts, renderPrompt } = require('./mcp-prompts.js');
 
 const MCP_PORT = process.env.MCP_PORT ? parseInt(process.env.MCP_PORT, 10) : 3000;
 const MCP_BIND_ADDR = process.env.MCP_BIND_ADDR || '127.0.0.1';
@@ -51,12 +54,13 @@ function createServer() {
       version: '1.0.0',
     },
     {
-      capabilities: {
-        tools: {},
-        resources: {},
-      },
-    }
-  );
+    capabilities: {
+      tools: {},
+      resources: {},
+      prompts: {},
+    },
+  }
+);
 
   server.setRequestHandler(ListToolsRequestSchema, async () => {
     return {
@@ -250,6 +254,17 @@ function createServer() {
         },
       ],
     };
+  });
+
+  server.setRequestHandler(ListPromptsRequestSchema, async () => {
+    return {
+      prompts: listPrompts(),
+    };
+  });
+
+  server.setRequestHandler(GetPromptRequestSchema, async (request) => {
+    const { name, arguments: args } = request.params;
+    return renderPrompt(name, args || {});
   });
 
   server.setRequestHandler(CallToolRequestSchema, async (request) => {
