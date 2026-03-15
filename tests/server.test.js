@@ -3,6 +3,9 @@
 const { describe, it, before, after } = require('node:test');
 const assert = require('node:assert/strict');
 const http = require('http');
+const fs = require('fs');
+const path = require('path');
+const os = require('os');
 
 /**
  * Server API tests
@@ -60,8 +63,36 @@ function postJSON(url, body) {
 describe('server API', () => {
   let server;
   let baseUrl;
+  let tmpDir;
 
   before((_, done) => {
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'memex-server-'));
+
+    const index = {
+      v: 'test',
+      u: '2026-01-01',
+      m: { ts: 1 },
+      p: { TestProject: { sc: 1, u: '2026-01-01', d: '' } },
+      t: {},
+      g: {}
+    };
+
+    fs.writeFileSync(path.join(tmpDir, 'index.json'), JSON.stringify(index, null, 2));
+
+    const sessionsDir = path.join(tmpDir, 'summaries', 'projects', 'TestProject');
+    fs.mkdirSync(sessionsDir, { recursive: true });
+    fs.writeFileSync(path.join(sessionsDir, 'sessions-index.json'), JSON.stringify({
+      project: 'TestProject',
+      total_sessions: 1,
+      last_updated: '2026-01-01',
+      sessions: [
+        { id: 'session-001', project: 'TestProject', date: '2026-01-01', summary: 'Test', topics: ['test'] }
+      ],
+      topics_index: { test: ['session-001'] }
+    }, null, 2));
+
+    process.env.MEMEX_PATH = tmpDir;
+
     // Clear module cache so Memex re-initializes
     const keysToDelete = Object.keys(require.cache).filter(k =>
       k.includes('memex-loader') || k.includes('server.js') ||
@@ -83,6 +114,10 @@ describe('server API', () => {
       server.close(done);
     } else {
       done();
+    }
+    delete process.env.MEMEX_PATH;
+    if (tmpDir) {
+      fs.rmSync(tmpDir, { recursive: true, force: true });
     }
   });
 

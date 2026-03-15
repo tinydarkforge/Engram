@@ -14,22 +14,62 @@ const fs = require('fs');
 const path = require('path');
 const { execFileSync } = require('child_process');
 const readline = require('readline');
-const { resolveMemexPath } = require('./paths');
+const { resolveMemexPath, resolveProjectDirName, normalizeProjectSlug } = require('./paths');
 const agentbridge = require('./agentbridge-client');
 const { readJSON } = require('./safe-json');
 
 const MEMEX_PATH = resolveMemexPath(__dirname);
 
+function atomicWriteFileSync(targetPath, content) {
+  const dir = path.dirname(targetPath);
+  const tmpPath = path.join(dir, `.tmp-${process.pid}-${Date.now()}-${path.basename(targetPath)}`);
+  fs.writeFileSync(tmpPath, content);
+  fs.renameSync(tmpPath, targetPath);
+}
+
+function lockFilePath(targetPath) {
+  return `${targetPath}.lock`;
+}
+
+async function withFileLock(targetPath, fn, { retries = 20, delayMs = 25 } = {}) {
+  const dir = path.dirname(targetPath);
+  fs.mkdirSync(dir, { recursive: true });
+  const lockPath = lockFilePath(targetPath);
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      const fd = fs.openSync(lockPath, 'wx');
+      try {
+        return await fn();
+      } finally {
+        fs.closeSync(fd);
+        try {
+          fs.unlinkSync(lockPath);
+        } catch (e) {
+          // Best effort cleanup
+        }
+      }
+    } catch (e) {
+      if (e.code !== 'EEXIST') throw e;
+      if (attempt === retries) throw new Error(`Lock timeout for ${path.basename(targetPath)}`);
+      await new Promise(resolve => setTimeout(resolve, delayMs));
+    }
+  }
+}
+
 class SessionSaver {
-  constructor() {
+  constructor(options = {}) {
     this.memex = require('./memex-loader');
     this.loader = new this.memex();
     this.loader.loadIndex();
-    const detection = this.loader.detectProject();
-    this.currentProject = detection.project;
+    if (options.project) {
+    this.currentProject = options.project;
+    } else {
+      const detection = this.loader.detectProject();
+      this.currentProject = detection.project;
 
-    if (!this.currentProject) {
-      throw new Error('Could not detect current project from git remote, package.json, or directory.');
+      if (!this.currentProject) {
+        throw new Error('Could not detect current project from git remote, package.json, or directory.');
+      }
     }
 
     // AgentBridge: async init, stored as promise (never blocks constructor)
@@ -102,86 +142,90 @@ class SessionSaver {
     const session = {
       id: sessionId,
       project: this.currentProject,
+      project_display: this.currentProject,
+      project_slug: normalizeProjectSlug(this.currentProject),
       date,
       summary,
       topics,
-      key_decisions: [],
+      key_decisions: Array.isArray(options.key_decisions) ? options.key_decisions : [],
       outcomes: {
         completed: []
       },
-      learnings: []
+      learnings: Array.isArray(options.learnings) ? options.learnings : []
     };
 
     // Add git changes if available
-    const gitChanges = this.getGitChanges();
-    if (gitChanges) {
-      session.code_changes = {
-        files_added: gitChanges.files.added,
-        files_modified: gitChanges.files.modified,
-        files_deleted: gitChanges.files.deleted,
-        lines_added: gitChanges.stats.lines_added,
-        lines_removed: gitChanges.stats.lines_removed
-      };
+    if (options.include_git_changes !== false) {
+      const gitChanges = this.getGitChanges();
+      if (gitChanges) {
+        session.code_changes = {
+          files_added: gitChanges.files.added,
+          files_modified: gitChanges.files.modified,
+          files_deleted: gitChanges.files.deleted,
+          lines_added: gitChanges.stats.lines_added,
+          lines_removed: gitChanges.stats.lines_removed
+        };
+      }
     }
 
     // Update sessions index
-    const indexPath = path.join(
-      MEMEX_PATH,
-      'summaries/projects',
-      this.currentProject,
-      'sessions-index.json'
-    );
+    const projectDirName = resolveProjectDirName(MEMEX_PATH, this.currentProject);
+    const indexPath = path.join(MEMEX_PATH, 'summaries/projects', projectDirName, 'sessions-index.json');
 
-    let sessionsIndex = readJSON(indexPath);
-    if (sessionsIndex) {
-      // Ensure topics_index exists (backward compatibility)
-      if (!sessionsIndex.topics_index) {
-        sessionsIndex.topics_index = {};
-      }
-    } else {
+    await withFileLock(indexPath, async () => {
+      let sessionsIndex = readJSON(indexPath);
+      if (sessionsIndex) {
+        // Ensure topics_index exists (backward compatibility)
+        if (!sessionsIndex.topics_index) {
+          sessionsIndex.topics_index = {};
+        }
+      } else {
       sessionsIndex = {
         project: this.currentProject,
+        project_display: this.currentProject,
+        project_slug: normalizeProjectSlug(this.currentProject),
         total_sessions: 0,
         last_updated: date,
         sessions: [],
-        topics_index: {}
-      };
-    }
-
-    // Add session
-    sessionsIndex.sessions.unshift(session);
-    sessionsIndex.total_sessions++;
-    sessionsIndex.last_updated = date;
-
-    // Update topics index
-    topics.forEach(topic => {
-      if (!sessionsIndex.topics_index[topic]) {
-        sessionsIndex.topics_index[topic] = [];
+          topics_index: {}
+        };
       }
-      sessionsIndex.topics_index[topic].push(sessionId);
-    });
 
-    // Save sessions index
-    fs.mkdirSync(path.dirname(indexPath), { recursive: true });
-    fs.writeFileSync(indexPath, JSON.stringify(sessionsIndex, null, 2));
+      // Add session
+      sessionsIndex.sessions.unshift(session);
+      sessionsIndex.total_sessions++;
+      sessionsIndex.last_updated = date;
+
+      // Update topics index
+      topics.forEach(topic => {
+        if (!sessionsIndex.topics_index[topic]) {
+          sessionsIndex.topics_index[topic] = [];
+        }
+        sessionsIndex.topics_index[topic].push(sessionId);
+      });
+
+      // Save sessions index
+      fs.mkdirSync(path.dirname(indexPath), { recursive: true });
+      atomicWriteFileSync(indexPath, JSON.stringify(sessionsIndex, null, 2));
+    });
 
     // Save full content if provided
     if (fullContent) {
       const contentPath = path.join(
         MEMEX_PATH,
         'content/projects',
-        this.currentProject,
+        projectDirName,
         'sessions',
         yearMonth,
         `${sessionId}.md`
       );
 
       fs.mkdirSync(path.dirname(contentPath), { recursive: true });
-      fs.writeFileSync(contentPath, fullContent);
+      atomicWriteFileSync(contentPath, fullContent);
     }
 
     // Update main index
-    this.updateMainIndex();
+    await this.updateMainIndex();
 
     // Notify AgentBridge (fire-and-forget, never blocks)
     if (this._bridge) {
@@ -205,56 +249,60 @@ class SessionSaver {
     return {
       session_id: sessionId,
       project: this.currentProject,
-      saved: true
+      saved: true,
+      session
     };
   }
 
   /**
    * Update main Memex index (v2.0 with abbreviated keys)
    */
-  updateMainIndex() {
+  async updateMainIndex() {
     const indexPath = path.join(MEMEX_PATH, 'index.json');
-    const index = readJSON(indexPath);
-    if (!index) return;
+    await withFileLock(indexPath, async () => {
+      const index = readJSON(indexPath);
+      if (!index) return;
 
-    // Update project session count
+      // Update project session count
+    const projectDirName = resolveProjectDirName(MEMEX_PATH, this.currentProject);
     const sessionsIndexPath = path.join(
       MEMEX_PATH,
       'summaries/projects',
-      this.currentProject,
+      projectDirName,
       'sessions-index.json'
     );
 
-    const sessionsIndex = readJSON(sessionsIndexPath);
-    if (sessionsIndex) {
-      // v2.0 uses abbreviated keys: p=projects, sc=session_count, u=last_updated
-      if (index.p && index.p[this.currentProject]) {
-        index.p[this.currentProject].sc = sessionsIndex.total_sessions;
-        index.p[this.currentProject].u = new Date().toISOString().split('T')[0];
+      const sessionsIndex = readJSON(sessionsIndexPath);
+      if (sessionsIndex) {
+        // v2.0 uses abbreviated keys: p=projects, sc=session_count, u=last_updated
+        if (index.p && index.p[this.currentProject]) {
+          index.p[this.currentProject].sc = sessionsIndex.total_sessions;
+          index.p[this.currentProject].u = new Date().toISOString().split('T')[0];
+        }
+
+        // Update topics index - v2.0 uses: t=topics, p=projects, sc=session_count
+        if (index.t && sessionsIndex.topics_index) {
+          Object.entries(sessionsIndex.topics_index).forEach(([topic, sessionIds]) => {
+            if (!index.t[topic]) {
+              index.t[topic] = { p: [], sc: 0 };
+            }
+            // Add project if not already there
+            if (!index.t[topic].p.includes(this.currentProject)) {
+              index.t[topic].p.push(this.currentProject);
+            }
+            // Update session count for this topic
+            index.t[topic].sc = sessionIds.length;
+          });
+        }
       }
 
-      // Update topics index - v2.0 uses: t=topics, p=projects, sc=session_count
-      if (index.t && sessionsIndex.topics_index) {
-        Object.entries(sessionsIndex.topics_index).forEach(([topic, sessionIds]) => {
-          if (!index.t[topic]) {
-            index.t[topic] = { p: [], sc: 0 };
-          }
-          // Add project if not already there
-          if (!index.t[topic].p.includes(this.currentProject)) {
-            index.t[topic].p.push(this.currentProject);
-          }
-          // Update session count for this topic
-          index.t[topic].sc = sessionIds.length;
-        });
-      }
-    }
+      // Update metadata - v2.0 uses: u=last_updated, m=metadata, ts=total_sessions
+      index.u = new Date().toISOString();
+      index.m.ts = Object.values(index.p)
+        .reduce((sum, p) => sum + (p.sc || 0), 0);
 
-    // Update metadata - v2.0 uses: u=last_updated, m=metadata, ts=total_sessions
-    index.u = new Date().toISOString();
-    index.m.ts = Object.values(index.p)
-      .reduce((sum, p) => sum + (p.sc || 0), 0);
-
-    fs.writeFileSync(indexPath, JSON.stringify(index, null, 2));
+      atomicWriteFileSync(indexPath, JSON.stringify(index, null, 2));
+    });
   }
 
   /**

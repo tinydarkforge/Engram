@@ -21,6 +21,7 @@ class VectorSearch {
   constructor() {
     this.embedder = null;
     this.embeddings = null;
+    this._persistPromise = null;
   }
 
   /**
@@ -103,6 +104,9 @@ class VectorSearch {
     } else {
       this.embeddings = { sessions: {}, version: '1.0.0' };
     }
+    if (!this.embeddings.sessions) {
+      this.embeddings.sessions = {};
+    }
     return this.embeddings;
   }
 
@@ -118,6 +122,19 @@ class VectorSearch {
     }
 
     fs.writeFileSync(EMBEDDINGS_PATH, JSON.stringify(this.embeddings, null, 2));
+  }
+
+  /**
+   * Persist embeddings to disk without overlapping writes.
+   * Returns a promise that resolves when the write completes.
+   */
+  persistEmbeddingsAsync() {
+    if (!this.embeddings) return Promise.resolve();
+    const write = () => {
+      this.saveEmbeddings();
+    };
+    this._persistPromise = (this._persistPromise || Promise.resolve()).then(write, write);
+    return this._persistPromise;
   }
 
   /**
@@ -143,6 +160,27 @@ class VectorSearch {
       embedding,
       text_preview: text.substring(0, 100)
     };
+  }
+
+  /**
+   * Embed and insert a session into the in-memory index.
+   * Optionally persists to disk asynchronously.
+   */
+  async addSessionEmbedding(sessionData, { persist = true } = {}) {
+    if (!this.embeddings) {
+      this.loadEmbeddings();
+    }
+
+    const record = await this.embedSession(sessionData);
+    if (!record) return { embedded: false };
+
+    this.embeddings.sessions[record.id] = record;
+
+    if (persist) {
+      this.persistEmbeddingsAsync();
+    }
+
+    return { embedded: true, id: record.id };
   }
 
   /**
