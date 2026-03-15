@@ -26,6 +26,7 @@ node scripts/memex-loader.js quick "commit format"
 ```
 
 **See [QUICKSTART.md](QUICKSTART.md) for details**
+**Remote MCP setup:** see [docs/remote-setup.md](docs/remote-setup.md)
 
 ---
 
