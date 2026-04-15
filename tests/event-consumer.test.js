@@ -13,6 +13,22 @@ keysToDelete.forEach(k => delete require.cache[k]);
 const EventConsumer = require('../scripts/event-consumer');
 
 describe('EventConsumer', () => {
+  const originalBridgeUrl = process.env.AGENTBRIDGE_URL;
+  const originalBridgeToken = process.env.AGENTBRIDGE_TOKEN;
+
+  beforeEach(() => {
+    delete process.env.AGENTBRIDGE_URL;
+    delete process.env.AGENTBRIDGE_TOKEN;
+  });
+
+  after(() => {
+    if (originalBridgeUrl === undefined) delete process.env.AGENTBRIDGE_URL;
+    else process.env.AGENTBRIDGE_URL = originalBridgeUrl;
+
+    if (originalBridgeToken === undefined) delete process.env.AGENTBRIDGE_TOKEN;
+    else process.env.AGENTBRIDGE_TOKEN = originalBridgeToken;
+  });
+
   describe('without AgentBridge', () => {
     it('start() returns false when no URL configured', () => {
       const consumer = new EventConsumer();
@@ -41,6 +57,7 @@ describe('EventConsumer', () => {
     let receivedRequests;
 
     before((_, done) => {
+      process.env.AGENTBRIDGE_URL = `http://127.0.0.1:1`;
       receivedRequests = [];
       mockServer = http.createServer((req, res) => {
         let body = '';
@@ -76,7 +93,7 @@ describe('EventConsumer', () => {
         });
       });
 
-      mockServer.listen(0, () => {
+      mockServer.listen(0, '127.0.0.1', () => {
         mockPort = mockServer.address().port;
         done();
       });

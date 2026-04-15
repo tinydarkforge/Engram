@@ -1,312 +1,270 @@
-# Memex v4.0.0
+# Memex
 
-[![CI](https://github.com/Pamperito74/Memex/actions/workflows/ci.yml/badge.svg)](https://github.com/Pamperito74/Memex/actions/workflows/ci.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Node.js](https://img.shields.io/badge/node-%3E%3D20.0.0-brightgreen.svg)](https://nodejs.org/)
+Persistent project memory for AI coding workflows.
 
-**Persistent memory for AI coding assistants — 94-98% token savings**
+Memex stores short session records about what was built, indexes them by project and topic, and exposes that memory through:
+- a local CLI
+- a local HTTP server and web UI
+- MCP servers for assistant integration
 
-Ultra-efficient knowledge system that remembers your project context across sessions.
+The practical goal is simple: stop re-explaining the same project context to your tools every session.
 
----
+## What It Is
+
+Memex is a local knowledge store for engineering work. A session usually contains:
+- a short summary
+- topics/tags
+- project name
+- timestamp
+- optional git change metadata
+- optional detailed notes
+
+From there, Memex provides several ways to retrieve that memory:
+- quick index lookups
+- keyword search
+- semantic search with embeddings
+- project/session browsing in a dashboard
+- MCP tools for assistants like Claude Code
+
+This repo is best understood as a local memory service plus integration layer, not just a CLI script collection.
+
+## What It Is For
+
+Use Memex if you want to:
+- keep a running memory of engineering work across repositories
+- give AI tools a lightweight summary of past sessions and conventions
+- save sessions manually or from git-hook-driven workflows
+- query memory from CLI, HTTP, or MCP
+- optionally expose the service to your LAN or remote clients
+
+It is most useful for solo or small-team workflows where a local, file-backed memory store is good enough.
+
+## Current Capabilities
+
+- Session capture with project detection and topic indexing
+- Concurrency-safe writes for session/index updates
+- Project and topic indexes stored on disk
+- Keyword search across projects and stored session summaries
+- Semantic search using `@huggingface/transformers`
+- Time decay in semantic ranking
+- Duplicate detection helpers in vector search
+- Local web dashboard for projects, sessions, search, and graph views
+- MCP server over stdio
+- Streamable HTTP MCP server with API-key auth
+- AgentBridge integration for event-based coordination
+
+## What It Is Not
+
+- Not a hosted SaaS
+- Not a multi-user sync platform yet
+- Not a full database-backed collaboration product
+- Not guaranteed to be the best fit if you need strict auth, audit trails, or enterprise sharing
+
+Open issues still reflect that:
+- team sharing is still open
+- auto-summarization is still open
+- better topic extraction is still open
 
 ## Quick Start
 
 ```bash
-# 1. Setup (one-time)
-cd ~/code/Memex
+git clone https://github.com/Pamperito74/Memex.git
+cd Memex
 npm install
 npm run setup
-
-# 2. Save a session
-./scripts/remember "Implemented feature X" --topics feature,x
-
-# 3. Query anytime
-node scripts/memex-loader.js quick "commit format"
+node scripts/memex-loader.js status
 ```
 
-**See [QUICKSTART.md](QUICKSTART.md) for details**
-**Remote MCP setup:** see [docs/remote-setup.md](docs/remote-setup.md)
-
-If `memex status` shows warnings:
-- Run `npm run migrate` for schema version updates
-- Missing `metadata/projects/*.json` files are optional but recommended
-- Metrics start after first `remember` or `neural_search`
-
----
-
-## What Makes Memex Special?
-
-### 🎯 **94-98% Token Savings**
-- Loads 4KB index vs 500KB docs
-- Most queries: 1,000 tokens vs 50,000
-- **Saves ~$35/month** on AI assistant API costs
-
-**See [HOW-MEMEX-SAVES-TOKENS.md](HOW-MEMEX-SAVES-TOKENS.md) for details**
-
-### ⚡ **Instant Performance**
-- Startup: <50ms
-- Bloom filter: 0.1ms negative lookups (500-1000x faster)
-- Lazy loading: Only fetch what you need
-- Smart caching: Persistent SQLite + hot/warm tiers
-
-### 🤖 **Zero-Effort Capture**
-- Git hooks: Auto-save sessions on commit
-- Auto-detect: Topics from files and commit type
-- Background: Non-blocking, zero delay
-
-### 🧠 **AI-Powered Search**
-- Semantic: Find by meaning, not just keywords
-- "auth work" → finds OAuth, JWT, SSO sessions
-- 384-dimensional embeddings (all-MiniLM-L6-v2)
-
----
-
-## How It Works
-
-```
-Question → Bloom Filter → Index → Full Details
-           ↓              ↓         ↓
-           "NO!" (0 tok)  Summary   Complete
-           ↓              (1K tok)  (1.1K tok)
-           STOP           ↓
-                         80% stop here!
-```
-
-**Three smart layers:**
-1. **Bloom Filter** (243 bytes): Instant "NO" answers
-2. **Index** (4KB): Quick summaries, 80% of queries answered
-3. **Full Details** (on-demand): Loaded only when needed
-
----
-
-## Architecture
-
-```
-Memex/
-├── index.json                    # 4KB - Load first
-│   ├── Global standards (quick_ref)
-│   ├── Projects metadata
-│   └── Topics index
-│
-├── summaries/projects/           # Lightweight indexes
-│   └── <Project>/
-│       ├── sessions-index.json   # Session summaries
-│       └── sessions/             # Full details (lazy loaded)
-│
-├── .neural/                      # Binary indexes
-│   ├── bloom.json                # Bloom filter
-│   ├── graph.msgpack             # Concept graph
-│   ├── embeddings.msgpack        # Vector embeddings
-│   └── git-index.msgpack         # Git commit index
-│
-├── scripts/
-│   ├── memex-loader.js           # Main loader + CLI
-│   ├── remember                  # Save sessions (smart wrapper)
-│   ├── save-session.js           # Session creation engine
-│   ├── server.js                 # HTTP server + REST API
-│   ├── mcp-server.mjs            # MCP server for AI tools
-│   ├── mcp-tools.js              # MCP tool implementations
-│   ├── agentbridge-client.js     # AgentBridge integration
-│   ├── event-consumer.js         # AgentBridge event polling
-│   ├── vector-search.js          # Semantic search (embeddings)
-│   ├── index-git.js              # Git commit indexer
-│   ├── bloom-filter.js           # Bloom filter
-│   ├── lazy-loader.js            # Lazy loading
-│   ├── persistent-cache.js       # SQLite cache
-│   ├── safe-json.js              # Safe JSON parsing
-│   └── paths.js                  # Path resolution
-│
-├── tests/                        # 194 tests across 16 files
-└── web/                          # Dashboard UI
-```
-
----
-
-## Common Usage
-
-### Save Sessions
+Save a session:
 
 ```bash
-# Quick save (after git commit - or use git hooks!)
-./scripts/remember "Added OAuth2 login" --topics auth,oauth
-
-# Interactive mode
-./scripts/remember --interactive
-
-# Or use git hooks (zero effort!)
-cd /path/to/your/repo
-/path/to/Memex/scripts/git-hook-capture.sh install
-# Now every commit auto-saves a session!
+./scripts/remember "Implemented OAuth callback handling" --topics auth,oauth
 ```
 
-### Query Memex
+Query memory:
 
 ```bash
-# Quick answers from index (instant)
 node scripts/memex-loader.js quick "commit format"
+node scripts/memex-loader.js search auth
+node scripts/memex-loader.js semantic "authentication work"
+```
 
-# Search across projects
+Full quickstart: [QUICKSTART.md](QUICKSTART.md)
+
+## Run The HTTP Server
+
+Local-only by default:
+
+```bash
+node scripts/server.js
+```
+
+Custom port:
+
+```bash
+PORT=8080 node scripts/server.js
+```
+
+Expose on your local network:
+
+```bash
+HOST=0.0.0.0 node scripts/server.js
+```
+
+Defaults and behavior:
+- default host is `127.0.0.1`
+- default port is `3000`
+- `HOST=0.0.0.0` makes the server reachable from other machines on your network
+
+Once running:
+- Dashboard: `http://127.0.0.1:3000/`
+- API: `http://127.0.0.1:3000/api/stats`
+- Health: `http://127.0.0.1:3000/health`
+
+## Connect An Assistant
+
+### MCP over stdio
+
+```bash
+claude mcp add memex -s user -- node /path/to/Memex/scripts/mcp-server.mjs
+```
+
+### MCP over Streamable HTTP
+
+See [docs/remote-setup.md](docs/remote-setup.md).
+
+That path supports:
+- `/mcp` HTTP transport
+- API-key auth
+- reverse-proxy deployment
+- remote clients
+
+## Common Commands
+
+```bash
+# Status
+node scripts/memex-loader.js status
+
+# List projects
+node scripts/memex-loader.js list
+
+# Keyword search
 node scripts/memex-loader.js search docker
 
-# Semantic search (AI-powered)
-node scripts/memex-loader.js semantic "authentication work"
+# Semantic search
+node scripts/memex-loader.js semantic "deployment work"
 
-# List all projects
-node scripts/memex-loader.js list
-```
-
-### Phase 1 Tools
-
-```bash
-# Lazy loading
-node scripts/lazy-loader.js convert  # Convert to lazy format
-node scripts/lazy-loader.js stats    # View statistics
-
-# Bloom filter
-node scripts/bloom-filter.js build   # Build filter
-node scripts/bloom-filter.js check auth  # Instant lookup
-
-# Git hooks
-scripts/git-hook-capture.sh install  # Auto-capture on commit
-```
-
----
-
-## Performance
-
-| Metric | Before Memex | With Memex | Improvement |
-|--------|--------------|------------|-------------|
-| **Tokens/query** | 50,000 | 1,000 | 98% ⬇️ |
-| **Startup time** | 1000ms | 46ms | 21x ⚡ |
-| **Index size** | 500KB | 4KB | 99% ⬇️ |
-| **Negative lookups** | 50-100ms | 0.1ms | 1000x ⚡ |
-| **Monthly cost** | $37.50 | $2.25 | $35 💰 |
-
----
-
-## Features
-
-### Optimizations (Phase 1 - v3.3)
-- ✅ **Lazy Loading** (#22): 64% smaller index
-- ✅ **Bloom Filters** (#27): 500-1000x faster negative queries
-- ✅ **Git Hooks** (#36): Zero-effort session capture
-
-### v4.0 Features
-- ✅ **HTTP Server + Web Dashboard**: Visual dashboard with search, graph, sessions
-- ✅ **MCP Server**: 7 tools for AI assistants via Model Context Protocol
-- ✅ **AgentBridge Integration**: Inter-agent events (session saved, query requested/result)
-- ✅ **194 Tests**: Comprehensive test coverage across 16 files
-- ✅ **Safe JSON**: Zero unprotected JSON.parse calls, schema validation
-- ✅ **Path Sanitization**: Input validation on all API endpoints
-
-### Core Features (v3.0-3.2)
-- ✅ **Incremental Updates**: 100x faster (only load changed files)
-- ✅ **Persistent Cache**: SQLite cache survives restarts
-- ✅ **Semantic Search**: AI-powered meaning-based search
-- ✅ **MessagePack**: 44% smaller files, improved I/O (see [MESSAGEPACK-MIGRATION.md](MESSAGEPACK-MIGRATION.md))
-- ✅ **Smart Caching**: Hot + warm + persistent tiers
-
-**See [PHASE-1-OPTIMIZATIONS.md](PHASE-1-OPTIMIZATIONS.md) for Phase 1 details**
-**See [ROADMAP-V4.md](ROADMAP-V4.md) for future plans**
-
----
-
-## How AI assistant Uses It
-
-```
-User: "What's our commit format?"
-
-1. Bloom filter: "commit" exists ✓
-2. Load index (4KB)
-3. Check quick_ref: "Conventional Commits: <type>(<scope>): <description>"
-4. Answer immediately
-
-Cost: 1,000 tokens (vs 50,000)
-Time: 2ms
-Files loaded: 1 (index only)
-```
-
-**80% of queries answered from index alone - no file loading needed!**
-
----
-
-## Documentation
-
-- **[QUICKSTART.md](QUICKSTART.md)** - Get started in 5 minutes
-- **[HOW-MEMEX-SAVES-TOKENS.md](HOW-MEMEX-SAVES-TOKENS.md)** - Simple token savings guide
-- **[MESSAGEPACK-MIGRATION.md](MESSAGEPACK-MIGRATION.md)** - MessagePack migration guide
-- **[PHASE-1-OPTIMIZATIONS.md](PHASE-1-OPTIMIZATIONS.md)** - Latest optimizations
-- **[ROADMAP-V4.md](ROADMAP-V4.md)** - Future plans
-- **[HOW-IT-WORKS.md](HOW-IT-WORKS.md)** - Technical deep dive
-- **[CHEATSHEET.md](CHEATSHEET.md)** - Command reference
-
----
-
-## Installation
-
-```bash
-# Clone/navigate to Memex
-cd ~/code/Memex
-
-# Make scripts executable
-chmod +x scripts/*.js scripts/*.sh
-
-# Test it works
-node scripts/memex-loader.js startup
-
-# Optional: Add alias
-echo 'alias memex="node ~/code/Memex/scripts/memex-loader.js"' >> ~/.zshrc
-source ~/.zshrc
-```
-
----
-
-## Migration
-
-### From v3.x to v4.0
-
-v4.0 uses MessagePack for binary data (graph, embeddings, git index, bundles). JSON files (index.json, session indexes) remain unchanged. No migration script needed for existing data.
-
-**See [MESSAGEPACK-MIGRATION.md](MESSAGEPACK-MIGRATION.md) for format details**
-
-### From v3.2 to v3.3 (Phase 1)
-
-```bash
-# 1. Convert to lazy loading
-node scripts/lazy-loader.js convert
-
-# 2. Build bloom filter
+# Build bloom filter
 node scripts/bloom-filter.js build
 
-# 3. Install git hooks (optional)
-cd /path/to/your/repo
-/path/to/Memex/scripts/git-hook-capture.sh install
+# View bloom stats
+node scripts/bloom-filter.js stats
 
-# Done!
+# Generate/inspect embeddings
+node scripts/vector-search.js generate
+node scripts/vector-search.js stats
+
+# Find duplicate/similar sessions
+node scripts/vector-search.js duplicates --threshold 0.9 --limit 10
+node scripts/vector-search.js duplicates --json
 ```
 
----
+## Data Model
 
-## Contributing
+At a high level:
 
-Memex is part of the Cirrus DevOps toolkit. Contributions welcome!
+```text
+index.json
+summaries/projects/<project>/sessions-index.json
+summaries/projects/<project>/sessions/<session-id>.json
+content/projects/<project>/sessions/<yyyy-mm>/<session-id>.md
+.cache/*
+.neural/*
+```
 
-- Report issues: open an issue in this repository
-- See roadmap: [ROADMAP-V4.md](ROADMAP-V4.md)
+Important parts:
+- `index.json`: compact top-level project/topic index
+- `summaries/projects/*/sessions-index.json`: lightweight session listing per project
+- `summaries/projects/*/sessions/*.json`: detailed session records when present
+- `content/projects/*`: optional markdown notes
+- `.cache/`: bloom filter, embeddings cache, and related runtime artifacts
+- `.neural/`: graph, bundles, and other binary/search artifacts
 
----
+## Architecture Summary
 
-## Key Benefits
+The repo has four main surfaces:
 
-✅ **95-98% token reduction** - Massive cost savings
-✅ **<50ms startup** - Instant context loading
-✅ **Cross-project** - Learn from all your projects
-✅ **Zero-effort** - Git hooks auto-capture sessions
-✅ **AI-powered** - Semantic search by meaning
-✅ **Smart caching** - Persistent across restarts
-✅ **Scalable** - Handle 1000+ sessions efficiently
+1. Storage and indexing
+   - file-backed session records
+   - project/topic indexes
+   - lock-protected atomic writes
 
----
+2. Retrieval
+   - quick lookup
+   - keyword search
+   - semantic search
+   - duplicate/similarity helpers
 
-**Memex: Your project's extended memory, optimized for efficiency** 🧠⚡
+3. Interfaces
+   - CLI commands
+   - REST API
+   - web UI
+   - MCP tools
+
+4. Integrations
+   - git-hook capture
+   - AgentBridge events
+   - remote MCP deployment
+
+## Validation Notes
+
+The current repo state supports these claims:
+- MCP server exists
+- HTTP MCP transport exists
+- web UI exists
+- session decay exists
+- concurrency-safe writes exist
+- validation/error-contract logic exists for MCP `remember`
+
+Several old GitHub issues were still open even though the code was already present. Those have been reviewed and the clearly completed ones were closed.
+
+## Limitations
+
+- Semantic search depends on embeddings/model availability
+- Topic extraction is still fairly heuristic
+- Shared multi-user memory is not solved
+- The repository currently contains a lot of checked-in memory/sample data, which makes it noisier than a clean product repo
+
+## Repo Layout
+
+```text
+scripts/     runtime, CLI, servers, MCP tools
+tests/       node:test coverage
+web/         dashboard UI
+docs/        setup and operational docs
+summaries/   stored session indexes and records
+metadata/    project metadata
+content/     optional detailed notes
+```
+
+## Recommended Next Steps
+
+If you are evaluating Memex:
+- run `node scripts/memex-loader.js status`
+- save 2-3 real sessions
+- test keyword search and semantic search
+- start the dashboard
+- connect one assistant through MCP
+
+If you are improving Memex:
+- keep the README aligned with actual shipped behavior
+- continue reducing stale checked-in data
+- decide whether this should stay a personal-tool repo or become a cleaner reusable product
+
+## Related Docs
+
+- [QUICKSTART.md](QUICKSTART.md)
+- [CHEATSHEET.md](CHEATSHEET.md)
+- [HOW-IT-WORKS.md](HOW-IT-WORKS.md)
+- [docs/remote-setup.md](docs/remote-setup.md)
+- [MESSAGEPACK-MIGRATION.md](MESSAGEPACK-MIGRATION.md)

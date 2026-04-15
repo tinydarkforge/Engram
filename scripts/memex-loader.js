@@ -320,9 +320,10 @@ class Memex {
   search(query) {
     const results = [];
     const lowerQuery = query.toLowerCase();
+    const queryTerms = this.extractSearchTerms(query);
 
     // #27: Bloom Filter pre-check for instant negative lookups
-    if (this.bloomFilter && !this.bloomFilter.mightContain(query)) {
+    if (this.shouldSkipSearch(query, queryTerms)) {
       // Definitely not in Memex, return immediately
       return {
         query,
@@ -361,12 +362,58 @@ class Memex {
       }
     }
 
+    // Search lightweight session summaries/topics
+    for (const [projectName] of Object.entries(this.index.p)) {
+      const sessions = this.listSessions(projectName);
+      for (const session of sessions) {
+        const summary = session.summary || '';
+        const topics = Array.isArray(session.topics) ? session.topics : [];
+        const haystack = `${summary} ${topics.join(' ')}`.toLowerCase();
+        const summaryMatch = summary.toLowerCase().includes(lowerQuery);
+        const topicMatch = topics.some(topic => String(topic).toLowerCase().includes(lowerQuery));
+        const multiTermMatch = queryTerms.length > 1 && queryTerms.every(term => haystack.includes(term));
+
+        if (!summaryMatch && !topicMatch && !multiTermMatch) continue;
+
+        results.push({
+          type: 'session',
+          project: projectName,
+          session_id: session.id,
+          date: session.date,
+          summary,
+          topics
+        });
+      }
+    }
+
     return {
       query,
       results,
       total: results.length,
       bloom_filter_skip: false
     };
+  }
+
+  extractSearchTerms(query) {
+    return String(query || '')
+      .toLowerCase()
+      .split(/\s+/)
+      .map(term => term.trim())
+      .filter(term => term.length > 2);
+  }
+
+  shouldSkipSearch(query, queryTerms = this.extractSearchTerms(query)) {
+    if (!this.bloomFilter) return false;
+
+    const normalizedQuery = String(query || '').trim().toLowerCase();
+    if (!normalizedQuery) return false;
+
+    if (queryTerms.length <= 1) {
+      const candidate = queryTerms[0] || normalizedQuery;
+      return !this.bloomFilter.mightContain(candidate);
+    }
+
+    return queryTerms.every(term => !this.bloomFilter.mightContain(term));
   }
 
   /**

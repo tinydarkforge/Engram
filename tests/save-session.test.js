@@ -195,6 +195,34 @@ describe('SessionSaver', () => {
       assert.ok(sessionsIndex.topics_index.backend, 'Should have backend topic');
     });
 
+    it('emits session saved event with git stats when bridge is configured', async () => {
+      const saver = Object.create(SessionSaver.prototype);
+      saver.currentProject = 'TestSaveProject';
+      saver.getGitChanges = () => ({
+        files: { added: ['a.js'], modified: ['b.js'], deleted: [] },
+        stats: { files_changed: 2, lines_added: 10, lines_removed: 3 }
+      });
+
+      const emitted = [];
+      saver._bridge = Promise.resolve({
+        emit: async (eventType, payload) => {
+          emitted.push({ eventType, payload });
+          return { sent: true };
+        }
+      });
+
+      await saver.saveSession('Bridge event test', ['bridge']);
+      await new Promise(resolve => setImmediate(resolve));
+
+      assert.equal(emitted.length, 1);
+      assert.equal(emitted[0].eventType, 'memex.session.saved');
+      assert.deepEqual(emitted[0].payload.git_stats, {
+        files_changed: 2,
+        lines_added: 10,
+        lines_removed: 3
+      });
+    });
+
     it('does not call commitToGit when commit option is false', async () => {
       const saver = Object.create(SessionSaver.prototype);
       saver.currentProject = 'TestSaveProject';

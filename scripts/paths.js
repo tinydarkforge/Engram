@@ -53,27 +53,55 @@ function normalizeProjectSlug(projectName) {
     .replace(/^-|-$/g, '');
 }
 
+function listProjectDirectories(memexPath) {
+  const projectsDir = path.join(memexPath, 'summaries', 'projects');
+  if (!fs.existsSync(projectsDir)) return [];
+
+  try {
+    return fs.readdirSync(projectsDir, { withFileTypes: true })
+      .filter((entry) => entry.isDirectory())
+      .map((entry) => entry.name);
+  } catch {
+    return [];
+  }
+}
+
 function resolveProjectDirName(memexPath, projectName) {
   const sanitized = String(projectName || '').replace(/[^a-zA-Z0-9._-]/g, '');
-  const exactDir = path.join(memexPath, 'summaries', 'projects', sanitized);
-  if (sanitized && fs.existsSync(exactDir)) {
+  const slug = normalizeProjectSlug(projectName);
+  const projectsDir = listProjectDirectories(memexPath);
+
+  // Prefer an existing exact directory name first.
+  if (sanitized && projectsDir.includes(sanitized)) {
     return sanitized;
   }
-
-  const slug = normalizeProjectSlug(projectName);
-  if (!slug) {
-    return sanitized || '';
-  }
-  const slugDir = path.join(memexPath, 'summaries', 'projects', slug);
-  if (fs.existsSync(slugDir)) {
+  if (slug && projectsDir.includes(slug)) {
     return slug;
   }
-  return slug;
+
+  const normalizedCandidates = new Set(
+    [sanitized, slug]
+      .filter(Boolean)
+      .map((value) => value.toLowerCase())
+  );
+
+  // Fall back to legacy directory names that normalize to the same slug.
+  for (const dirName of projectsDir) {
+    if (slug && normalizeProjectSlug(dirName) === slug) {
+      return dirName;
+    }
+    if (normalizedCandidates.has(dirName.toLowerCase())) {
+      return dirName;
+    }
+  }
+
+  return slug || sanitized || '';
 }
 
 module.exports = {
   resolveMemexPath,
   resolveReposRoot,
   normalizeProjectSlug,
-  resolveProjectDirName
+  resolveProjectDirName,
+  listProjectDirectories
 };

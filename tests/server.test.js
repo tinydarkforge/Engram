@@ -92,6 +92,7 @@ describe('server API', () => {
     }, null, 2));
 
     process.env.MEMEX_PATH = tmpDir;
+    process.env.HOST = '127.0.0.1';
 
     // Clear module cache so Memex re-initializes
     const keysToDelete = Object.keys(require.cache).filter(k =>
@@ -102,7 +103,7 @@ describe('server API', () => {
     keysToDelete.forEach(k => delete require.cache[k]);
 
     const app = require('../scripts/server');
-    server = app.listen(0, () => {
+    server = app.listen(0, '127.0.0.1', () => {
       const port = server.address().port;
       baseUrl = `http://127.0.0.1:${port}`;
       done();
@@ -116,6 +117,7 @@ describe('server API', () => {
       done();
     }
     delete process.env.MEMEX_PATH;
+    delete process.env.HOST;
     if (tmpDir) {
       fs.rmSync(tmpDir, { recursive: true, force: true });
     }
@@ -128,6 +130,46 @@ describe('server API', () => {
     assert.ok(Array.isArray(json.projects));
     assert.equal(typeof json.totalTopics, 'number');
     assert.ok(json.version);
+  });
+
+  it('GET /health returns healthy on a fresh lazy-loaded server', async () => {
+    const freshDir = fs.mkdtempSync(path.join(os.tmpdir(), 'memex-server-fresh-'));
+    fs.writeFileSync(path.join(freshDir, 'index.json'), JSON.stringify({
+      v: 'fresh-test',
+      u: '2026-01-01',
+      m: { ts: 0 },
+      p: {},
+      t: {},
+      g: {}
+    }, null, 2));
+
+    const originalMemexPath = process.env.MEMEX_PATH;
+    process.env.MEMEX_PATH = freshDir;
+
+    const keysToDelete = Object.keys(require.cache).filter(k =>
+      k.includes('memex-loader') || k.includes('server.js') ||
+      k.includes('persistent-cache') || k.includes('safe-json') ||
+      k.includes('agentbridge-client')
+    );
+    keysToDelete.forEach(k => delete require.cache[k]);
+
+    const freshApp = require('../scripts/server');
+    const freshServer = await new Promise((resolve) => {
+      const instance = freshApp.listen(0, '127.0.0.1', () => resolve(instance));
+    });
+    const freshBaseUrl = `http://127.0.0.1:${freshServer.address().port}`;
+
+    try {
+      const { status, json } = await fetch(`${freshBaseUrl}/health`);
+      assert.equal(status, 200);
+      assert.equal(json.status, 'healthy');
+      assert.equal(json.version, 'fresh-test');
+    } finally {
+      await new Promise(resolve => freshServer.close(resolve));
+      if (originalMemexPath === undefined) delete process.env.MEMEX_PATH;
+      else process.env.MEMEX_PATH = originalMemexPath;
+      fs.rmSync(freshDir, { recursive: true, force: true });
+    }
   });
 
   it('GET /api/projects returns project list', async () => {

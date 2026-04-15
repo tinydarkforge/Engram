@@ -16,6 +16,98 @@ const { readJSON } = require('./safe-json');
 
 const MEMEX_PATH = resolveMemexPath(__dirname);
 const EMBEDDINGS_PATH = path.join(MEMEX_PATH, '.cache', 'embeddings.json');
+const DEFAULT_DUPLICATE_THRESHOLD = 0.85;
+const DEFAULT_DUPLICATE_LIMIT = 20;
+
+function truncatePreview(text, maxLength = 80) {
+  const normalized = String(text || '').replace(/\s+/g, ' ').trim();
+  if (!normalized) return '(no preview)';
+  if (normalized.length <= maxLength) return normalized;
+  return `${normalized.slice(0, maxLength - 3)}...`;
+}
+
+function parseDuplicateArgs(args = []) {
+  const options = {
+    threshold: DEFAULT_DUPLICATE_THRESHOLD,
+    limit: DEFAULT_DUPLICATE_LIMIT,
+    json: false
+  };
+
+  for (let i = 0; i < args.length; i++) {
+    const arg = args[i];
+
+    if (arg === '--json') {
+      options.json = true;
+      continue;
+    }
+
+    if (arg === '--threshold' || arg === '-t') {
+      const value = args[++i];
+      if (value === undefined) {
+        return { error: 'Missing value for --threshold' };
+      }
+      const parsed = parseFloat(value);
+      if (!Number.isFinite(parsed) || parsed <= 0 || parsed > 1) {
+        return { error: 'Threshold must be a number greater than 0 and at most 1' };
+      }
+      options.threshold = parsed;
+      continue;
+    }
+
+    if (arg === '--limit' || arg === '-n') {
+      const value = args[++i];
+      if (value === undefined) {
+        return { error: 'Missing value for --limit' };
+      }
+      const parsed = parseInt(value, 10);
+      if (!Number.isInteger(parsed) || parsed < 1) {
+        return { error: 'Limit must be a positive integer' };
+      }
+      options.limit = parsed;
+      continue;
+    }
+
+    if (arg.startsWith('-')) {
+      return { error: `Unknown option: ${arg}` };
+    }
+
+    // Backward-compatible positional threshold support.
+    const parsed = parseFloat(arg);
+    if (!Number.isFinite(parsed) || parsed <= 0 || parsed > 1) {
+      return { error: `Unexpected argument: ${arg}` };
+    }
+    options.threshold = parsed;
+  }
+
+  return options;
+}
+
+function formatDuplicatesReport(result, options = {}) {
+  const { threshold = DEFAULT_DUPLICATE_THRESHOLD, limit = DEFAULT_DUPLICATE_LIMIT } = options;
+  const lines = [
+    `Duplicate detection report`,
+    `Threshold: ${(threshold * 100).toFixed(0)}%`,
+    `Pairs checked: ${result.total_pairs_checked.toLocaleString()}`,
+    `Matches found: ${result.duplicates_found}`,
+    `Showing: ${Math.min(result.duplicates.length, limit)}`
+  ];
+
+  if (result.duplicates.length === 0) {
+    lines.push('', 'No duplicate candidates found above the configured threshold.');
+    return lines.join('\n');
+  }
+
+  lines.push('', 'Candidates:');
+  result.duplicates.forEach((dup, index) => {
+    lines.push(`${index + 1}. ${(dup.similarity * 100).toFixed(0)}% similar`);
+    lines.push(`   A: ${dup.session1.id}`);
+    lines.push(`      ${truncatePreview(dup.session1.preview)}`);
+    lines.push(`   B: ${dup.session2.id}`);
+    lines.push(`      ${truncatePreview(dup.session2.preview)}`);
+  });
+
+  return lines.join('\n');
+}
 
 class VectorSearch {
   constructor() {
@@ -643,25 +735,26 @@ if (require.main === module) {
           break;
 
         case 'duplicates': {
-          const threshold = parseFloat(process.argv[3]) || 0.85;
-          console.log(`🔍 Finding duplicate sessions (threshold: ${threshold * 100}%)...\n`);
+          const duplicateOptions = parseDuplicateArgs(process.argv.slice(3));
+          if (duplicateOptions.error) {
+            console.error(`Usage: vector-search.js duplicates [threshold] [--threshold <0..1>] [--limit <n>] [--json]`);
+            console.error(`Error: ${duplicateOptions.error}`);
+            process.exit(1);
+          }
 
-          const dupResult = vectorSearch.findDuplicates({ threshold });
+          const dupResult = vectorSearch.findDuplicates({
+            threshold: duplicateOptions.threshold,
+            limit: duplicateOptions.limit
+          });
 
-          console.log(`📊 Checked ${dupResult.total_pairs_checked.toLocaleString()} session pairs`);
-          console.log(`🔗 Found ${dupResult.duplicates_found} potential duplicates\n`);
-
-          if (dupResult.duplicates.length === 0) {
-            console.log('✅ No duplicates found above threshold');
+          if (duplicateOptions.json) {
+            console.log(JSON.stringify({
+              threshold: duplicateOptions.threshold,
+              limit: duplicateOptions.limit,
+              ...dupResult
+            }, null, 2));
           } else {
-            dupResult.duplicates.forEach((dup, i) => {
-              console.log(`${i + 1}. ${(dup.similarity * 100).toFixed(0)}% similar:`);
-              console.log(`   📄 ${dup.session1.id}`);
-              console.log(`      ${dup.session1.preview}...`);
-              console.log(`   📄 ${dup.session2.id}`);
-              console.log(`      ${dup.session2.preview}...`);
-              console.log('');
-            });
+            console.log(formatDuplicatesReport(dupResult, duplicateOptions));
           }
           break;
         }
@@ -701,6 +794,9 @@ if (require.main === module) {
           console.log('  generate          - Generate embeddings for all sessions');
           console.log('  search <query>    - Search sessions by meaning');
           console.log('  duplicates [0.85] - Find duplicate/similar sessions');
+          console.log('     --threshold <0..1>  Similarity threshold');
+          console.log('     --limit <n>         Max matches to show');
+          console.log('     --json              Machine-readable output');
           console.log('  similar <id>      - Find sessions similar to a specific one');
           console.log('  stats             - Show embedding statistics');
           console.log('  test              - Test embedding generation');
@@ -713,3 +809,5 @@ if (require.main === module) {
 }
 
 module.exports = VectorSearch;
+module.exports.parseDuplicateArgs = parseDuplicateArgs;
+module.exports.formatDuplicatesReport = formatDuplicatesReport;
