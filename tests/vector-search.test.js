@@ -289,4 +289,62 @@ describe('VectorSearch', () => {
       assert.equal(result.duplicates_found, 0);
     });
   });
+
+  describe('duplicate CLI helpers', () => {
+    it('parses duplicate options with flags', () => {
+      const options = VectorSearch.parseDuplicateArgs(['--threshold', '0.92', '--limit', '5', '--json']);
+      assert.deepEqual(options, {
+        threshold: 0.92,
+        limit: 5,
+        json: true
+      });
+    });
+
+    it('supports backward-compatible positional threshold', () => {
+      const options = VectorSearch.parseDuplicateArgs(['0.9']);
+      assert.equal(options.threshold, 0.9);
+      assert.equal(options.limit, 20);
+      assert.equal(options.json, false);
+    });
+
+    it('rejects invalid duplicate options', () => {
+      const result = VectorSearch.parseDuplicateArgs(['--threshold', '1.5']);
+      assert.ok(result.error);
+    });
+
+    it('formats a human-readable duplicate report', () => {
+      const output = VectorSearch.formatDuplicatesReport({
+        total_pairs_checked: 3,
+        duplicates_found: 1,
+        duplicates: [
+          {
+            similarity: 0.93,
+            session1: { id: 's1', preview: 'implemented oauth callback flow' },
+            session2: { id: 's2', preview: 'implemented oauth callback flow with cleanup' }
+          }
+        ]
+      }, {
+        threshold: 0.9,
+        limit: 10
+      });
+
+      assert.match(output, /Duplicate detection report/);
+      assert.match(output, /93% similar/);
+      assert.match(output, /A: s1/);
+      assert.match(output, /B: s2/);
+    });
+
+    it('formats an empty duplicate report clearly', () => {
+      const output = VectorSearch.formatDuplicatesReport({
+        total_pairs_checked: 0,
+        duplicates_found: 0,
+        duplicates: []
+      }, {
+        threshold: 0.85,
+        limit: 20
+      });
+
+      assert.match(output, /No duplicate candidates found/);
+    });
+  });
 });

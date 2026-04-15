@@ -5,6 +5,7 @@ const assert = require('node:assert/strict');
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
+const BloomFilter = require('../scripts/bloom-filter');
 
 // Create a minimal test fixture that mimics the Memex data structure
 function createTestFixture() {
@@ -91,10 +92,11 @@ function createTestFixture() {
   // Create .cache dir
   fs.mkdirSync(path.join(tmpDir, '.cache'), { recursive: true });
 
-  // Create bloom filter state (empty)
+  const bloomFilter = new BloomFilter(64, 0.01);
+  ['auth', 'testing', 'tests', 'unit', 'added', 'project', 'setup', 'testproject'].forEach((term) => bloomFilter.add(term));
   fs.writeFileSync(
     path.join(tmpDir, '.cache', 'bloom-filter.json'),
-    JSON.stringify({ bits: [], size: 0, numHashFunctions: 0, itemCount: 0 })
+    JSON.stringify(bloomFilter.toJSON(), null, 2)
   );
 
   return tmpDir;
@@ -230,6 +232,25 @@ describe('Memex Loader', () => {
       const projectResult = results.results.find((r) => r.type === 'project');
       assert.ok(projectResult);
       assert.equal(projectResult.project, 'TestProject');
+    });
+
+    it('finds sessions by summary text', () => {
+      const memex = new Memex();
+      memex.loadIndex();
+      const results = memex.search('project setup');
+
+      const sessionResult = results.results.find((r) => r.type === 'session');
+      assert.ok(sessionResult);
+      assert.equal(sessionResult.session_id, 'tp-2025-11-15-setup-xyz2');
+    });
+
+    it('does not bloom-skip multi-word queries when one term exists', () => {
+      const memex = new Memex();
+      memex.loadIndex();
+      const results = memex.search('auth workflow');
+
+      assert.equal(results.bloom_filter_skip, false);
+      assert.equal(Array.isArray(results.results), true);
     });
 
     it('returns empty for nonexistent terms', () => {

@@ -160,6 +160,7 @@ class SessionSaver {
     const sessionId = this.generateSessionId(topics);
     const date = new Date().toISOString().split('T')[0];
     const yearMonth = date.substring(0, 7); // YYYY-MM
+    let gitChanges = null;
 
     // Create session metadata
     const session = {
@@ -179,7 +180,7 @@ class SessionSaver {
 
     // Add git changes if available
     if (options.include_git_changes !== false) {
-      const gitChanges = this.getGitChanges();
+      gitChanges = this.getGitChanges();
       if (gitChanges) {
         session.code_changes = {
           files_added: gitChanges.files.added,
