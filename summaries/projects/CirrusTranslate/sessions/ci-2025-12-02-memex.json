@@ -1,6 +1,5 @@
 {
   "id": "ci-2025-12-02-memex",
-  "project": "CirrusTranslate",
   "date": "2025-12-02",
   "summary": "Added Memex auto-update on startup - automatically stays in sync with Cirrus-Inc/Memex",
   "topics": [
@@ -12,6 +11,6 @@
     "pr-232"
   ],
   "_lazy_loaded": true,
-  "_index_size_bytes": 244,
-  "_full_size_bytes": 244
+  "_index_size_bytes": 216,
+  "_full_size_bytes": 216
 }

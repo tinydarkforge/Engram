@@ -1,6 +1,5 @@
 {
   "id": "de-2025-12-04-session",
-  "project": "DevOps",
   "date": "2025-12-04",
   "summary": "chore(memex): remove test file after successful hook verification",
   "topics": [
@@ -8,21 +7,7 @@
     "chore",
     "docs"
   ],
-  "key_decisions": [],
-  "outcomes": {
-    "completed": []
-  },
-  "learnings": [],
-  "code_changes": {
-    "files_added": [],
-    "files_modified": [
-      ".claude/settings.local.json"
-    ],
-    "files_deleted": [],
-    "lines_added": 8,
-    "lines_removed": 1
-  },
   "_lazy_loaded": true,
-  "_index_size_bytes": 176,
-  "_full_size_bytes": 374
+  "_index_size_bytes": 157,
+  "_full_size_bytes": 157
 }

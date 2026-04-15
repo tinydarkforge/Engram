@@ -33,9 +33,10 @@
       "id": "tr-2025-12-08-session",
       "project": "translate.hellocirrus",
       "date": "2025-12-08",
-      "summary": "feat(memex): add auto-regenerate on-start hook",
+      "summary": "feat(memex): add Neural Memory CLAUDE.md context",
       "topics": [
         "",
+        "docs",
         "feat"
       ],
       "key_decisions": [],
@@ -59,11 +60,11 @@
       "id": "tr-2025-12-08-session",
       "project": "translate.hellocirrus",
       "date": "2025-12-08",
-      "summary": "chore(memex): neuralize with latest Neural Memory",
+      "summary": "feat(memex): add Neural Memory CLAUDE.md context",
       "topics": [
         "",
-        "chore",
-        "docs"
+        "docs",
+        "feat"
       ],
       "key_decisions": [],
       "outcomes": {
@@ -86,7 +87,7 @@
       "id": "tr-2025-12-08-session",
       "project": "translate.hellocirrus",
       "date": "2025-12-08",
-      "summary": "feat(memex): update CLAUDE.md with Neural Memory v2.0",
+      "summary": "feat(memex): add Neural Memory CLAUDE.md context",
       "topics": [
         "",
         "docs",
@@ -139,58 +140,49 @@
     {
       "id": "tr-2025-12-06-session",
       "date": "2025-12-06",
-      "summary": "chore: migrate to ESLint 9 and stylelint-config-standard 39",
-      "topics": [
-        "",
-        "dependencies"
-      ],
-      "changes": "+9/-3"
-    },
-    {
-      "id": "tr-2025-12-06-session",
-      "date": "2025-12-06",
-      "summary": "security: add SRI hashes and update packages",
-      "topics": [
-        "",
-        "dependencies"
-      ],
-      "changes": "+8/-3"
-    },
-    {
-      "id": "tr-2025-12-06-session",
-      "date": "2025-12-06",
-      "summary": "docs: add December 6 tasks to monthly report",
-      "topics": [
-        "",
-        "docs"
-      ],
-      "changes": "+4/-3"
-    },
-    {
-      "id": "tr-2025-12-06-session",
-      "date": "2025-12-06",
-      "summary": "chore: update Spanish chatbot knowledge base",
-      "topics": [],
-      "changes": "+4/-3"
-    },
-    {
-      "id": "tr-2025-12-06-session",
-      "date": "2025-12-06",
-      "summary": "feat: reorder testimonials section before advisory board",
+      "summary": "perf: implement lazy loading and dynamic i18n for faster page load",
       "topics": [],
       "changes": "+5/-4"
     },
     {
       "id": "tr-2025-12-06-session",
       "date": "2025-12-06",
-      "summary": "feat: add loading state improvements for async actions",
+      "summary": "perf: implement lazy loading and dynamic i18n for faster page load",
       "topics": [],
       "changes": "+5/-4"
     },
     {
       "id": "tr-2025-12-06-session",
       "date": "2025-12-06",
-      "summary": "feat: add real-time form validation with visual feedback (#67)",
+      "summary": "perf: implement lazy loading and dynamic i18n for faster page load",
+      "topics": [],
+      "changes": "+5/-4"
+    },
+    {
+      "id": "tr-2025-12-06-session",
+      "date": "2025-12-06",
+      "summary": "perf: implement lazy loading and dynamic i18n for faster page load",
+      "topics": [],
+      "changes": "+5/-4"
+    },
+    {
+      "id": "tr-2025-12-06-session",
+      "date": "2025-12-06",
+      "summary": "perf: implement lazy loading and dynamic i18n for faster page load",
+      "topics": [],
+      "changes": "+5/-4"
+    },
+    {
+      "id": "tr-2025-12-06-session",
+      "date": "2025-12-06",
+      "summary": "perf: implement lazy loading and dynamic i18n for faster page load",
+      "topics": [],
+      "changes": "+5/-4"
+    },
+    {
+      "id": "tr-2025-12-06-session",
+      "date": "2025-12-06",
+      "summary": "perf: implement lazy loading and dynamic i18n for faster page load",
       "topics": [],
       "changes": "+5/-4"
     },
@@ -204,163 +196,7 @@
     {
       "id": "tr-2025-12-05-session",
       "date": "2025-12-05",
-      "summary": "fix: correct contact modal i18n import and add translations",
-      "topics": [],
-      "changes": "+5/-4"
-    },
-    {
-      "id": "tr-2025-12-05-session",
-      "date": "2025-12-05",
-      "summary": "fix: increase feedback button left margin on mobile",
-      "topics": [],
-      "changes": "+5/-4"
-    },
-    {
-      "id": "tr-2025-12-05-session",
-      "date": "2025-12-05",
-      "summary": "fix: optimize contact modal button text and mobile layout",
-      "topics": [],
-      "changes": "+5/-4"
-    },
-    {
-      "id": "tr-2025-12-05-session",
-      "date": "2025-12-05",
-      "summary": "fix: add Contact Us modal translations for all languages (#63)",
-      "topics": [],
-      "changes": "+5/-4"
-    },
-    {
-      "id": "tr-2025-12-05-session",
-      "date": "2025-12-05",
-      "summary": "fix: simplify form buttons and move feedback to left on mobile",
-      "topics": [],
-      "changes": "+5/-4"
-    },
-    {
-      "id": "tr-2025-12-05-session",
-      "date": "2025-12-05",
-      "summary": "fix: add playsinline for iOS video to prevent fullscreen overlay (#61)",
-      "topics": [],
-      "changes": "+5/-4"
-    },
-    {
-      "id": "tr-2025-12-05-session",
-      "date": "2025-12-05",
-      "summary": "fix: template buttons hidden behind player on iPhone (#61)",
-      "topics": [],
-      "changes": "+5/-4"
-    },
-    {
-      "id": "tr-2025-12-05-session",
-      "date": "2025-12-05",
-      "summary": "fix: update language dropdown to match dark site theme (#60)",
-      "topics": [],
-      "changes": "+5/-4"
-    },
-    {
-      "id": "tr-2025-12-05-session",
-      "date": "2025-12-05",
-      "summary": "fix: change 'Contacto' to 'Contáctenos' in Spanish translations",
-      "topics": [],
-      "changes": "+5/-4"
-    },
-    {
-      "id": "tr-2025-12-05-session",
-      "date": "2025-12-05",
-      "summary": "fix: remove unnecessary CCPA Do",
-      "topics": [],
-      "changes": "+2/-1"
-    },
-    {
-      "id": "tr-2025-12-05-session",
-      "date": "2025-12-05",
-      "summary": "fix: add missing doNotSell translation key to all locales",
-      "topics": [],
-      "changes": "+2/-1"
-    },
-    {
-      "id": "tr-2025-12-05-session",
-      "date": "2025-12-05",
-      "summary": "docs: add Botpress Cloud service features and pricing details",
-      "topics": [
-        "",
-        "docs"
-      ],
-      "changes": "+2/-1"
-    },
-    {
-      "id": "tr-2025-12-05-session",
-      "date": "2025-12-05",
-      "summary": "docs: optimize chatbot knowledge base to Q&A format",
-      "topics": [
-        "",
-        "docs"
-      ],
-      "changes": "+2/-1"
-    },
-    {
-      "id": "tr-2025-12-05-session",
-      "date": "2025-12-05",
-      "summary": "fix: use official Botpress v3.4 embed code",
-      "topics": [],
-      "changes": "+2/-1"
-    },
-    {
-      "id": "tr-2025-12-05-session",
-      "date": "2025-12-05",
-      "summary": "fix: set bot name to 'Cirrus' and add logo avatar",
-      "topics": [],
-      "changes": "+2/-1"
-    },
-    {
-      "id": "tr-2025-12-05-session",
-      "date": "2025-12-05",
-      "summary": "fix: add clientId to Botpress webchat configuration",
-      "topics": [],
-      "changes": "+2/-1"
-    },
-    {
-      "id": "tr-2025-12-05-session",
-      "date": "2025-12-05",
-      "summary": "fix: add botId to Botpress webchat configuration",
-      "topics": [],
-      "changes": "+2/-1"
-    },
-    {
-      "id": "tr-2025-12-05-session",
-      "date": "2025-12-05",
-      "summary": "feat: integrate Cirrus chatbot (Botpress Cloud) into website",
-      "topics": [],
-      "changes": "+2/-1"
-    },
-    {
-      "id": "tr-2025-12-05-session",
-      "date": "2025-12-05",
-      "summary": "chore: add chatbot knowledge files to public folder",
-      "topics": [],
-      "changes": "+2/-1"
-    },
-    {
-      "id": "tr-2025-12-05-session",
-      "date": "2025-12-05",
-      "summary": "docs: add multilingual knowledge base files for chatbot",
-      "topics": [],
-      "changes": "+2/-1"
-    },
-    {
-      "id": "tr-2025-12-05-session",
-      "date": "2025-12-05",
-      "summary": "docs: add stakeholder summary table to November report",
-      "topics": [
-        "",
-        "docs"
-      ],
-      "changes": "+2/-1"
-    },
-    {
-      "id": "tr-2025-12-05-session",
-      "date": "2025-12-05",
-      "summary": "docs: add stakeholder summary table to December report",
+      "summary": "revert: remove Web3Forms integration, keep mailto: links",
       "topics": [
         "",
         "docs"
@@ -369,7 +205,7 @@
     {
       "id": "tr-2025-12-05-session",
       "date": "2025-12-05",
-      "summary": "docs: update December 2025 monthly report with issues #47, #48, #50",
+      "summary": "revert: remove Web3Forms integration, keep mailto: links",
       "topics": [
         "",
         "docs"
@@ -378,59 +214,261 @@
     {
       "id": "tr-2025-12-05-session",
       "date": "2025-12-05",
-      "summary": "feat: add comprehensive GDPR/CCPA compliance features (#48)",
-      "topics": []
-    },
-    {
-      "id": "tr-2025-12-05-session",
-      "date": "2025-12-05",
-      "summary": "feat: enhance necessary cookies section with detailed descriptions (#47)",
-      "topics": []
-    },
-    {
-      "id": "tr-2025-12-05-session",
-      "date": "2025-12-05",
-      "summary": "refactor: move inline styles from JS to CSS classes (#50)",
+      "summary": "revert: remove Web3Forms integration, keep mailto: links",
       "topics": [
         "",
-        "dependencies",
         "docs"
       ]
     },
     {
       "id": "tr-2025-12-05-session",
       "date": "2025-12-05",
-      "summary": "chore: remove debug console.log statements",
-      "topics": []
-    },
-    {
-      "id": "tr-2025-12-05-session",
-      "date": "2025-12-05",
-      "summary": "fix: update CI to use Node 20+ for Vite 7 compatibility",
+      "summary": "revert: remove Web3Forms integration, keep mailto: links",
       "topics": [
         "",
-        "cicd"
+        "docs"
       ]
     },
     {
       "id": "tr-2025-12-05-session",
       "date": "2025-12-05",
-      "summary": "fix: remove custom CORS headers to resolve conflict with DO",
-      "topics": []
-    },
-    {
-      "id": "tr-2025-12-05-session",
-      "date": "2025-12-05",
-      "summary": "fix: deploy serverless function and integrate with website (#52)",
-      "topics": []
-    },
-    {
-      "id": "tr-2025-12-05-session",
-      "date": "2025-12-05",
-      "summary": "feat: add DigitalOcean serverless functions for email sending (#52)",
+      "summary": "revert: remove Web3Forms integration, keep mailto: links",
       "topics": [
         "",
-        "dependencies",
+        "docs"
+      ]
+    },
+    {
+      "id": "tr-2025-12-05-session",
+      "date": "2025-12-05",
+      "summary": "revert: remove Web3Forms integration, keep mailto: links",
+      "topics": [
+        "",
+        "docs"
+      ]
+    },
+    {
+      "id": "tr-2025-12-05-session",
+      "date": "2025-12-05",
+      "summary": "revert: remove Web3Forms integration, keep mailto: links",
+      "topics": [
+        "",
+        "docs"
+      ]
+    },
+    {
+      "id": "tr-2025-12-05-session",
+      "date": "2025-12-05",
+      "summary": "revert: remove Web3Forms integration, keep mailto: links",
+      "topics": [
+        "",
+        "docs"
+      ]
+    },
+    {
+      "id": "tr-2025-12-05-session",
+      "date": "2025-12-05",
+      "summary": "revert: remove Web3Forms integration, keep mailto: links",
+      "topics": [
+        "",
+        "docs"
+      ]
+    },
+    {
+      "id": "tr-2025-12-05-session",
+      "date": "2025-12-05",
+      "summary": "revert: remove Web3Forms integration, keep mailto: links",
+      "topics": [
+        "",
+        "docs"
+      ]
+    },
+    {
+      "id": "tr-2025-12-05-session",
+      "date": "2025-12-05",
+      "summary": "revert: remove Web3Forms integration, keep mailto: links",
+      "topics": [
+        "",
+        "docs"
+      ]
+    },
+    {
+      "id": "tr-2025-12-05-session",
+      "date": "2025-12-05",
+      "summary": "revert: remove Web3Forms integration, keep mailto: links",
+      "topics": [
+        "",
+        "docs"
+      ]
+    },
+    {
+      "id": "tr-2025-12-05-session",
+      "date": "2025-12-05",
+      "summary": "revert: remove Web3Forms integration, keep mailto: links",
+      "topics": [
+        "",
+        "docs"
+      ]
+    },
+    {
+      "id": "tr-2025-12-05-session",
+      "date": "2025-12-05",
+      "summary": "revert: remove Web3Forms integration, keep mailto: links",
+      "topics": [
+        "",
+        "docs"
+      ]
+    },
+    {
+      "id": "tr-2025-12-05-session",
+      "date": "2025-12-05",
+      "summary": "revert: remove Web3Forms integration, keep mailto: links",
+      "topics": [
+        "",
+        "docs"
+      ]
+    },
+    {
+      "id": "tr-2025-12-05-session",
+      "date": "2025-12-05",
+      "summary": "revert: remove Web3Forms integration, keep mailto: links",
+      "topics": [
+        "",
+        "docs"
+      ]
+    },
+    {
+      "id": "tr-2025-12-05-session",
+      "date": "2025-12-05",
+      "summary": "revert: remove Web3Forms integration, keep mailto: links",
+      "topics": [
+        "",
+        "docs"
+      ]
+    },
+    {
+      "id": "tr-2025-12-05-session",
+      "date": "2025-12-05",
+      "summary": "revert: remove Web3Forms integration, keep mailto: links",
+      "topics": [
+        "",
+        "docs"
+      ]
+    },
+    {
+      "id": "tr-2025-12-05-session",
+      "date": "2025-12-05",
+      "summary": "revert: remove Web3Forms integration, keep mailto: links",
+      "topics": [
+        "",
+        "docs"
+      ]
+    },
+    {
+      "id": "tr-2025-12-05-session",
+      "date": "2025-12-05",
+      "summary": "revert: remove Web3Forms integration, keep mailto: links",
+      "topics": [
+        "",
+        "docs"
+      ]
+    },
+    {
+      "id": "tr-2025-12-05-session",
+      "date": "2025-12-05",
+      "summary": "revert: remove Web3Forms integration, keep mailto: links",
+      "topics": [
+        "",
+        "docs"
+      ]
+    },
+    {
+      "id": "tr-2025-12-05-session",
+      "date": "2025-12-05",
+      "summary": "revert: remove Web3Forms integration, keep mailto: links",
+      "topics": [
+        "",
+        "docs"
+      ]
+    },
+    {
+      "id": "tr-2025-12-05-session",
+      "date": "2025-12-05",
+      "summary": "revert: remove Web3Forms integration, keep mailto: links",
+      "topics": [
+        "",
+        "docs"
+      ]
+    },
+    {
+      "id": "tr-2025-12-05-session",
+      "date": "2025-12-05",
+      "summary": "revert: remove Web3Forms integration, keep mailto: links",
+      "topics": [
+        "",
+        "docs"
+      ]
+    },
+    {
+      "id": "tr-2025-12-05-session",
+      "date": "2025-12-05",
+      "summary": "revert: remove Web3Forms integration, keep mailto: links",
+      "topics": [
+        "",
+        "docs"
+      ]
+    },
+    {
+      "id": "tr-2025-12-05-session",
+      "date": "2025-12-05",
+      "summary": "revert: remove Web3Forms integration, keep mailto: links",
+      "topics": [
+        "",
+        "docs"
+      ]
+    },
+    {
+      "id": "tr-2025-12-05-session",
+      "date": "2025-12-05",
+      "summary": "revert: remove Web3Forms integration, keep mailto: links",
+      "topics": [
+        "",
+        "docs"
+      ]
+    },
+    {
+      "id": "tr-2025-12-05-session",
+      "date": "2025-12-05",
+      "summary": "revert: remove Web3Forms integration, keep mailto: links",
+      "topics": [
+        "",
+        "docs"
+      ]
+    },
+    {
+      "id": "tr-2025-12-05-session",
+      "date": "2025-12-05",
+      "summary": "revert: remove Web3Forms integration, keep mailto: links",
+      "topics": [
+        "",
+        "docs"
+      ]
+    },
+    {
+      "id": "tr-2025-12-05-session",
+      "date": "2025-12-05",
+      "summary": "revert: remove Web3Forms integration, keep mailto: links",
+      "topics": [
+        "",
+        "docs"
+      ]
+    },
+    {
+      "id": "tr-2025-12-05-session",
+      "date": "2025-12-05",
+      "summary": "revert: remove Web3Forms integration, keep mailto: links",
+      "topics": [
+        "",
         "docs"
       ]
     },
@@ -446,7 +484,7 @@
     {
       "id": "tr-2025-12-04-session",
       "date": "2025-12-04",
-      "summary": "feat: integrate Web3Forms for contact and feedback forms",
+      "summary": "chore: remove Memex test file",
       "topics": [
         "",
         "docs"
@@ -455,51 +493,7 @@
     {
       "id": "tr-2025-12-04-session",
       "date": "2025-12-04",
-      "summary": "feat: integrate extracted modules (Phase 3)",
-      "topics": []
-    },
-    {
-      "id": "tr-2025-12-04-session",
-      "date": "2025-12-04",
-      "summary": "docs: complete Phase 2 module documentation (#51 - Phase 2)",
-      "topics": [
-        "",
-        "dependencies",
-        "docs"
-      ]
-    },
-    {
-      "id": "tr-2025-12-04-session",
-      "date": "2025-12-04",
-      "summary": "feat: extract reusable modules for organization-wide use (#51 - Phase 1)",
-      "topics": [
-        "",
-        "dependencies",
-        "docs"
-      ]
-    },
-    {
-      "id": "tr-2025-12-04-session",
-      "date": "2025-12-04",
-      "summary": "refactor: move inline notification styles to CSS classes (#50)",
-      "topics": []
-    },
-    {
-      "id": "tr-2025-12-04-session",
-      "date": "2025-12-04",
-      "summary": "feat: add GDPR/CCPA compliance features (#47, #48)",
-      "topics": []
-    },
-    {
-      "id": "tr-2025-12-04-session",
-      "date": "2025-12-04",
-      "summary": "fix: translation improvements and UX enhancements (#37)",
-      "topics": []
-    },
-    {
-      "id": "tr-2025-12-04-session",
-      "date": "2025-12-04",
-      "summary": "docs: update December 2025 report with documentation infrastructure work",
+      "summary": "chore: remove Memex test file",
       "topics": [
         "",
         "docs"
@@ -508,7 +502,7 @@
     {
       "id": "tr-2025-12-04-session",
       "date": "2025-12-04",
-      "summary": "docs: add comprehensive November 2025 monthly report",
+      "summary": "chore: remove Memex test file",
       "topics": [
         "",
         "docs"
@@ -517,7 +511,7 @@
     {
       "id": "tr-2025-12-04-session",
       "date": "2025-12-04",
-      "summary": "docs: add monthly task reporting structure",
+      "summary": "chore: remove Memex test file",
       "topics": [
         "",
         "docs"
@@ -526,7 +520,7 @@
     {
       "id": "tr-2025-12-04-session",
       "date": "2025-12-04",
-      "summary": "test: add detailed logging for cookie consent testing",
+      "summary": "chore: remove Memex test file",
       "topics": [
         "",
         "docs"
@@ -535,92 +529,191 @@
     {
       "id": "tr-2025-12-04-session",
       "date": "2025-12-04",
-      "summary": "security: add script cleanup on cookie consent revocation",
-      "topics": []
+      "summary": "chore: remove Memex test file",
+      "topics": [
+        "",
+        "docs"
+      ]
     },
     {
       "id": "tr-2025-12-04-session",
       "date": "2025-12-04",
-      "summary": "style: unify modal theming with CSS variables and light theme",
-      "topics": []
+      "summary": "chore: remove Memex test file",
+      "topics": [
+        "",
+        "docs"
+      ]
     },
     {
       "id": "tr-2025-12-04-session",
       "date": "2025-12-04",
-      "summary": "refactor: implement CSS variables and light theme for all modals",
-      "topics": []
+      "summary": "chore: remove Memex test file",
+      "topics": [
+        "",
+        "docs"
+      ]
     },
     {
       "id": "tr-2025-12-04-session",
       "date": "2025-12-04",
-      "summary": "style: unify all modals with cookie consent backgrounds and fonts",
-      "topics": []
+      "summary": "chore: remove Memex test file",
+      "topics": [
+        "",
+        "docs"
+      ]
     },
     {
       "id": "tr-2025-12-04-session",
       "date": "2025-12-04",
-      "summary": "style: unify all modals with cookie consent theme colors",
-      "topics": []
+      "summary": "chore: remove Memex test file",
+      "topics": [
+        "",
+        "docs"
+      ]
     },
     {
       "id": "tr-2025-12-04-session",
       "date": "2025-12-04",
-      "summary": "fix: improve legal modal close button and cookie settings",
-      "topics": []
+      "summary": "chore: remove Memex test file",
+      "topics": [
+        "",
+        "docs"
+      ]
     },
     {
       "id": "tr-2025-12-04-session",
       "date": "2025-12-04",
-      "summary": "feat: implement custom contact modal and fix critical cookie consent issues",
-      "topics": []
+      "summary": "chore: remove Memex test file",
+      "topics": [
+        "",
+        "docs"
+      ]
     },
     {
       "id": "tr-2025-12-04-session",
       "date": "2025-12-04",
-      "summary": "fix: remove animations from legal modals",
-      "topics": []
+      "summary": "chore: remove Memex test file",
+      "topics": [
+        "",
+        "docs"
+      ]
     },
     {
       "id": "tr-2025-12-04-session",
       "date": "2025-12-04",
-      "summary": "style: apply dark theme to all modals and center them",
-      "topics": []
+      "summary": "chore: remove Memex test file",
+      "topics": [
+        "",
+        "docs"
+      ]
     },
     {
       "id": "tr-2025-12-04-session",
       "date": "2025-12-04",
-      "summary": "fix: center feedback modal and remove close button",
-      "topics": []
+      "summary": "chore: remove Memex test file",
+      "topics": [
+        "",
+        "docs"
+      ]
     },
     {
       "id": "tr-2025-12-04-session",
       "date": "2025-12-04",
-      "summary": "style: unify color theme to site purple palette",
-      "topics": []
+      "summary": "chore: remove Memex test file",
+      "topics": [
+        "",
+        "docs"
+      ]
     },
     {
       "id": "tr-2025-12-04-session",
       "date": "2025-12-04",
-      "summary": "fix: resolve modal dialog bugs",
-      "topics": []
+      "summary": "chore: remove Memex test file",
+      "topics": [
+        "",
+        "docs"
+      ]
     },
     {
       "id": "tr-2025-12-04-session",
       "date": "2025-12-04",
-      "summary": "feat: convert Terms and Privacy to modal dialogs",
-      "topics": []
+      "summary": "chore: remove Memex test file",
+      "topics": [
+        "",
+        "docs"
+      ]
     },
     {
       "id": "tr-2025-12-04-session",
       "date": "2025-12-04",
-      "summary": "feat: add modern feedback button with multi-language support",
-      "topics": []
+      "summary": "chore: remove Memex test file",
+      "topics": [
+        "",
+        "docs"
+      ]
     },
     {
       "id": "tr-2025-12-04-session",
       "date": "2025-12-04",
-      "summary": "fix: translate footer across all languages",
-      "topics": []
+      "summary": "chore: remove Memex test file",
+      "topics": [
+        "",
+        "docs"
+      ]
+    },
+    {
+      "id": "tr-2025-12-04-session",
+      "date": "2025-12-04",
+      "summary": "chore: remove Memex test file",
+      "topics": [
+        "",
+        "docs"
+      ]
+    },
+    {
+      "id": "tr-2025-12-04-session",
+      "date": "2025-12-04",
+      "summary": "chore: remove Memex test file",
+      "topics": [
+        "",
+        "docs"
+      ]
+    },
+    {
+      "id": "tr-2025-12-04-session",
+      "date": "2025-12-04",
+      "summary": "chore: remove Memex test file",
+      "topics": [
+        "",
+        "docs"
+      ]
+    },
+    {
+      "id": "tr-2025-12-04-session",
+      "date": "2025-12-04",
+      "summary": "chore: remove Memex test file",
+      "topics": [
+        "",
+        "docs"
+      ]
+    },
+    {
+      "id": "tr-2025-12-04-session",
+      "date": "2025-12-04",
+      "summary": "chore: remove Memex test file",
+      "topics": [
+        "",
+        "docs"
+      ]
+    },
+    {
+      "id": "tr-2025-12-04-session",
+      "date": "2025-12-04",
+      "summary": "chore: remove Memex test file",
+      "topics": [
+        "",
+        "docs"
+      ]
     },
     {
       "id": "tr-2025-12-04-session",
@@ -642,8 +735,6 @@
       ]
     }
   ],
-  "_lazy_loading_enabled": true,
-  "_session_details_path": "sessions/{id}.json",
   "topics_index": {
     "": [
       "tr-2025-12-08-session",

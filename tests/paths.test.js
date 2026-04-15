@@ -3,6 +3,8 @@
 const { describe, it, before, after } = require('node:test');
 const assert = require('node:assert/strict');
 const path = require('path');
+const fs = require('fs');
+const os = require('os');
 
 describe('paths', () => {
   let originalMemexPath;
@@ -11,6 +13,7 @@ describe('paths', () => {
   let resolveReposRoot;
   let resolveProjectDirName;
   let normalizeProjectSlug;
+  let tmpDir;
 
   before(() => {
     originalMemexPath = process.env.MEMEX_PATH;
@@ -22,6 +25,8 @@ describe('paths', () => {
       .forEach(k => delete require.cache[k]);
 
     ({ resolveMemexPath, resolveReposRoot, resolveProjectDirName, normalizeProjectSlug } = require('../scripts/paths'));
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'memex-paths-'));
+    fs.mkdirSync(path.join(tmpDir, 'summaries', 'projects'), { recursive: true });
   });
 
   after(() => {
@@ -34,6 +39,9 @@ describe('paths', () => {
       process.env.MEMEX_REPOS_ROOT = originalReposRoot;
     } else {
       delete process.env.MEMEX_REPOS_ROOT;
+    }
+    if (tmpDir) {
+      fs.rmSync(tmpDir, { recursive: true, force: true });
     }
   });
 
@@ -82,6 +90,23 @@ describe('paths', () => {
       const memexPath = '/tmp/memex';
       const result = resolveProjectDirName(memexPath, 'MyProject');
       assert.equal(result, 'myproject');
+    });
+
+    it('resolveProjectDirName() prefers an existing mixed-case legacy directory', () => {
+      fs.mkdirSync(path.join(tmpDir, 'summaries', 'projects', 'CirrusTranslate'));
+      const result = resolveProjectDirName(tmpDir, 'cirrustranslate');
+      assert.equal(result, 'CirrusTranslate');
+    });
+
+    it('resolveProjectDirName() reuses legacy directories that normalize to the same slug', () => {
+      fs.mkdirSync(path.join(tmpDir, 'summaries', 'projects', 'My Project'), { recursive: true });
+      const result = resolveProjectDirName(tmpDir, 'my-project');
+      assert.equal(result, 'My Project');
+    });
+
+    it('resolveProjectDirName() still returns slug for brand new projects', () => {
+      const result = resolveProjectDirName(tmpDir, 'Brand New Project');
+      assert.equal(result, 'brand-new-project');
     });
   });
 });

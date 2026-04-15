@@ -1,29 +1,12 @@
 {
   "id": "tr-2025-12-04-session",
-  "project": "translate.hellocirrus",
   "date": "2025-12-04",
   "summary": "chore: remove Memex test file",
   "topics": [
     "",
     "docs"
   ],
-  "key_decisions": [],
-  "outcomes": {
-    "completed": []
-  },
-  "learnings": [],
-  "code_changes": {
-    "files_added": [],
-    "files_modified": [
-      ".DS_Store",
-      ".claude/settings.local.json",
-      "package.json"
-    ],
-    "files_deleted": [],
-    "lines_added": 10,
-    "lines_removed": 2
-  },
   "_lazy_loaded": true,
-  "_index_size_bytes": 147,
-  "_full_size_bytes": 373
+  "_index_size_bytes": 113,
+  "_full_size_bytes": 113
 }

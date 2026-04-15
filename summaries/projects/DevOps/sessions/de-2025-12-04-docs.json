@@ -1,6 +1,5 @@
 {
   "id": "de-2025-12-04-docs",
-  "project": "DevOps",
   "date": "2025-12-04",
   "summary": "test(memex): verify automated session capture [memex: testing, git-hooks]",
   "topics": [
@@ -9,21 +8,7 @@
     "test",
     "testing"
   ],
-  "key_decisions": [],
-  "outcomes": {
-    "completed": []
-  },
-  "learnings": [],
-  "code_changes": {
-    "files_added": [],
-    "files_modified": [
-      ".claude/settings.local.json"
-    ],
-    "files_deleted": [],
-    "lines_added": 6,
-    "lines_removed": 1
-  },
   "_lazy_loaded": true,
-  "_index_size_bytes": 199,
-  "_full_size_bytes": 397
+  "_index_size_bytes": 180,
+  "_full_size_bytes": 180
 }

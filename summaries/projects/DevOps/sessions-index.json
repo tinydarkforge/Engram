@@ -7,12 +7,12 @@
       "id": "de-2025-12-14-memex",
       "project": "DevOps",
       "date": "2025-12-14",
-      "summary": "Added",
+      "summary": "Fixed",
       "topics": [
         "memex",
-        "git-indexing",
-        "neural-memory",
-        "search"
+        "ram-leak",
+        "hooks",
+        "stability"
       ],
       "key_decisions": [],
       "outcomes": {
@@ -26,7 +26,7 @@
           ".claude/settings.local.json"
         ],
         "files_deleted": [],
-        "lines_added": 30,
+        "lines_added": 28,
         "lines_removed": 3
       }
     },
@@ -66,8 +66,7 @@
         "uploader",
         "s3",
         "mirage",
-        "typescript",
-        "projectfiles"
+        "cirrustranslate"
       ],
       "key_decisions": [],
       "outcomes": {
@@ -143,7 +142,7 @@
       "id": "de-2025-12-11-session",
       "project": "DevOps",
       "date": "2025-12-11",
-      "summary": "Commit",
+      "summary": "Epic",
       "topics": [],
       "key_decisions": [],
       "outcomes": {
@@ -165,7 +164,7 @@
       "id": "de-2025-12-11-session",
       "project": "DevOps",
       "date": "2025-12-11",
-      "summary": "Fixed",
+      "summary": "Epic",
       "topics": [],
       "key_decisions": [],
       "outcomes": {
@@ -262,8 +261,11 @@
       "topics": [
         "security",
         "soc",
-        "dependency-analysis",
-        "code-quality"
+        "audit",
+        "npm",
+        "trivy",
+        "semgrep",
+        "gitleaks"
       ],
       "key_decisions": [],
       "outcomes": {
@@ -315,11 +317,10 @@
       "id": "de-2025-12-10-session",
       "project": "DevOps",
       "date": "2025-12-10",
-      "summary": "fix(memex): bulletproof on-start hook to prevent memory leaks",
+      "summary": "hotfix(memex): disable on-start hook - causes system instability",
       "topics": [
         "",
-        "docs",
-        "fix"
+        "hotfix"
       ],
       "key_decisions": [],
       "outcomes": {
@@ -329,10 +330,11 @@
       "code_changes": {
         "files_added": [],
         "files_modified": [
+          ".claude/CLAUDE.md",
           ".claude/settings.local.json"
         ],
         "files_deleted": [],
-        "lines_added": 10,
+        "lines_added": 9,
         "lines_removed": 2
       }
     },
@@ -381,7 +383,7 @@
           ".claude/settings.local.json"
         ],
         "files_deleted": [],
-        "lines_added": 8,
+        "lines_added": 6,
         "lines_removed": 2
       }
     },
@@ -413,9 +415,10 @@
       "id": "de-2025-12-08-session",
       "project": "DevOps",
       "date": "2025-12-08",
-      "summary": "feat(memex): add auto-regenerate on-start hook",
+      "summary": "feat(memex): add Neural Memory v1.0 with auto-deployment",
       "topics": [
         "",
+        "docs",
         "feat"
       ],
       "key_decisions": [],
@@ -425,23 +428,21 @@
       "learnings": [],
       "code_changes": {
         "files_added": [],
-        "files_modified": [
-          ".claude/settings.local.json"
-        ],
+        "files_modified": [],
         "files_deleted": [],
-        "lines_added": 2,
-        "lines_removed": 1
+        "lines_added": 0,
+        "lines_removed": 0
       }
     },
     {
       "id": "de-2025-12-08-session",
       "project": "DevOps",
       "date": "2025-12-08",
-      "summary": "chore(memex): update CLAUDE.md context",
+      "summary": "feat(memex): add Neural Memory v1.0 with auto-deployment",
       "topics": [
         "",
-        "chore",
-        "docs"
+        "docs",
+        "feat"
       ],
       "key_decisions": [],
       "outcomes": {
@@ -450,19 +451,17 @@
       "learnings": [],
       "code_changes": {
         "files_added": [],
-        "files_modified": [
-          ".claude/settings.local.json"
-        ],
+        "files_modified": [],
         "files_deleted": [],
-        "lines_added": 2,
-        "lines_removed": 1
+        "lines_added": 0,
+        "lines_removed": 0
       }
     },
     {
       "id": "de-2025-12-08-session",
       "project": "DevOps",
       "date": "2025-12-08",
-      "summary": "feat(memex): update CLAUDE.md with Neural Memory v2.0",
+      "summary": "feat(memex): add Neural Memory v1.0 with auto-deployment",
       "topics": [
         "",
         "docs",
@@ -507,20 +506,21 @@
     {
       "id": "de-2025-12-04-session",
       "date": "2025-12-04",
-      "summary": "feat(memex): complete Epic F1 - MessagePack Binary Serialization v4.0",
+      "summary": "chore(memex): remove test file after successful hook verification",
       "topics": [
         "",
-        "feat"
+        "chore",
+        "docs"
       ]
     },
     {
       "id": "de-2025-12-04-session",
       "date": "2025-12-04",
-      "summary": "feat(memex): complete epic planning for Local",
+      "summary": "chore(memex): remove test file after successful hook verification",
       "topics": [
         "",
-        "docs",
-        "feat"
+        "chore",
+        "docs"
       ]
     },
     {
@@ -559,8 +559,6 @@
       ]
     }
   ],
-  "_lazy_loading_enabled": true,
-  "_session_details_path": "sessions/{id}.json",
   "topics_index": {
     "": [
       "de-2025-12-08-session",

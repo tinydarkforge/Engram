@@ -1,10 +1,10 @@
 {
   "$schema": "./schemas/index.schema.json",
   "v": "4.0.0",
-  "u": "2026-02-21T11:01:27.073Z",
+  "u": "2026-02-21T18:33:47.613Z",
   "m": {
     "tp": 6,
-    "ts": 13309,
+    "ts": 13314,
     "gs": 5
   },
   "g": {
@@ -127,8 +127,8 @@
         "Python"
       ],
       "a": "monorepo",
-      "sc": 50,
-      "u": "2025-12-21",
+      "sc": 55,
+      "u": "2026-02-21",
       "mf": "metadata/projects/CirrusTranslate.json",
       "tp": [
         "auth",
@@ -339,7 +339,7 @@
       "p": [
         "CirrusTranslate"
       ],
-      "sc": 1
+      "sc": 2
     },
     "memory-system": {
       "p": [
@@ -588,7 +588,7 @@
         "CirrusTranslate",
         "DevOps"
       ],
-      "sc": 8
+      "sc": 9
     },
     "maintenance": {
       "p": [
@@ -788,7 +788,7 @@
         "DevOps",
         "CirrusTranslate"
       ],
-      "sc": 1
+      "sc": 3
     },
     "aither": {
       "p": [
@@ -1231,9 +1231,10 @@
     },
     "agentbridge": {
       "p": [
-        "Memex"
+        "Memex",
+        "CirrusTranslate"
       ],
-      "sc": 1
+      "sc": 2
     },
     "business": {
       "p": [
@@ -1244,6 +1245,90 @@
     "plan": {
       "p": [
         "Memex"
+      ],
+      "sc": 1
+    },
+    "mvp-audit": {
+      "p": [
+        "CirrusTranslate"
+      ],
+      "sc": 1
+    },
+    "refactoring": {
+      "p": [
+        "CirrusTranslate"
+      ],
+      "sc": 1
+    },
+    "roadmap": {
+      "p": [
+        "CirrusTranslate"
+      ],
+      "sc": 1
+    },
+    "soc2": {
+      "p": [
+        "CirrusTranslate"
+      ],
+      "sc": 1
+    },
+    "codex-review": {
+      "p": [
+        "CirrusTranslate"
+      ],
+      "sc": 3
+    },
+    "codebase-audit": {
+      "p": [
+        "CirrusTranslate"
+      ],
+      "sc": 3
+    },
+    "refactor-proposal": {
+      "p": [
+        "CirrusTranslate"
+      ],
+      "sc": 3
+    },
+    "adversarial-review": {
+      "p": [
+        "CirrusTranslate"
+      ],
+      "sc": 2
+    },
+    "severity-model": {
+      "p": [
+        "CirrusTranslate"
+      ],
+      "sc": 1
+    },
+    "executive-proposal": {
+      "p": [
+        "CirrusTranslate"
+      ],
+      "sc": 2
+    },
+    "implementation-plan": {
+      "p": [
+        "CirrusTranslate"
+      ],
+      "sc": 2
+    },
+    "product-design": {
+      "p": [
+        "CirrusTranslate"
+      ],
+      "sc": 1
+    },
+    "system-design": {
+      "p": [
+        "CirrusTranslate"
+      ],
+      "sc": 1
+    },
+    "infrastructure": {
+      "p": [
+        "CirrusTranslate"
       ],
       "sc": 1
     }

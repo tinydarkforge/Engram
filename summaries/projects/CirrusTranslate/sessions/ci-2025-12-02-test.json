@@ -1,6 +1,5 @@
 {
   "id": "ci-2025-12-02-test",
-  "project": "CirrusTranslate",
   "date": "2025-12-02",
   "summary": "Test session to verify Memex v2.0 integration",
   "topics": [
@@ -9,6 +8,6 @@
     "integration"
   ],
   "_lazy_loaded": true,
-  "_index_size_bytes": 173,
-  "_full_size_bytes": 173
+  "_index_size_bytes": 145,
+  "_full_size_bytes": 145
 }

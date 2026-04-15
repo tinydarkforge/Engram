@@ -1,6 +1,5 @@
 {
   "id": "ci-2025-12-02-search",
-  "project": "CirrusTranslate",
   "date": "2025-12-02",
   "summary": "Testing topics index update",
   "topics": [
@@ -9,6 +8,6 @@
     "topics"
   ],
   "_lazy_loaded": true,
-  "_index_size_bytes": 152,
-  "_full_size_bytes": 152
+  "_index_size_bytes": 124,
+  "_full_size_bytes": 124
 }

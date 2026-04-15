@@ -1,6 +1,5 @@
 {
   "id": "ci-2025-12-02-docker",
-  "project": "CirrusTranslate",
   "date": "2025-12-02",
   "summary": "Docker optimization for CirrusTranslate",
   "topics": [
@@ -9,6 +8,6 @@
     "build"
   ],
   "_lazy_loaded": true,
-  "_index_size_bytes": 166,
-  "_full_size_bytes": 166
+  "_index_size_bytes": 138,
+  "_full_size_bytes": 138
 }

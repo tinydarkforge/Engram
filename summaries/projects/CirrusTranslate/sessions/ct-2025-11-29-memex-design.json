@@ -1,6 +1,5 @@
 {
   "id": "ct-2025-11-29-memex-design",
-  "project": "CirrusTranslate",
   "date": "2025-11-29",
   "summary": "Designed Memex memory system with three-tier architecture and token-efficient loading",
   "topics": [
@@ -10,6 +9,6 @@
     "optimization"
   ],
   "_lazy_loaded": true,
-  "_index_size_bytes": 246,
-  "_full_size_bytes": 246
+  "_index_size_bytes": 218,
+  "_full_size_bytes": 218
 }

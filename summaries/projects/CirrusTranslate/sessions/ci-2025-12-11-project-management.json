@@ -1,0 +1,26 @@
+{
+  "id": "ci-2025-12-11-project-management",
+  "project": "CirrusTranslate",
+  "date": "2025-12-11",
+  "summary": "Fixed",
+  "topics": [
+    "project-management",
+    "ci-cd",
+    "github"
+  ],
+  "key_decisions": [],
+  "outcomes": {
+    "completed": []
+  },
+  "learnings": [],
+  "code_changes": {
+    "files_added": [],
+    "files_modified": [],
+    "files_deleted": [],
+    "lines_added": 0,
+    "lines_removed": 0
+  },
+  "_lazy_loaded": true,
+  "_index_size_bytes": 156,
+  "_full_size_bytes": 325
+}

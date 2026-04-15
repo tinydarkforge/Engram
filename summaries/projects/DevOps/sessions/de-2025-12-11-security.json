@@ -1,0 +1,33 @@
+{
+  "id": "de-2025-12-11-security",
+  "project": "DevOps",
+  "date": "2025-12-11",
+  "summary": "SOC",
+  "topics": [
+    "security",
+    "soc",
+    "audit",
+    "npm",
+    "trivy",
+    "semgrep",
+    "gitleaks"
+  ],
+  "key_decisions": [],
+  "outcomes": {
+    "completed": []
+  },
+  "learnings": [],
+  "code_changes": {
+    "files_added": [],
+    "files_modified": [
+      ".claude/CLAUDE.md",
+      ".claude/settings.local.json"
+    ],
+    "files_deleted": [],
+    "lines_added": 12,
+    "lines_removed": 3
+  },
+  "_lazy_loaded": true,
+  "_index_size_bytes": 157,
+  "_full_size_bytes": 376
+}

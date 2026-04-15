@@ -1,0 +1,28 @@
+{
+  "id": "ci-2025-12-18-load-testing",
+  "project": "CirrusTranslate",
+  "date": "2025-12-18",
+  "summary": "Heavy",
+  "topics": [
+    "load-testing",
+    "performance",
+    "editor",
+    "bug-fix",
+    "api-hardening"
+  ],
+  "key_decisions": [],
+  "outcomes": {
+    "completed": []
+  },
+  "learnings": [],
+  "code_changes": {
+    "files_added": [],
+    "files_modified": [],
+    "files_deleted": [],
+    "lines_added": 0,
+    "lines_removed": 0
+  },
+  "_lazy_loaded": true,
+  "_index_size_bytes": 176,
+  "_full_size_bytes": 345
+}

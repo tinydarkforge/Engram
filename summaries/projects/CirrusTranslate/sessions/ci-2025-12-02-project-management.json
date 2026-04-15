@@ -1,6 +1,5 @@
 {
   "id": "ci-2025-12-02-project-management",
-  "project": "CirrusTranslate",
   "date": "2025-12-02",
   "summary": "Closed issue #221 (CLEAR Rendering integration) - completed in PR #222",
   "topics": [
@@ -10,6 +9,6 @@
     "issue-tracking"
   ],
   "_lazy_loaded": true,
-  "_index_size_bytes": 250,
-  "_full_size_bytes": 250
+  "_index_size_bytes": 222,
+  "_full_size_bytes": 222
 }

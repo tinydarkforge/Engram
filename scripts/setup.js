@@ -11,6 +11,7 @@ const path = require('path');
 const { execFileSync } = require('child_process');
 const { resolveMemexPath } = require('./paths');
 const { runMigrations } = require('./migrations');
+const { readJSON } = require('./safe-json');
 
 const MEMEX_PATH = resolveMemexPath(__dirname);
 const pkg = require('../package.json');
@@ -72,6 +73,18 @@ function main() {
 
   const createdIndex = writeIndexIfMissing();
   runMigrations();
+
+  // Ensure metadata files exist for known projects
+  const index = readJSON(path.join(MEMEX_PATH, 'index.json'));
+  if (index && index.p) {
+    for (const projectName of Object.keys(index.p)) {
+      const metadataPath = path.join(MEMEX_PATH, 'metadata', 'projects', `${projectName}.json`);
+      if (!fs.existsSync(metadataPath)) {
+        const minimal = { ts: [], d: '' };
+        fs.writeFileSync(metadataPath, JSON.stringify(minimal, null, 2));
+      }
+    }
+  }
 
   try {
     runNodeScript(path.join(__dirname, 'manifest-manager.js'), ['generate']);

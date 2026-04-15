@@ -1,6 +1,5 @@
 {
   "id": "ci-2025-12-02-msgpack",
-  "project": "CirrusTranslate",
   "date": "2025-12-02",
   "summary": "MessagePack v3.1 testing",
   "topics": [
@@ -9,6 +8,6 @@
     "optimization"
   ],
   "_lazy_loaded": true,
-  "_index_size_bytes": 165,
-  "_full_size_bytes": 165
+  "_index_size_bytes": 137,
+  "_full_size_bytes": 137
 }
