@@ -16,8 +16,9 @@
  *   GET  /api/graph              - Concept graph for vis.js
  *
  * Usage:
- *   node scripts/server.js                # Start on default port 3000
+ *   node scripts/server.js                # Start on 127.0.0.1:3000
  *   PORT=8080 node scripts/server.js      # Custom port
+ *   HOST=0.0.0.0 node scripts/server.js   # Expose on local network
  */
 
 const express = require('express');
@@ -31,6 +32,7 @@ const { readJSON } = require('./safe-json');
 
 const MEMEX_PATH = resolveMemexPath(__dirname);
 const PORT = parseInt(process.env.PORT || '3000', 10);
+const HOST = process.env.HOST || '127.0.0.1';
 
 // Initialize Memex (lazy index load)
 const memex = new Memex();
@@ -350,13 +352,23 @@ app.post('/api/agentbridge/stop', (req, res) => {
 // ─────────────────────────────────────────────────────────────
 
 app.get('/health', (req, res) => {
-  const healthy = !!memex.index;
-  res.status(healthy ? 200 : 503).json({
-    status: healthy ? 'healthy' : 'unhealthy',
-    uptime: Math.floor(process.uptime()),
-    version: memex.index?.v || 'unknown',
-    timestamp: new Date().toISOString(),
-  });
+  try {
+    ensureIndexLoaded();
+    res.status(200).json({
+      status: 'healthy',
+      uptime: Math.floor(process.uptime()),
+      version: memex.index?.v || 'unknown',
+      timestamp: new Date().toISOString(),
+    });
+  } catch (e) {
+    res.status(503).json({
+      status: 'unhealthy',
+      uptime: Math.floor(process.uptime()),
+      version: memex.index?.v || 'unknown',
+      timestamp: new Date().toISOString(),
+      error: e.message,
+    });
+  }
 });
 
 // ─────────────────────────────────────────────────────────────
@@ -364,11 +376,13 @@ app.get('/health', (req, res) => {
 // ─────────────────────────────────────────────────────────────
 
 if (require.main === module) {
-  const server = app.listen(PORT, () => {
-    console.log(`Memex server listening on http://localhost:${PORT}`);
-    console.log(`  Dashboard: http://localhost:${PORT}/`);
-    console.log(`  API:       http://localhost:${PORT}/api/stats`);
-    console.log(`  Health:    http://localhost:${PORT}/health`);
+  const server = app.listen(PORT, HOST, () => {
+    const displayHost = HOST === '0.0.0.0' ? 'localhost' : HOST;
+    console.log(`Memex server listening on http://${displayHost}:${PORT}`);
+    console.log(`  Bound host: ${HOST}`);
+    console.log(`  Dashboard: http://${displayHost}:${PORT}/`);
+    console.log(`  API:       http://${displayHost}:${PORT}/api/stats`);
+    console.log(`  Health:    http://${displayHost}:${PORT}/health`);
   });
 
   // Graceful shutdown

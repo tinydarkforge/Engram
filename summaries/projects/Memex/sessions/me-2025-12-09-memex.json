@@ -1,0 +1,34 @@
+{
+  "id": "me-2025-12-09-memex",
+  "project": "Memex",
+  "date": "2025-12-09",
+  "summary": "Enriched",
+  "topics": [
+    "memex",
+    "neural-memory",
+    "mirage",
+    "aither"
+  ],
+  "key_decisions": [],
+  "outcomes": {
+    "completed": []
+  },
+  "learnings": [],
+  "code_changes": {
+    "files_added": [],
+    "files_modified": [
+      ".claude/CLAUDE.md",
+      ".neural/bundles/DemoProject.msgpack",
+      ".neural/embeddings.msgpack",
+      ".neural/graph.msgpack",
+      "scripts/deploy-neural.js",
+      "slim-context.json"
+    ],
+    "files_deleted": [],
+    "lines_added": 36,
+    "lines_removed": 8
+  },
+  "_lazy_loaded": true,
+  "_index_size_bytes": 140,
+  "_full_size_bytes": 471
+}
