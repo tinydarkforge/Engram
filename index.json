@@ -1,10 +1,10 @@
 {
   "$schema": "./schemas/index.schema.json",
   "v": "4.0.0",
-  "u": "2026-02-21T18:33:47.613Z",
+  "u": "2026-04-15T20:29:48.786Z",
   "m": {
     "tp": 6,
-    "ts": 13314,
+    "ts": 13315,
     "gs": 5
   },
   "g": {
@@ -127,8 +127,8 @@
         "Python"
       ],
       "a": "monorepo",
-      "sc": 55,
-      "u": "2026-02-21",
+      "sc": 56,
+      "u": "2026-04-15",
       "mf": "metadata/projects/CirrusTranslate.json",
       "tp": [
         "auth",
@@ -741,9 +741,10 @@
       "p": [
         "DevOps",
         "translate.hellocirrus",
-        "Memex"
+        "Memex",
+        "CirrusTranslate"
       ],
-      "sc": 13151
+      "sc": 1
     },
     "digitalocean": {
       "p": [
