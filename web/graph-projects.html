@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Memex — Project Graph</title>
+  <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+  <link rel="stylesheet" href="tokens.css">
+  <link rel="stylesheet" href="graph-shared.css">
+</head>
+<body>
+  <header class="graph-header">
+    <div class="graph-header-left">
+      <a href="/" class="graph-home-link">🧠 Memex</a>
+      <span class="graph-title">Project Graph</span>
+    </div>
+    <nav class="graph-nav" aria-label="Graph navigation">
+      <a href="/graph-concepts.html" class="graph-nav-link">Concepts</a>
+      <a href="/graph-projects.html" class="graph-nav-link active" aria-current="page">Projects</a>
+    </nav>
+  </header>
+  <main id="graph-main">
+    <div id="graph-canvas" style="width:100%;height:calc(100vh - 56px)"></div>
+    <div class="graph-controls">
+      <input type="text" id="graph-search" placeholder="Find project…" aria-label="Search projects">
+    </div>
+    <div class="graph-legend">
+      <span class="legend-dot hot"></span> Hot (5+)
+      <span class="legend-dot warm"></span> Warm (3–4)
+      <span class="legend-dot normal"></span> Normal (2)
+      <span class="legend-dot cold"></span> Cold (1)
+    </div>
+  </main>
+  <script src="graph-shell.js"></script>
+  <script>
+    (async () => {
+      const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const container = document.getElementById('graph-canvas');
+
+      const res = await fetch('/api/projects');
+      const data = await res.json();
+      const nodeList = (data.projects || []).map((p, i) => ({
+        id: i + 1,
+        label: p.name,
+        value: p.sessions || 1,
+        color: {
+          background: GraphShell.nodeColor(p.sessions || 1),
+          border: GraphShell.nodeColor(p.sessions || 1)
+        },
+        title: `${p.name}: ${p.sessions} sessions`
+      }));
+
+      const nodes = new vis.DataSet(nodeList);
+      const edges = new vis.DataSet([]);
+      const options = GraphShell.buildOptions({ reducedMotion: reduced });
+      const network = new vis.Network(container, { nodes, edges }, options);
+
+      GraphShell.setupSearch(network, nodes, 'graph-search');
+      GraphShell.restoreState('projects', network);
+      GraphShell.setupStateAutoSave('projects', network);
+    })();
+  </script>
+</body>
+</html>
