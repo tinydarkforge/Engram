@@ -69,6 +69,7 @@ function request(url, method, body, token) {
         method,
         headers,
         timeout: HTTP_TIMEOUT,
+        agent: false,
       },
       (res) => {
         let data = '';
