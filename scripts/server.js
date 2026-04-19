@@ -361,6 +361,131 @@ app.get('/api/assertions', (req, res) => {
 
 
 /**
+ * GET /api/assertions/:id
+ * Full assertion detail with lineage, outcome history, and selection stats.
+ */
+app.get('/api/assertions/:id', (req, res) => {
+  try {
+    const db = getLedgerDb();
+    if (!db) {
+      return res.status(404).json({ error: 'not found' });
+    }
+
+    const id = req.params.id;
+    let assertion;
+    try {
+      assertion = db.prepare(
+        `SELECT id, plane, class, claim, body, confidence, status, density_hint,
+                staleness_model, quorum_count, created_at, last_verified, cache_stable
+         FROM assertions WHERE id = ?`
+      ).get(id);
+    } catch (e) {
+      if (e.message && e.message.includes('no such table')) {
+        return res.status(404).json({ error: 'not found' });
+      }
+      throw e;
+    }
+
+    if (!assertion) {
+      return res.status(404).json({ error: 'not found' });
+    }
+
+    let lineage = [];
+    try {
+      lineage = db.prepare(
+        `SELECT source_span FROM assertion_lineage WHERE assertion_id = ?`
+      ).all(id).map(r => r.source_span);
+    } catch (e) {
+      if (!e.message || !e.message.includes('no such table')) throw e;
+    }
+
+    let outcomes = [];
+    try {
+      outcomes = db.prepare(
+        `SELECT session_id, scored_at, signal_source, score, note
+         FROM assertion_outcomes WHERE assertion_id = ?
+         ORDER BY scored_at DESC LIMIT 100`
+      ).all(id);
+    } catch (e) {
+      if (!e.message || !e.message.includes('no such table')) throw e;
+    }
+
+    let selection_count = 0;
+    let avg_score = null;
+    try {
+      const selRow = db.prepare(
+        `SELECT COUNT(*) AS cnt FROM selection_log WHERE assertion_id = ?`
+      ).get(id);
+      selection_count = selRow ? selRow.cnt : 0;
+
+      const scoreRow = db.prepare(
+        `SELECT AVG(score) AS avg FROM assertion_outcomes WHERE assertion_id = ?`
+      ).get(id);
+      avg_score = scoreRow && scoreRow.avg != null ? scoreRow.avg : null;
+    } catch (e) {
+      if (!e.message || !e.message.includes('no such table')) throw e;
+    }
+
+    res.json({ ...assertion, lineage, outcomes, selection_count, avg_score });
+  } catch (e) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+/**
+ * GET /api/sessions/:project/:sessionId
+ * Session detail: basic fields from sessions-index.json + ledger stats.
+ */
+app.get('/api/sessions/:project/:sessionId', (req, res) => {
+  try {
+    const project = sanitizeProject(req.params.project);
+    const sessionId = req.params.sessionId;
+
+    const sessions = memex.listSessions(project);
+    const session = sessions.find(s => s.id === sessionId);
+    if (!session) {
+      return res.status(404).json({ error: 'not found' });
+    }
+
+    let assertions_selected = 0;
+    let outcomes = [];
+    const db = getLedgerDb();
+    if (db) {
+      try {
+        const selRow = db.prepare(
+          `SELECT COUNT(*) AS cnt FROM selection_log WHERE session_id = ?`
+        ).get(sessionId);
+        assertions_selected = selRow ? selRow.cnt : 0;
+      } catch (e) {
+        if (!e.message || !e.message.includes('no such table')) throw e;
+      }
+
+      try {
+        outcomes = db.prepare(
+          `SELECT assertion_id, signal_source, score
+           FROM assertion_outcomes WHERE session_id = ?
+           ORDER BY scored_at DESC LIMIT 100`
+        ).all(sessionId);
+      } catch (e) {
+        if (!e.message || !e.message.includes('no such table')) throw e;
+      }
+    }
+
+    res.json({
+      id: session.id,
+      project: session.project || project,
+      date: session.date,
+      summary: session.summary,
+      topics: session.topics || [],
+      assertions_selected,
+      outcomes,
+    });
+  } catch (e) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+/**
  * POST /api/feedback
  * Layer C user feedback signal.
  * Body: { sessionId, assertionId, signal: 'helpful'|'unhelpful'|'wrong', note? }
