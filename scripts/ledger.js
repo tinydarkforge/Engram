@@ -2,13 +2,14 @@
 // Ledger — single gateway for reading and writing assertions to SQLite
 // Exports: createAssertion, reinforceAssertion, maybePromote, linkSupersession,
 //          markFossilized, quarantine, getAssertion, queryActiveByPlane,
-//          queryByClaim, queryTensions, setCounterfactualWeight, stats
+//          queryByClaim, queryTensions, setCounterfactualWeight, stats, ingest
 
 const Database = require('better-sqlite3');
 const crypto = require('crypto');
 const path = require('path');
 const fs = require('fs');
 const { resolveMemexPath } = require('./paths');
+const { findNearDuplicate, findNegations } = require('./dedup');
 
 const MEMEX_PATH = resolveMemexPath(__dirname);
 const DB_PATH = path.join(MEMEX_PATH, '.cache', 'memex.db');
@@ -335,6 +336,37 @@ function createLedger(getDbFn) {
     return { total, by_status, by_plane, tensions_open };
   }
 
+  // -------------------------------------------------------------------------
+  // ingest
+  // -------------------------------------------------------------------------
+  function ingest(params, { dupThreshold = 0.7, negThreshold = 0.7 } = {}) {
+    const { plane, source_spans } = params;
+    if (!plane) throw new Error('ingest: plane is required');
+
+    const db = getDbFn();
+
+    const activeClaims = db.prepare(
+      `SELECT id, claim FROM assertions
+       WHERE plane = ? AND status NOT IN ('fossilized','quarantined')`
+    ).all(plane);
+
+    const dup = findNearDuplicate(activeClaims, params.claim, dupThreshold);
+    if (dup) {
+      const spanArg = Array.isArray(source_spans) && source_spans.length > 0 ? source_spans[0] : undefined;
+      reinforceAssertion(dup.id, { source_span: spanArg });
+      return { action: 'reinforced', id: dup.id, similarity: dup.similarity };
+    }
+
+    const newId = createAssertion(params);
+
+    const negationIds = findNegations(activeClaims, params.claim, negThreshold);
+    for (const existingId of negationIds) {
+      linkSupersession(newId, existingId, 'contradicts');
+    }
+
+    return { action: 'created', id: newId, negations: negationIds };
+  }
+
   return {
     createAssertion,
     reinforceAssertion,
@@ -348,6 +380,7 @@ function createLedger(getDbFn) {
     queryTensions,
     setCounterfactualWeight,
     stats,
+    ingest,
   };
 }
 
