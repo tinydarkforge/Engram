@@ -137,6 +137,7 @@ describe('E2E: AgentBridge round-trip', () => {
   });
 
   after((_, done) => {
+    mockBridge.closeAllConnections();
     mockBridge.close(done);
   });
 
@@ -329,6 +330,7 @@ describe('E2E: Server AgentBridge endpoints', () => {
   });
 
   after((_, done) => {
+    server.closeAllConnections();
     server.close(done);
   });
 

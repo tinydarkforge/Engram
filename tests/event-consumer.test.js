@@ -100,6 +100,7 @@ describe('EventConsumer', () => {
     });
 
     after((_, done) => {
+      mockServer.closeAllConnections();
       mockServer.close(done);
     });
 
