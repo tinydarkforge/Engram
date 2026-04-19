@@ -58,6 +58,10 @@ const {
   rebuildIndex,
   getStats,
   getGraphSummary,
+  ledgerIngest,
+  ledgerQuery,
+  ledgerSelectContext,
+  ledgerStats,
 } = require('./mcp-tools.js');
 const { listPrompts, renderPrompt } = require('./mcp-prompts.js');
 
@@ -293,6 +297,95 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
             }
           }
         }
+      },
+      {
+        name: 'ledger_ingest',
+        description: 'Write an assertion to the ledger. Creates new or reinforces existing assertions.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            plane: {
+              type: 'string',
+              description: 'Plane identifier (e.g., user:daniel, project:Memex, session:id123)'
+            },
+            class_: {
+              type: 'string',
+              description: 'Assertion class: monotonic, episodic, state_bound, contextual',
+              enum: ['monotonic', 'episodic', 'state_bound', 'contextual']
+            },
+            claim: {
+              type: 'string',
+              description: 'The assertion claim (max 500 chars)'
+            },
+            body: {
+              type: 'string',
+              description: 'Optional extended text'
+            },
+            confidence: {
+              type: 'number',
+              description: 'Confidence 0–1 (default 0.5)'
+            },
+            source_spans: {
+              type: 'array',
+              items: { type: 'string' },
+              description: 'Source references (required, non-empty)'
+            },
+            density_hint: {
+              type: 'string',
+              description: 'Rendering hint: terse, standard, verbose',
+              enum: ['terse', 'standard', 'verbose']
+            },
+            staleness_model: {
+              type: 'string',
+              description: 'Staleness model for decay'
+            }
+          },
+          required: ['plane', 'class_', 'claim', 'source_spans']
+        }
+      },
+      {
+        name: 'ledger_query',
+        description: 'Query active assertions by plane. Returns all non-fossilized/quarantined assertions.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            plane: {
+              type: 'string',
+              description: 'Plane identifier (e.g., user:daniel, project:Memex)'
+            }
+          },
+          required: ['plane']
+        }
+      },
+      {
+        name: 'ledger_select_context',
+        description: 'Select and render ranked assertions for context injection. Respects character budget.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            plane: {
+              type: 'string',
+              description: 'Plane identifier'
+            },
+            budget: {
+              type: 'number',
+              description: 'Maximum characters to use'
+            },
+            header: {
+              type: 'string',
+              description: 'Optional markdown header for the rendered block'
+            }
+          },
+          required: ['plane', 'budget']
+        }
+      },
+      {
+        name: 'ledger_stats',
+        description: 'Get ledger statistics: counts by status, plane, and tensions.',
+        inputSchema: {
+          type: 'object',
+          properties: {}
+        }
       }
     ]
   };
@@ -360,6 +453,22 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
     case 'rebuild_index':
       result = rebuildIndex(args || {});
+      break;
+
+    case 'ledger_ingest':
+      result = ledgerIngest(args || {});
+      break;
+
+    case 'ledger_query':
+      result = ledgerQuery(args.plane, args || {});
+      break;
+
+    case 'ledger_select_context':
+      result = ledgerSelectContext(args.plane, args.budget || 2000, args || {});
+      break;
+
+    case 'ledger_stats':
+      result = ledgerStats();
       break;
 
     default:
