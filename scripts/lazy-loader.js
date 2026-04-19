@@ -295,7 +295,7 @@ if (require.main === module) {
           console.log('');
           console.log('Example:');
           console.log('  lazy-loader.js convert');
-          console.log('  lazy-loader.js load DemoProject ci-2025-12-03-hotfix');
+          console.log('  lazy-loader.js load <project> <session-id>');
       }
     } catch (error) {
       console.error('Error:', error.message);

@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://cirrus.com/schemas/memex-session.json",
+  "$id": "https://example.com/schemas/memex-session.json",
   "title": "Memex Session",
   "description": "Schema for Claude session records in Memex v2.0 - Optimized with progressive disclosure",
   "type": "object",
@@ -15,7 +15,7 @@
     "project": {
       "type": "string",
       "description": "Project name",
-      "examples": ["DemoProject", "ProjectAuth", "DevOps"]
+      "examples": ["Memex", "ProjectA", "ProjectB"]
     },
     "date": {
       "type": "string",

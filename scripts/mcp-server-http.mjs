@@ -138,7 +138,7 @@ function createServer() {
             properties: {
               project: {
                 type: 'string',
-                description: 'Project name (e.g., "Memex", "DemoProject", "DevOps")',
+                description: 'Project name (e.g., "Memex", "ProjectA", "ProjectB")',
               },
             },
             required: ['project'],
@@ -152,7 +152,7 @@ function createServer() {
             properties: {
               project: {
                 type: 'string',
-                description: 'Project name (e.g., "Memex", "DemoProject", "DevOps")',
+                description: 'Project name (e.g., "Memex", "ProjectA", "ProjectB")',
               },
               session_id: {
                 type: 'string',
