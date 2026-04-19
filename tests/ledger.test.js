@@ -30,3 +30,287 @@ describe('SQL Migrations', () => {
     db.close();
   });
 });
+
+// ---------------------------------------------------------------------------
+// Ledger CRUD tests
+// ---------------------------------------------------------------------------
+const { _createForTesting } = require('../scripts/ledger');
+
+function makeTestLedger() {
+  const db = new Database(':memory:');
+  db.pragma('foreign_keys = ON');
+  runSqlMigrations(db);
+  return { ledger: _createForTesting(db), db };
+}
+
+describe('Ledger CRUD', () => {
+  it('createAssertion → round-trip via getAssertion', () => {
+    const { ledger } = makeTestLedger();
+
+    const id = ledger.createAssertion({
+      plane: 'user:daniel',
+      class_: 'monotonic',
+      claim: 'The sky is blue',
+      body: 'Some body text',
+      confidence: 0.8,
+      source_spans: ['session:abc', 'session:def'],
+      density_hint: 'verbose',
+      cache_stable: 1,
+    });
+
+    assert.ok(id.startsWith('a_'), 'id should start with a_');
+
+    const assertion = ledger.getAssertion(id);
+    assert.ok(assertion !== null, 'should return the assertion');
+    assert.equal(assertion.id, id);
+    assert.equal(assertion.plane, 'user:daniel');
+    assert.equal(assertion.class, 'monotonic');
+    assert.equal(assertion.claim, 'The sky is blue');
+    assert.equal(assertion.body, 'Some body text');
+    assert.equal(assertion.confidence, 0.8);
+    assert.equal(assertion.status, 'tentative');
+    assert.equal(assertion.quorum_count, 1);
+    assert.equal(assertion.density_hint, 'verbose');
+    assert.equal(assertion.cache_stable, 1);
+
+    assert.ok(Array.isArray(assertion.source_spans), 'source_spans should be an array');
+    assert.equal(assertion.source_spans.length, 2);
+    assert.ok(assertion.source_spans.includes('session:abc'));
+    assert.ok(assertion.source_spans.includes('session:def'));
+
+    assert.deepEqual(assertion.supersedes, []);
+    assert.deepEqual(assertion.superseded_by, []);
+  });
+
+  it('createAssertion throws when required fields are missing', () => {
+    const { ledger } = makeTestLedger();
+
+    assert.throws(
+      () => ledger.createAssertion({ class_: 'monotonic', claim: 'x', source_spans: ['s:1'] }),
+      /plane is required/
+    );
+    assert.throws(
+      () => ledger.createAssertion({ plane: 'p', claim: 'x', source_spans: ['s:1'] }),
+      /class_ is required/
+    );
+    assert.throws(
+      () => ledger.createAssertion({ plane: 'p', class_: 'monotonic', source_spans: ['s:1'] }),
+      /claim is required/
+    );
+    assert.throws(
+      () => ledger.createAssertion({ plane: 'p', class_: 'monotonic', claim: 'x', source_spans: [] }),
+      /source_spans/
+    );
+  });
+
+  it('reinforceAssertion increments quorum and updates last_reinforced', () => {
+    const { ledger } = makeTestLedger();
+
+    const id = ledger.createAssertion({
+      plane: 'project:Memex',
+      class_: 'episodic',
+      claim: 'Reinforcement works',
+      source_spans: ['session:r1'],
+    });
+
+    ledger.reinforceAssertion(id, { source_span: 'session:r2', confidence_delta: 0.1 });
+
+    const assertion = ledger.getAssertion(id);
+    assert.equal(assertion.quorum_count, 2);
+    assert.ok(assertion.last_reinforced !== null, 'last_reinforced should be set');
+    // confidence started at 0.5, delta 0.1 → 0.6
+    assert.ok(Math.abs(assertion.confidence - 0.6) < 0.001, `confidence should be ~0.6, got ${assertion.confidence}`);
+    // new span should be recorded
+    assert.ok(assertion.source_spans.includes('session:r2'));
+  });
+
+  it('reinforceAssertion throws when assertion not found', () => {
+    const { ledger } = makeTestLedger();
+    assert.throws(
+      () => ledger.reinforceAssertion('a_0_notexist', { source_span: 's:x' }),
+      /not found/
+    );
+  });
+
+  it('maybePromote flips tentative → established at threshold', () => {
+    const { ledger } = makeTestLedger();
+
+    const id = ledger.createAssertion({
+      plane: 'user:daniel',
+      class_: 'state_bound',
+      claim: 'Promotion test',
+      source_spans: ['session:p1'],
+    });
+
+    // quorum_count = 1, threshold = 2 → should NOT promote
+    const promoted1 = ledger.maybePromote(id, 2);
+    assert.equal(promoted1, false);
+    assert.equal(ledger.getAssertion(id).status, 'tentative');
+
+    // reinforce to quorum_count = 2
+    ledger.reinforceAssertion(id, { source_span: 'session:p2' });
+
+    const promoted2 = ledger.maybePromote(id, 2);
+    assert.equal(promoted2, true);
+    assert.equal(ledger.getAssertion(id).status, 'established');
+
+    // calling again on an already-established assertion returns false
+    const promoted3 = ledger.maybePromote(id, 2);
+    assert.equal(promoted3, false);
+  });
+
+  it('linkSupersession dominates excludes parent from queryActiveByPlane', () => {
+    const { ledger } = makeTestLedger();
+
+    const parentId = ledger.createAssertion({
+      plane: 'project:Memex',
+      class_: 'monotonic',
+      claim: 'Old claim',
+      source_spans: ['session:s1'],
+    });
+
+    const childId = ledger.createAssertion({
+      plane: 'project:Memex',
+      class_: 'monotonic',
+      claim: 'New claim supersedes old',
+      source_spans: ['session:s2'],
+    });
+
+    ledger.linkSupersession(childId, parentId, 'dominates');
+
+    // child supersedes parent
+    const child = ledger.getAssertion(childId);
+    assert.equal(child.supersedes.length, 1);
+    assert.equal(child.supersedes[0].id, parentId);
+    assert.equal(child.supersedes[0].kind, 'dominates');
+
+    const parent = ledger.getAssertion(parentId);
+    assert.equal(parent.superseded_by.length, 1);
+    assert.equal(parent.superseded_by[0].id, childId);
+
+    // active query must include child but exclude parent
+    const active = ledger.queryActiveByPlane('project:Memex');
+    const ids = active.map(a => a.id);
+    assert.ok(ids.includes(childId), 'child should be active');
+    assert.ok(!ids.includes(parentId), 'dominated parent should be excluded');
+  });
+
+  it('linkSupersession contradicts creates tension_pair', () => {
+    const { ledger } = makeTestLedger();
+
+    const idA = ledger.createAssertion({
+      plane: 'user:daniel',
+      class_: 'contextual',
+      claim: 'Claim A',
+      source_spans: ['session:c1'],
+    });
+
+    const idB = ledger.createAssertion({
+      plane: 'user:daniel',
+      class_: 'contextual',
+      claim: 'Claim B contradicts A',
+      source_spans: ['session:c2'],
+    });
+
+    ledger.linkSupersession(idB, idA, 'contradicts');
+
+    const tensions = ledger.queryTensions({ resolved: false });
+    assert.equal(tensions.length, 1);
+    assert.equal(tensions[0].a_id, idB);
+    assert.equal(tensions[0].b_id, idA);
+    assert.ok(tensions[0].resolved_at === null);
+
+    // calling again should not create a duplicate
+    ledger.linkSupersession(idB, idA, 'contradicts');
+    const tensionsAfter = ledger.queryTensions({ resolved: false });
+    assert.equal(tensionsAfter.length, 1);
+  });
+
+  it('queryActiveByPlane scoped by plane and class', () => {
+    const { ledger } = makeTestLedger();
+
+    ledger.createAssertion({ plane: 'project:Alpha', class_: 'monotonic', claim: 'Alpha mono 1', source_spans: ['s:1'] });
+    ledger.createAssertion({ plane: 'project:Alpha', class_: 'episodic',  claim: 'Alpha epi 1',  source_spans: ['s:2'] });
+    ledger.createAssertion({ plane: 'project:Beta',  class_: 'monotonic', claim: 'Beta mono 1',  source_spans: ['s:3'] });
+
+    const allAlpha = ledger.queryActiveByPlane('project:Alpha');
+    assert.equal(allAlpha.length, 2);
+
+    const monoAlpha = ledger.queryActiveByPlane('project:Alpha', { classes: ['monotonic'] });
+    assert.equal(monoAlpha.length, 1);
+    assert.equal(monoAlpha[0].claim, 'Alpha mono 1');
+
+    const betaResults = ledger.queryActiveByPlane('project:Beta');
+    assert.equal(betaResults.length, 1);
+    assert.equal(betaResults[0].plane, 'project:Beta');
+  });
+
+  it('markFossilized flips status', () => {
+    const { ledger } = makeTestLedger();
+
+    const id = ledger.createAssertion({
+      plane: 'user:daniel',
+      class_: 'monotonic',
+      claim: 'Will be fossilized',
+      source_spans: ['session:f1'],
+    });
+
+    ledger.markFossilized(id, 'outdated after review');
+    assert.equal(ledger.getAssertion(id).status, 'fossilized');
+
+    // should be excluded from active queries
+    const active = ledger.queryActiveByPlane('user:daniel');
+    assert.ok(!active.map(a => a.id).includes(id));
+
+    // throws on unknown id
+    assert.throws(() => ledger.markFossilized('a_0_unknown', 'x'), /not found/);
+  });
+
+  it('queryTensions returns unresolved pairs', () => {
+    const { ledger } = makeTestLedger();
+
+    const idA = ledger.createAssertion({
+      plane: 'user:daniel', class_: 'contextual', claim: 'Tension A', source_spans: ['s:t1'],
+    });
+    const idB = ledger.createAssertion({
+      plane: 'user:daniel', class_: 'contextual', claim: 'Tension B', source_spans: ['s:t2'],
+    });
+    const idC = ledger.createAssertion({
+      plane: 'user:daniel', class_: 'contextual', claim: 'Tension C', source_spans: ['s:t3'],
+    });
+
+    ledger.linkSupersession(idB, idA, 'contradicts');
+    ledger.linkSupersession(idC, idA, 'contradicts');
+
+    const unresolved = ledger.queryTensions({ resolved: false });
+    assert.equal(unresolved.length, 2);
+    assert.ok(unresolved.every(t => t.resolved_at === null));
+
+    const resolved = ledger.queryTensions({ resolved: true });
+    assert.equal(resolved.length, 0);
+  });
+
+  it('stats returns correct counts', () => {
+    const { ledger } = makeTestLedger();
+
+    ledger.createAssertion({ plane: 'user:daniel', class_: 'monotonic', claim: 'S1', source_spans: ['s:1'] });
+    const id2 = ledger.createAssertion({ plane: 'user:daniel', class_: 'episodic', claim: 'S2', source_spans: ['s:2'] });
+    ledger.createAssertion({ plane: 'project:Alpha', class_: 'monotonic', claim: 'S3', source_spans: ['s:3'] });
+
+    ledger.reinforceAssertion(id2, { source_span: 's:2b' });
+    ledger.maybePromote(id2, 2);
+
+    const s = ledger.stats();
+    assert.equal(s.total, 3);
+    assert.equal(s.by_status.tentative, 2);
+    assert.equal(s.by_status.established, 1);
+    assert.equal(s.by_plane['user:daniel'], 2);
+    assert.equal(s.by_plane['project:Alpha'], 1);
+    assert.equal(s.tensions_open, 0);
+  });
+
+  it('getAssertion returns null for unknown id', () => {
+    const { ledger } = makeTestLedger();
+    assert.equal(ledger.getAssertion('a_0_doesnotexist'), null);
+  });
+});
