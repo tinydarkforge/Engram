@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Memex — Concept Graph</title>
+  <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+  <link rel="stylesheet" href="tokens.css">
+  <link rel="stylesheet" href="graph-shared.css">
+</head>
+<body>
+  <header class="graph-header">
+    <div class="graph-header-left">
+      <a href="/" class="graph-home-link">🧠 Memex</a>
+      <span class="graph-title">Concept Graph</span>
+    </div>
+    <nav class="graph-nav" aria-label="Graph navigation">
+      <a href="/graph-concepts.html" class="graph-nav-link active" aria-current="page">Concepts</a>
+      <a href="/graph-projects.html" class="graph-nav-link">Projects</a>
+    </nav>
+  </header>
+  <main id="graph-main">
+    <div id="graph-canvas" style="width:100%;height:calc(100vh - 56px)"></div>
+    <div class="graph-controls">
+      <input type="text" id="graph-search" placeholder="Find concept…" aria-label="Search concepts">
+    </div>
+    <div class="graph-legend">
+      <span class="legend-dot hot"></span> Hot (5+)
+      <span class="legend-dot warm"></span> Warm (3–4)
+      <span class="legend-dot normal"></span> Normal (2)
+      <span class="legend-dot cold"></span> Cold (1)
+    </div>
+  </main>
+  <script src="graph-shell.js"></script>
+  <script>
+    (async () => {
+      const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const { network, nodes } = await GraphShell.init('graph-canvas', '/api/graph', { reducedMotion: reduced });
+      GraphShell.setupSearch(network, nodes, 'graph-search');
+      GraphShell.restoreState('concepts', network);
+      GraphShell.setupStateAutoSave('concepts', network);
+    })();
+  </script>
+</body>
+</html>
