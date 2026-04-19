@@ -369,6 +369,18 @@ function createLedger(getDbFn) {
   }
 
   // -------------------------------------------------------------------------
+  // markVerified
+  // -------------------------------------------------------------------------
+  function markVerified(id) {
+    const db = getDbFn();
+    const ts = now();
+    const result = db.prepare(
+      'UPDATE assertions SET last_verified = ? WHERE id = ?'
+    ).run(ts, id);
+    if (result.changes === 0) throw new Error(`markVerified: assertion not found: ${id}`);
+  }
+
+  // -------------------------------------------------------------------------
   // rankActive
   // -------------------------------------------------------------------------
   function rankActive(plane, { classes, limit = 100, since, now, context } = {}) {
@@ -384,7 +396,25 @@ function createLedger(getDbFn) {
       tensionIds.add(b_id);
     }
 
-    return rankAssertions(assertions, { tensionIds, now: now ?? new Date(), context: context ?? {} });
+    // Load counterfactual weights for the current assertions
+    const ids = assertions.map(a => a.id);
+    const counterfactualWeights = new Map();
+    if (ids.length > 0) {
+      const placeholders = ids.map(() => '?').join(', ');
+      const rows = db.prepare(
+        `SELECT assertion_id, value FROM counterfactual_weights WHERE assertion_id IN (${placeholders})`
+      ).all(...ids);
+      for (const { assertion_id, value } of rows) {
+        counterfactualWeights.set(assertion_id, value);
+      }
+    }
+
+    return rankAssertions(assertions, {
+      tensionIds,
+      now: now ?? new Date(),
+      context: context ?? {},
+      counterfactualWeights,
+    });
   }
 
   // -------------------------------------------------------------------------
@@ -407,6 +437,7 @@ function createLedger(getDbFn) {
     queryByClaim,
     queryTensions,
     setCounterfactualWeight,
+    markVerified,
     stats,
     ingest,
     rankActive,

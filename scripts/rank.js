@@ -7,22 +7,30 @@ const decayModels = require('./decay-models');
 const STATUS_WEIGHT = { established: 1.0, tentative: 0.75 };
 
 // Score an assertion. Lower confidence for assertions with open tensions.
-function computeScore(assertion, tensionIds, now, context) {
+function computeScore(assertion, tensionIds, now, context, counterfactualWeight) {
   const model = decayModels[assertion.staleness_model] || decayModels.flat;
   const effectiveConf = model(assertion, now, context);
   const statusW = STATUS_WEIGHT[assertion.status] ?? 0.5;
   // quorumFactor: 1 corroboration → 0.2 weight, 5+ → full 1.0
   const quorumFactor = Math.min(assertion.quorum_count / 5, 1.0);
   const tensionPenalty = tensionIds.has(assertion.id) ? 0.5 : 1.0;
-  return effectiveConf * statusW * (0.5 + 0.5 * quorumFactor) * tensionPenalty;
+  return Math.min(
+    1.0,
+    effectiveConf * statusW * (0.5 + 0.5 * quorumFactor) * tensionPenalty * (counterfactualWeight ?? 1.0)
+  );
 }
 
 // Return assertions sorted by score descending, each annotated with score + in_tension.
-function rankAssertions(assertions, { tensionIds = new Set(), now = new Date(), context = {} } = {}) {
+function rankAssertions(assertions, {
+  tensionIds = new Set(),
+  now = new Date(),
+  context = {},
+  counterfactualWeights = new Map(),
+} = {}) {
   return assertions
     .map(a => ({
       ...a,
-      score: computeScore(a, tensionIds, now, context),
+      score: computeScore(a, tensionIds, now, context, counterfactualWeights.get(a.id)),
       in_tension: tensionIds.has(a.id),
     }))
     .sort((a, b) => b.score - a.score);

@@ -1,10 +1,10 @@
 {
   "$schema": "./schemas/index.schema.json",
   "v": "4.0.0",
-  "u": "2026-04-15T20:29:48.786Z",
+  "u": "2026-04-19T01:50:25.529Z",
   "m": {
     "tp": 6,
-    "ts": 13315,
+    "ts": 13316,
     "gs": 5
   },
   "g": {
@@ -224,8 +224,8 @@
         "JavaScript"
       ],
       "a": "library",
-      "sc": 13159,
-      "u": "2026-02-21",
+      "sc": 13160,
+      "u": "2026-04-19",
       "mf": "metadata/projects/Memex.json",
       "tp": [
         "memex",
@@ -337,9 +337,10 @@
     },
     "architecture": {
       "p": [
-        "CirrusTranslate"
+        "CirrusTranslate",
+        "Memex"
       ],
-      "sc": 2
+      "sc": 1
     },
     "memory-system": {
       "p": [
@@ -744,7 +745,7 @@
         "Memex",
         "CirrusTranslate"
       ],
-      "sc": 1
+      "sc": 13151
     },
     "digitalocean": {
       "p": [
@@ -789,7 +790,7 @@
         "DevOps",
         "CirrusTranslate"
       ],
-      "sc": 3
+      "sc": 1
     },
     "aither": {
       "p": [
@@ -1235,7 +1236,7 @@
         "Memex",
         "CirrusTranslate"
       ],
-      "sc": 2
+      "sc": 1
     },
     "business": {
       "p": [
@@ -1332,6 +1333,42 @@
         "CirrusTranslate"
       ],
       "sc": 1
+    },
+    "ledger": {
+      "p": [
+        "Memex"
+      ],
+      "sc": 1
+    },
+    "phase-0": {
+      "p": [
+        "Memex"
+      ],
+      "sc": 1
+    },
+    "scaffolding": {
+      "p": [
+        "Memex"
+      ],
+      "sc": 1
+    },
+    "sql-migrations": {
+      "p": [
+        "Memex"
+      ],
+      "sc": 1
+    },
+    "sqlite": {
+      "p": [
+        "Memex"
+      ],
+      "sc": 1
+    },
+    "test-passing": {
+      "p": [
+        "Memex"
+      ],
+      "sc": 1
     }
   },
   "cc": {
@@ -1400,5 +1437,6 @@
       "warm": "warm_cache_size",
       "ttl": "cache_ttl_minutes"
     }
-  }
+  },
+  "schema_version": 1
 }
