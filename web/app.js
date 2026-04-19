@@ -427,7 +427,7 @@ async function loadAssertions(page = 1) {
       ? `${Math.round(a.confidence * 100)}%`
       : '—';
     return `
-      <div class="assertion-item">
+      <div class="assertion-item" data-id="${esc(a.id || '')}" role="button" tabindex="0" aria-label="View details for: ${esc(a.claim)}">
         <div class="assertion-header">
           <span class="assertion-claim">${esc(a.claim)}</span>
           <span class="assertion-badge" data-status="${esc(a.status || '')}">${esc(a.status || 'unknown')}</span>
@@ -443,6 +443,16 @@ async function loadAssertions(page = 1) {
   }).join('');
 
   container.innerHTML = html;
+
+  container.querySelectorAll('.assertion-item[data-id]').forEach(item => {
+    item.addEventListener('click', () => openAssertionDetail(item.dataset.id));
+    item.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        openAssertionDetail(item.dataset.id);
+      }
+    });
+  });
 }
 
 function initAssertions() {
@@ -458,6 +468,128 @@ function initAssertions() {
 }
 
 // ─────────────────────────────────────────────────────────────
+// Assertion Detail Panel
+// ─────────────────────────────────────────────────────────────
+
+let _detailPanelTrigger = null;
+
+function closeAssertionDetail() {
+  const panel = document.getElementById('assertion-detail');
+  panel.hidden = true;
+  if (_detailPanelTrigger) {
+    _detailPanelTrigger.focus();
+    _detailPanelTrigger = null;
+  }
+}
+
+async function openAssertionDetail(id) {
+  _detailPanelTrigger = document.activeElement;
+
+  const panel = document.getElementById('assertion-detail');
+  document.getElementById('detail-claim').textContent = 'Loading...';
+  document.getElementById('detail-meta').innerHTML = '';
+  document.getElementById('detail-outcomes').innerHTML = '';
+  document.getElementById('detail-lineage').innerHTML = '';
+  document.getElementById('detail-why').innerHTML = '';
+  document.getElementById('detail-feedback').innerHTML = '';
+  panel.hidden = false;
+  document.getElementById('detail-close').focus();
+
+  let json;
+  try {
+    const res = await fetch(`/api/assertions/${encodeURIComponent(id)}`);
+    json = await res.json();
+    if (res.status === 404) {
+      document.getElementById('detail-claim').textContent = 'Assertion not found';
+      return;
+    }
+  } catch (e) {
+    document.getElementById('detail-claim').textContent = 'Failed to load';
+    return;
+  }
+
+  document.getElementById('detail-claim').textContent = json.claim;
+
+  const confidence = typeof json.confidence === 'number'
+    ? `${Math.round(json.confidence * 100)}%`
+    : '—';
+  const created = json.created_at ? json.created_at.slice(0, 10) : '—';
+
+  document.getElementById('detail-meta').innerHTML = [
+    `<span class="detail-chip assertion-badge" data-status="${esc(json.status || '')}">${esc(json.status || 'unknown')}</span>`,
+    `<span class="detail-chip">Confidence: ${esc(confidence)}</span>`,
+    json.plane ? `<span class="detail-chip">${esc(json.plane)}</span>` : '',
+    json.class ? `<span class="detail-chip">${esc(json.class)}</span>` : '',
+    typeof json.quorum_count === 'number' ? `<span class="detail-chip">Quorum: ${json.quorum_count}</span>` : '',
+    `<span class="detail-chip">Created: ${esc(created)}</span>`,
+  ].filter(Boolean).join('');
+
+  const outcomes = json.outcomes || [];
+  if (outcomes.length === 0) {
+    document.getElementById('detail-outcomes').innerHTML = '<p class="empty-state">No outcomes recorded yet.</p>';
+  } else {
+    document.getElementById('detail-outcomes').innerHTML = outcomes.map(o => {
+      const pct = typeof o.score === 'number' ? Math.round(o.score * 100) : 0;
+      const date = o.scored_at ? o.scored_at.slice(0, 10) : '—';
+      const sessionShort = o.session_id ? esc(o.session_id.slice(0, 20)) : '—';
+      return `
+        <div class="outcome-row">
+          <span class="detail-chip">${esc(o.signal_source || '?')}</span>
+          <div class="outcome-bar-wrap"><div class="outcome-bar" style="width:${pct}%"></div></div>
+          <span>${pct}%</span>
+          <span style="color:var(--text-muted);font-size:11px">${sessionShort}</span>
+          <span style="color:var(--text-muted);font-size:11px">${esc(date)}</span>
+        </div>
+      `;
+    }).join('');
+  }
+
+  const lineage = json.lineage || [];
+  if (lineage.length === 0) {
+    document.getElementById('detail-lineage').innerHTML = '<p class="empty-state">No source spans.</p>';
+  } else {
+    document.getElementById('detail-lineage').innerHTML = lineage
+      .map(span => `<div class="lineage-item">${esc(span)}</div>`)
+      .join('');
+  }
+
+  const avgScore = json.avg_score != null
+    ? `${Math.round(json.avg_score * 100)}%`
+    : '—';
+  document.getElementById('detail-why').innerHTML = `
+    <div class="why-grid">
+      <div class="why-cell"><div class="label">Times selected</div><div class="value">${json.selection_count || 0}</div></div>
+      <div class="why-cell"><div class="label">Avg score</div><div class="value">${esc(avgScore)}</div></div>
+      <div class="why-cell"><div class="label">Confidence</div><div class="value">${esc(confidence)}</div></div>
+      <div class="why-cell"><div class="label">Status</div><div class="value">${esc(json.status || '—')}</div></div>
+    </div>
+  `;
+
+  document.getElementById('detail-feedback').innerHTML = `
+    <div class="feedback-btns">
+      <button class="feedback-btn" data-signal="helpful">Helpful</button>
+      <button class="feedback-btn" data-signal="unhelpful">Unhelpful</button>
+      <button class="feedback-btn" data-signal="wrong">Wrong</button>
+    </div>
+    <div class="feedback-msg" id="feedback-msg" style="display:none">Feedback recorded</div>
+  `;
+
+  document.querySelectorAll('#detail-feedback .feedback-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      await api.post('/feedback', { sessionId: 'manual', assertionId: id, signal: btn.dataset.signal });
+      const msg = document.getElementById('feedback-msg');
+      if (msg) { msg.style.display = ''; }
+    });
+  });
+}
+
+async function openSessionDetail(project, sessionId) {
+  const res = await fetch(`/api/sessions/${encodeURIComponent(project)}/${encodeURIComponent(sessionId)}`);
+  const json = await res.json();
+  console.log('session detail', json);
+}
+
+// ─────────────────────────────────────────────────────────────
 // Keyboard Navigation
 // ─────────────────────────────────────────────────────────────
 
@@ -469,7 +601,12 @@ function initKeyboard() {
     const inInput = tag === 'input' || tag === 'textarea' || tag === 'select';
 
     if (e.key === 'Escape') {
-      document.activeElement?.blur();
+      const panel = document.getElementById('assertion-detail');
+      if (panel && !panel.hidden) {
+        closeAssertionDetail();
+      } else {
+        document.activeElement?.blur();
+      }
       return;
     }
 
@@ -499,4 +636,9 @@ document.addEventListener('DOMContentLoaded', () => {
   initAssertions();
   initKeyboard();
   loadDashboard();
+
+  const closeBtn = document.getElementById('detail-close');
+  if (closeBtn) {
+    closeBtn.addEventListener('click', closeAssertionDetail);
+  }
 });
