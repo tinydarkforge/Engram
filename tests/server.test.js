@@ -112,6 +112,7 @@ describe('server API', () => {
 
   after((_, done) => {
     if (server) {
+      server.closeAllConnections();
       server.close(done);
     } else {
       done();
@@ -165,6 +166,7 @@ describe('server API', () => {
       assert.equal(json.status, 'healthy');
       assert.equal(json.version, 'fresh-test');
     } finally {
+      freshServer.closeAllConnections();
       await new Promise(resolve => freshServer.close(resolve));
       if (originalMemexPath === undefined) delete process.env.MEMEX_PATH;
       else process.env.MEMEX_PATH = originalMemexPath;

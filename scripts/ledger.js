@@ -420,9 +420,28 @@ function createLedger(getDbFn) {
   // -------------------------------------------------------------------------
   // selectForContext
   // -------------------------------------------------------------------------
-  function selectForContext(plane, budget, opts) {
+  function selectForContext(plane, budget, opts = {}) {
     const ranked = rankActive(plane, opts);
-    return _selectForContext(ranked, budget);
+    const selected = _selectForContext(ranked, budget);
+
+    if (opts.session_id) {
+      const db = getDbFn();
+      const ts = now();
+      const insert = db.prepare(`
+        INSERT INTO selection_log (id, session_id, assertion_id, selected_at, budget, score)
+        VALUES (?, ?, ?, ?, ?, ?)
+      `);
+      const txn = db.transaction(() => {
+        for (let i = 0; i < selected.length; i++) {
+          const a = selected[i];
+          const logId = `sl_${Date.now()}_${i}_${crypto.randomBytes(4).toString('hex')}`;
+          insert.run(logId, opts.session_id, a.id, ts, budget ?? null, a.score ?? null);
+        }
+      });
+      txn();
+    }
+
+    return selected;
   }
 
   return {
