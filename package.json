@@ -21,7 +21,9 @@
     "lazy:stats": "node scripts/lazy-loader.js stats",
     "git:index": "node scripts/index-git.js build",
     "git:query": "node scripts/index-git.js query",
-    "semantic:stats": "node scripts/vector-search.js stats"
+    "semantic:stats": "node scripts/vector-search.js stats",
+    "ledger:migrate": "node scripts/migrations.js",
+    "ledger:stats": "node -e \"const l = require('./scripts/ledger'); if (l.stats) console.log(JSON.stringify(l.stats(), null, 2)); else console.log('ledger not yet implemented');\""
   },
   "keywords": [
     "memex",
