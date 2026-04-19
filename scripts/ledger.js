@@ -10,6 +10,7 @@ const path = require('path');
 const fs = require('fs');
 const { resolveMemexPath } = require('./paths');
 const { findNearDuplicate, findNegations } = require('./dedup');
+const { rankAssertions, selectForContext: _selectForContext } = require('./rank');
 
 const MEMEX_PATH = resolveMemexPath(__dirname);
 const DB_PATH = path.join(MEMEX_PATH, '.cache', 'memex.db');
@@ -367,6 +368,33 @@ function createLedger(getDbFn) {
     return { action: 'created', id: newId, negations: negationIds };
   }
 
+  // -------------------------------------------------------------------------
+  // rankActive
+  // -------------------------------------------------------------------------
+  function rankActive(plane, { classes, limit = 100, since, now, context } = {}) {
+    const db = getDbFn();
+    const assertions = queryActiveByPlane(plane, { classes, limit, since });
+
+    const openTensions = db.prepare(`
+      SELECT a_id, b_id FROM tension_pairs WHERE resolved_at IS NULL
+    `).all();
+    const tensionIds = new Set();
+    for (const { a_id, b_id } of openTensions) {
+      tensionIds.add(a_id);
+      tensionIds.add(b_id);
+    }
+
+    return rankAssertions(assertions, { tensionIds, now: now ?? new Date(), context: context ?? {} });
+  }
+
+  // -------------------------------------------------------------------------
+  // selectForContext
+  // -------------------------------------------------------------------------
+  function selectForContext(plane, budget, opts) {
+    const ranked = rankActive(plane, opts);
+    return _selectForContext(ranked, budget);
+  }
+
   return {
     createAssertion,
     reinforceAssertion,
@@ -381,6 +409,8 @@ function createLedger(getDbFn) {
     setCounterfactualWeight,
     stats,
     ingest,
+    rankActive,
+    selectForContext,
   };
 }
 

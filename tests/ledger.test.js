@@ -471,3 +471,262 @@ describe('Ledger ingest', () => {
     assert.equal(count, 1);
   });
 });
+
+// ---------------------------------------------------------------------------
+// rank unit tests
+// ---------------------------------------------------------------------------
+const { computeScore, rankAssertions, budgetCost, selectForContext: rankSelectForContext } = require('../scripts/rank');
+
+function makeAssertion(overrides = {}) {
+  return {
+    id: 'a_test',
+    plane: 'project:Test',
+    class: 'monotonic',
+    claim: 'hello world',
+    body: null,
+    confidence: 0.8,
+    quorum_count: 1,
+    status: 'tentative',
+    created_at: new Date().toISOString(),
+    last_reinforced: null,
+    last_verified: null,
+    staleness_model: 'flat',
+    cache_stable: 0,
+    density_hint: 'terse',
+    ...overrides,
+  };
+}
+
+describe('rank — computeScore', () => {
+  it('established scores higher than tentative at same confidence', () => {
+    const established = makeAssertion({ id: 'a_1', status: 'established' });
+    const tentative = makeAssertion({ id: 'a_2', status: 'tentative' });
+    const noTensions = new Set();
+    const scoreE = computeScore(established, noTensions, new Date(), {});
+    const scoreT = computeScore(tentative, noTensions, new Date(), {});
+    assert.ok(scoreE > scoreT, `established (${scoreE}) should beat tentative (${scoreT})`);
+  });
+
+  it('tension penalty halves the score', () => {
+    const a = makeAssertion({ id: 'a_1' });
+    const scoreClean = computeScore(a, new Set(), new Date(), {});
+    const scoreTense = computeScore(a, new Set(['a_1']), new Date(), {});
+    assert.ok(Math.abs(scoreClean / scoreTense - 2.0) < 0.001, 'tension should halve score');
+  });
+
+  it('higher quorum_count yields higher score', () => {
+    const low = makeAssertion({ id: 'a_1', quorum_count: 1 });
+    const high = makeAssertion({ id: 'a_2', quorum_count: 5 });
+    const noTensions = new Set();
+    assert.ok(
+      computeScore(high, noTensions, new Date(), {}) > computeScore(low, noTensions, new Date(), {}),
+      'quorum 5 should score higher than quorum 1'
+    );
+  });
+
+  it('exponential decay model reduces score over time', () => {
+    const now = new Date();
+    const old = new Date(now.getTime() - 100 * 24 * 3600 * 1000); // 100 days ago
+    const a = makeAssertion({ staleness_model: 'exponential', created_at: old.toISOString() });
+    const scoreOld = computeScore(a, new Set(), now, {});
+    const scoreNew = computeScore(makeAssertion({ staleness_model: 'exponential' }), new Set(), now, {});
+    assert.ok(scoreOld < scoreNew, 'old exponential assertion should score lower');
+  });
+});
+
+describe('rank — rankAssertions', () => {
+  it('returns assertions sorted by score descending', () => {
+    const assertions = [
+      makeAssertion({ id: 'a_low', confidence: 0.3, status: 'tentative', quorum_count: 1 }),
+      makeAssertion({ id: 'a_high', confidence: 0.9, status: 'established', quorum_count: 5 }),
+      makeAssertion({ id: 'a_mid', confidence: 0.6, status: 'tentative', quorum_count: 2 }),
+    ];
+    const ranked = rankAssertions(assertions);
+    assert.equal(ranked[0].id, 'a_high');
+    assert.equal(ranked[ranked.length - 1].id, 'a_low');
+  });
+
+  it('annotates in_tension correctly', () => {
+    const assertions = [
+      makeAssertion({ id: 'a_1' }),
+      makeAssertion({ id: 'a_2' }),
+    ];
+    const ranked = rankAssertions(assertions, { tensionIds: new Set(['a_1']) });
+    const r1 = ranked.find(a => a.id === 'a_1');
+    const r2 = ranked.find(a => a.id === 'a_2');
+    assert.equal(r1.in_tension, true);
+    assert.equal(r2.in_tension, false);
+  });
+});
+
+describe('rank — budgetCost', () => {
+  it('terse: cost = claim.length', () => {
+    const a = makeAssertion({ claim: 'short claim', density_hint: 'terse' });
+    assert.equal(budgetCost(a), 'short claim'.length);
+  });
+
+  it('verbose with body: cost = body.length', () => {
+    const a = makeAssertion({ claim: 'short', body: 'a much longer body text here', density_hint: 'verbose' });
+    assert.equal(budgetCost(a), 'a much longer body text here'.length);
+  });
+
+  it('verbose without body: falls back to claim.length', () => {
+    const a = makeAssertion({ claim: 'claim text', body: null, density_hint: 'verbose' });
+    assert.equal(budgetCost(a), 'claim text'.length);
+  });
+});
+
+describe('rank — selectForContext', () => {
+  it('respects budget and excludes assertions that do not fit', () => {
+    const assertions = [
+      makeAssertion({ id: 'a_1', claim: 'x'.repeat(50), score: 0.9, in_tension: false }),
+      makeAssertion({ id: 'a_2', claim: 'x'.repeat(50), score: 0.8, in_tension: false }),
+      makeAssertion({ id: 'a_3', claim: 'x'.repeat(50), score: 0.7, in_tension: false }),
+    ];
+    const selected = rankSelectForContext(assertions, 110); // fits 2 of 3
+    assert.equal(selected.length, 2);
+    assert.ok(selected.some(a => a.id === 'a_1'));
+    assert.ok(selected.some(a => a.id === 'a_2'));
+    assert.ok(!selected.some(a => a.id === 'a_3'));
+  });
+
+  it('cache_stable assertions are selected before dynamic ones', () => {
+    // stable is low score, dynamic is high score — stable should win the limited budget
+    const assertions = [
+      makeAssertion({ id: 'dyn_1',    claim: 'x'.repeat(60), score: 0.95, in_tension: false, cache_stable: 0 }),
+      makeAssertion({ id: 'stable_1', claim: 'x'.repeat(60), score: 0.50, in_tension: false, cache_stable: 1 }),
+    ];
+    const selected = rankSelectForContext(assertions, 70); // only fits one
+    assert.equal(selected.length, 1);
+    assert.equal(selected[0].id, 'stable_1');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Ledger rankActive + selectForContext integration tests
+// ---------------------------------------------------------------------------
+describe('Ledger rankActive', () => {
+  it('returns assertions ranked by score, tension assertions flagged', () => {
+    const { ledger } = makeTestLedger();
+
+    const idA = ledger.createAssertion({
+      plane: 'project:R',
+      class_: 'monotonic',
+      claim: 'the sky is blue',
+      confidence: 0.9,
+      source_spans: ['s:1'],
+    });
+    // Reinforce so quorum_count = 2, then promote
+    ledger.reinforceAssertion(idA, { source_span: 's:1b' });
+    ledger.maybePromote(idA, 2);
+
+    const idB = ledger.createAssertion({
+      plane: 'project:R',
+      class_: 'monotonic',
+      claim: 'the sky is not blue',
+      confidence: 0.5,
+      source_spans: ['s:2'],
+    });
+
+    ledger.linkSupersession(idB, idA, 'contradicts');
+
+    const ranked = ledger.rankActive('project:R');
+    assert.equal(ranked.length, 2);
+    // idA is established + high confidence but now in tension
+    // idB is tentative + low confidence + in tension
+    // Both are penalized; established idA should still rank first
+    assert.equal(ranked[0].id, idA);
+    assert.equal(ranked[0].in_tension, true);
+    assert.equal(ranked[1].in_tension, true);
+  });
+
+  it('established without tension ranks above tentative with tension', () => {
+    const { ledger } = makeTestLedger();
+
+    const idClean = ledger.createAssertion({
+      plane: 'project:R2',
+      class_: 'monotonic',
+      claim: 'grass is green',
+      confidence: 0.8,
+      source_spans: ['s:g1'],
+    });
+    ledger.reinforceAssertion(idClean, { source_span: 's:g2' });
+    ledger.maybePromote(idClean, 2);
+
+    const idTensed = ledger.createAssertion({
+      plane: 'project:R2',
+      class_: 'monotonic',
+      claim: 'water is wet',
+      confidence: 0.9,
+      source_spans: ['s:w1'],
+    });
+    const idContra = ledger.createAssertion({
+      plane: 'project:R2',
+      class_: 'monotonic',
+      claim: 'water is not wet',
+      confidence: 0.5,
+      source_spans: ['s:w2'],
+    });
+    ledger.linkSupersession(idContra, idTensed, 'contradicts');
+
+    const ranked = ledger.rankActive('project:R2');
+    // idClean: established, no tension
+    // idTensed: tentative, in tension
+    // idContra: tentative, in tension
+    const cleanEntry = ranked.find(a => a.id === idClean);
+    const tensedEntry = ranked.find(a => a.id === idTensed);
+    assert.ok(cleanEntry.score > tensedEntry.score);
+    assert.equal(cleanEntry.in_tension, false);
+    assert.equal(tensedEntry.in_tension, true);
+  });
+});
+
+describe('Ledger selectForContext', () => {
+  it('returns only assertions that fit within budget', () => {
+    const { ledger } = makeTestLedger();
+
+    ledger.createAssertion({ plane: 'project:B', class_: 'monotonic', claim: 'x'.repeat(30), source_spans: ['s:1'] });
+    ledger.createAssertion({ plane: 'project:B', class_: 'monotonic', claim: 'y'.repeat(30), source_spans: ['s:2'] });
+    ledger.createAssertion({ plane: 'project:B', class_: 'monotonic', claim: 'z'.repeat(30), source_spans: ['s:3'] });
+
+    const selected = ledger.selectForContext('project:B', 65);
+    assert.equal(selected.length, 2);
+    assert.ok(selected.every(a => a.plane === 'project:B'));
+  });
+
+  it('empty plane returns empty array', () => {
+    const { ledger } = makeTestLedger();
+    const selected = ledger.selectForContext('project:Empty', 10000);
+    assert.deepEqual(selected, []);
+  });
+
+  it('cache_stable assertions are prioritized over higher-scoring dynamic ones', () => {
+    const { ledger } = makeTestLedger();
+
+    // high confidence but not stable
+    ledger.createAssertion({
+      plane: 'project:CS',
+      class_: 'monotonic',
+      claim: 'a'.repeat(50),
+      confidence: 0.95,
+      source_spans: ['s:d1'],
+      cache_stable: 0,
+      density_hint: 'terse',
+    });
+    // lower confidence but stable
+    ledger.createAssertion({
+      plane: 'project:CS',
+      class_: 'monotonic',
+      claim: 'b'.repeat(50),
+      confidence: 0.4,
+      source_spans: ['s:s1'],
+      cache_stable: 1,
+      density_hint: 'terse',
+    });
+
+    // budget fits exactly one (50 chars each)
+    const selected = ledger.selectForContext('project:CS', 60);
+    assert.equal(selected.length, 1);
+    assert.equal(selected[0].cache_stable, 1);
+  });
+});
