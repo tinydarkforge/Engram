@@ -240,4 +240,23 @@ describe('server API', () => {
     assert.ok(json.timestamp);
     assert.ok(json.version);
   });
+
+  it('GET /api/assertions returns assertions list', async () => {
+    const { status, json } = await fetch(`${baseUrl}/api/assertions`);
+    assert.equal(status, 200);
+    assert.ok(Array.isArray(json.assertions));
+    assert.equal(typeof json.total, 'number');
+    assert.equal(typeof json.page, 'number');
+    assert.equal(typeof json.limit, 'number');
+  });
+
+  it('POST /api/feedback with valid body returns ok or 400', async () => {
+    const { status } = await postJSON(`${baseUrl}/api/feedback`, {
+      sessionId: 's1',
+      assertionId: 'a1',
+      signal: 'helpful',
+    });
+    assert.ok(status === 200 || status === 400, `expected 200 or 400, got ${status}`);
+    assert.notEqual(status, 500);
+  });
 });

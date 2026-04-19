@@ -24,6 +24,7 @@
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
+const crypto = require('crypto');
 const msgpack = require('msgpack-lite');
 const Memex = require('./memex-loader');
 const EventConsumer = require('./event-consumer');
@@ -289,6 +290,115 @@ app.get('/api/graph', (req, res) => {
 
     res.json({ nodes, edges });
   } catch (e) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+/** Open (or return cached) ledger DB. Returns null if DB file does not exist. */
+let _ledgerDb = null;
+function getLedgerDb() {
+  if (_ledgerDb) return _ledgerDb;
+  const Database = require('better-sqlite3');
+  const dbPath = path.join(MEMEX_PATH, '.cache', 'memex.db');
+  if (!fs.existsSync(dbPath)) return null;
+  _ledgerDb = new Database(dbPath, { readonly: false });
+  return _ledgerDb;
+}
+
+/**
+ * GET /api/assertions?q=&status=&plane=&page=1&limit=50
+ * Browse assertions stored in the ledger SQLite DB.
+ */
+app.get('/api/assertions', (req, res) => {
+  try {
+    const db = getLedgerDb();
+    if (!db) {
+      return res.json({ total: 0, page: 1, limit: 50, assertions: [] });
+    }
+    const q = (req.query.q || '').slice(0, 500).trim();
+    const status = (req.query.status || '').trim();
+    const plane = (req.query.plane || '').trim();
+    const limit = clampLimit(req.query.limit, 50, 200);
+    const page = Math.max(1, parseInt(req.query.page || '1', 10));
+    const offset = (page - 1) * limit;
+
+    const conditions = [];
+    const params = [];
+
+    if (q) {
+      conditions.push('claim LIKE ?');
+      params.push(`%${q}%`);
+    }
+    if (status) {
+      conditions.push('status = ?');
+      params.push(status);
+    }
+    if (plane) {
+      conditions.push('plane = ?');
+      params.push(plane);
+    }
+
+    const where = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+
+    const totalRow = db.prepare(`SELECT COUNT(*) AS n FROM assertions ${where}`).get(...params);
+    const total = totalRow ? totalRow.n : 0;
+
+    const assertions = db.prepare(
+      `SELECT id, claim, body, status, confidence, plane, class, density_hint, created_at, last_verified
+       FROM assertions ${where}
+       ORDER BY created_at DESC
+       LIMIT ? OFFSET ?`
+    ).all(...params, limit, offset);
+
+    res.json({ total, page, limit, assertions });
+  } catch (e) {
+    if (e.message && e.message.includes('no such table')) {
+      return res.json({ total: 0, page: 1, limit: 50, assertions: [] });
+    }
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+
+/**
+ * POST /api/feedback
+ * Layer C user feedback signal.
+ * Body: { sessionId, assertionId, signal: 'helpful'|'unhelpful'|'wrong', note? }
+ */
+app.post('/api/feedback', (req, res) => {
+  try {
+    const { sessionId, assertionId, signal, note } = req.body || {};
+
+    if (!sessionId || typeof sessionId !== 'string') {
+      return res.status(400).json({ error: 'sessionId is required' });
+    }
+    if (!assertionId || typeof assertionId !== 'string') {
+      return res.status(400).json({ error: 'assertionId is required' });
+    }
+    if (!['helpful', 'unhelpful', 'wrong'].includes(signal)) {
+      return res.status(400).json({ error: 'signal must be helpful, unhelpful, or wrong' });
+    }
+
+    const score = signal === 'helpful' ? 1.0 : signal === 'unhelpful' ? 0.2 : 0.0;
+    const id = `uf_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`;
+    const now = new Date().toISOString();
+
+    const db = getLedgerDb();
+    if (!db) {
+      return res.status(400).json({ error: 'ledger database not initialized' });
+    }
+
+    db.prepare(
+      `INSERT OR REPLACE INTO assertion_outcomes
+         (id, assertion_id, session_id, selected_at, scored_at, signal_source, score, note, reply_hash)
+       VALUES (?, ?, ?, ?, ?, 'user', ?, ?, NULL)`
+    ).run(id, assertionId, sessionId, now, now, score, note || null);
+
+    res.json({ ok: true, scored: 1 });
+  } catch (e) {
+    if (e.message && (e.message.includes('no such table') || e.message.includes('FOREIGN KEY'))) {
+      return res.status(400).json({ error: 'assertion not found or schema not migrated' });
+    }
     res.status(500).json({ error: 'Internal server error' });
   }
 });
