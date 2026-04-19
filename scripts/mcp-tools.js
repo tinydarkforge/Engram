@@ -640,6 +640,49 @@ async function ledgerTransform(plane, opts = {}) {
   }
 }
 
+async function ledgerReportOutcome(params) {
+  try {
+    const { session_id, reply_text, mode = 'post_hoc' } = params || {};
+
+    if (!session_id || typeof session_id !== 'string') {
+      return { error: 'ledger_report_outcome: session_id is required' };
+    }
+    if (!reply_text || typeof reply_text !== 'string') {
+      return { error: 'ledger_report_outcome: reply_text is required' };
+    }
+    if (!['post_hoc', 'citation', 'both'].includes(mode)) {
+      return { error: 'ledger_report_outcome: mode must be post_hoc, citation, or both' };
+    }
+
+    const Database = require('better-sqlite3');
+    const path = require('path');
+    const { resolveMemexPath } = require('./paths');
+    const dbPath = path.join(resolveMemexPath(__dirname), '.cache', 'memex.db');
+    const fs = require('fs');
+    if (!fs.existsSync(dbPath)) {
+      return { ok: true, session_id, post_hoc: null, citation: null, message: 'ledger DB not initialized' };
+    }
+    const db = new Database(dbPath);
+
+    let postHocResult = null;
+    let citationResult = null;
+
+    if (mode === 'post_hoc' || mode === 'both') {
+      const { scoreReply } = require('./capture');
+      postHocResult = await scoreReply(session_id, reply_text, { db });
+    }
+
+    if (mode === 'citation' || mode === 'both') {
+      const { scoreCitations } = require('./feedback/score-citations');
+      citationResult = await scoreCitations({ sessionId: session_id, replyText: reply_text, db });
+    }
+
+    return { ok: true, session_id, post_hoc: postHocResult, citation: citationResult };
+  } catch (e) {
+    return { error: `ledger_report_outcome failed: ${e.message}` };
+  }
+}
+
 module.exports = {
   loadIndex,
   loadSessionsIndex,
@@ -666,4 +709,5 @@ module.exports = {
   ledgerRunVerifications,
   ledgerWeight,
   ledgerTransform,
+  ledgerReportOutcome,
 };
