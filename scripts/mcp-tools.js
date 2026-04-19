@@ -572,6 +572,74 @@ function ledgerStats() {
   }
 }
 
+// ─────────────────────────────────────────────────────────────
+// Ledger Tools (Phase 8)
+// ─────────────────────────────────────────────────────────────
+
+function ledgerScanSentinel(plane, { sampleSize = 50, threshold = 0.7 } = {}) {
+  try {
+    const { scanPlane } = require('./contradiction-sentinel');
+    const result = scanPlane(plane, { sampleSize, threshold });
+    // scanPlane returns a Promise (async function), resolve it
+    if (result && typeof result.then === 'function') {
+      // Callers expecting sync must await — but MCP tools are async-capable
+      return result.then(r => ({ ok: true, plane, ...r }));
+    }
+    return { ok: true, plane, ...result };
+  } catch (e) {
+    return { error: `ledger scan sentinel failed: ${e.message}` };
+  }
+}
+
+function ledgerRunVerifications(plane, { staleDays = 14 } = {}) {
+  try {
+    const ledger = require('./ledger');
+    const hooks = require('./verification-hooks');
+    const assertions = ledger.queryActiveByPlane(plane, { classes: ['state_bound'] });
+    const resultPromise = hooks.runPending(assertions, {
+      staleDays,
+      onVerified: (id) => ledger.markVerified(id),
+    });
+    if (resultPromise && typeof resultPromise.then === 'function') {
+      return resultPromise.then(results => ({ ok: true, plane, results }));
+    }
+    return { ok: true, plane, results: resultPromise };
+  } catch (e) {
+    return { error: `ledger run verifications failed: ${e.message}` };
+  }
+}
+
+function ledgerWeight(id, value) {
+  try {
+    const ledger = require('./ledger');
+    ledger.setCounterfactualWeight(id, value);
+    return { ok: true, id, value };
+  } catch (e) {
+    return { error: `ledger weight failed: ${e.message}` };
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// Ledger Tools (Phase 9)
+// ─────────────────────────────────────────────────────────────
+
+async function ledgerTransform(plane, opts = {}) {
+  try {
+    const { transformPlane } = require('./transform');
+    const result = await transformPlane(plane, {
+      dryRun: opts.dry_run !== false,
+      action: opts.action || 'all',
+      confidenceThreshold: opts.confidence_threshold || 0.7,
+      staleDays: opts.stale_days || 14,
+      maxAgeDays: opts.max_age_days || 90,
+      yes: opts.yes === true,
+    });
+    return { ok: true, plane, ...result };
+  } catch (e) {
+    return { error: `ledger transform failed: ${e.message}` };
+  }
+}
+
 module.exports = {
   loadIndex,
   loadSessionsIndex,
@@ -594,4 +662,8 @@ module.exports = {
   ledgerQuery,
   ledgerSelectContext,
   ledgerStats,
+  ledgerScanSentinel,
+  ledgerRunVerifications,
+  ledgerWeight,
+  ledgerTransform,
 };
