@@ -314,3 +314,160 @@ describe('Ledger CRUD', () => {
     assert.equal(ledger.getAssertion('a_0_doesnotexist'), null);
   });
 });
+
+// ---------------------------------------------------------------------------
+// dedup unit tests
+// ---------------------------------------------------------------------------
+const {
+  tokenize,
+  jaccardSimilarity,
+  removeNegations,
+  hasNegation,
+  detectNegation,
+  findNearDuplicate,
+  findNegations,
+} = require('../scripts/dedup');
+
+describe('dedup', () => {
+  it('tokenize returns expected tokens', () => {
+    const tokens = tokenize('The sky is blue!');
+    assert.ok(tokens instanceof Set);
+    assert.ok(tokens.has('the'));
+    assert.ok(tokens.has('sky'));
+    assert.ok(tokens.has('is'));
+    assert.ok(tokens.has('blue'));
+    assert.equal(tokens.size, 4);
+  });
+
+  it('jaccardSimilarity: identical sets → 1.0', () => {
+    const s = new Set(['a', 'b', 'c']);
+    assert.equal(jaccardSimilarity(s, s), 1.0);
+  });
+
+  it('jaccardSimilarity: disjoint sets → 0.0', () => {
+    assert.equal(jaccardSimilarity(new Set(['a', 'b']), new Set(['c', 'd'])), 0.0);
+  });
+
+  it('jaccardSimilarity: partial overlap → correct fraction', () => {
+    const a = new Set(['a', 'b', 'c']);
+    const b = new Set(['b', 'c', 'd']);
+    // intersection: {b, c} = 2, union: {a, b, c, d} = 4 → 0.5
+    assert.equal(jaccardSimilarity(a, b), 0.5);
+  });
+
+  it('detectNegation: "X is Y" vs "X is not Y" → true', () => {
+    assert.equal(detectNegation('the sky is blue', 'the sky is not blue'), true);
+  });
+
+  it('detectNegation: two non-negating claims → false', () => {
+    assert.equal(detectNegation('the sky is blue', 'the ocean is green'), false);
+  });
+
+  it('detectNegation: both claims contain negation words → false', () => {
+    assert.equal(detectNegation('the sky is not green', 'the sky is not blue'), false);
+  });
+
+  it('findNearDuplicate: finds match above threshold', () => {
+    const claims = [{ id: 'a_1', claim: 'the sky is blue' }];
+    const result = findNearDuplicate(claims, 'sky is blue', 0.7);
+    assert.ok(result !== null);
+    assert.equal(result.id, 'a_1');
+    assert.ok(result.similarity >= 0.7);
+  });
+
+  it('findNearDuplicate: returns null below threshold', () => {
+    const claims = [{ id: 'a_1', claim: 'the sky is blue on a clear day in summer' }];
+    const result = findNearDuplicate(claims, 'the ocean is deep', 0.7);
+    assert.equal(result, null);
+  });
+
+  it('findNegations: returns correct ids', () => {
+    const claims = [
+      { id: 'a_1', claim: 'the sky is blue' },
+      { id: 'a_2', claim: 'the ocean is deep' },
+    ];
+    const result = findNegations(claims, 'the sky is not blue', 0.7);
+    assert.deepEqual(result, ['a_1']);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Ledger ingest integration tests
+// ---------------------------------------------------------------------------
+describe('Ledger ingest', () => {
+  it('creates new assertion when no duplicate exists', () => {
+    const { ledger } = makeTestLedger();
+    const result = ledger.ingest({
+      plane: 'project:Memex',
+      class_: 'monotonic',
+      claim: 'The sky is blue',
+      source_spans: ['session:s1'],
+    });
+    assert.equal(result.action, 'created');
+    assert.ok(result.id.startsWith('a_'));
+    assert.deepEqual(result.negations, []);
+  });
+
+  it('reinforces when a duplicate claim exists', () => {
+    const { ledger } = makeTestLedger();
+    const existingId = ledger.createAssertion({
+      plane: 'project:Memex',
+      class_: 'monotonic',
+      claim: 'the sky is blue',
+      source_spans: ['session:s1'],
+    });
+
+    const result = ledger.ingest({
+      plane: 'project:Memex',
+      class_: 'monotonic',
+      claim: 'sky is blue',
+      source_spans: ['session:s2'],
+    });
+
+    assert.equal(result.action, 'reinforced');
+    assert.equal(result.id, existingId);
+  });
+
+  it('creates assertion and auto-links contradiction when negation detected', () => {
+    const { ledger } = makeTestLedger();
+    const existingId = ledger.createAssertion({
+      plane: 'project:Memex',
+      class_: 'monotonic',
+      claim: 'the sky is blue',
+      source_spans: ['session:s1'],
+    });
+
+    const result = ledger.ingest({
+      plane: 'project:Memex',
+      class_: 'monotonic',
+      claim: 'the sky is not blue',
+      source_spans: ['session:s2'],
+    });
+
+    assert.equal(result.action, 'created');
+    assert.deepEqual(result.negations, [existingId]);
+
+    const tensions = ledger.queryTensions({ resolved: false });
+    assert.equal(tensions.length, 1);
+  });
+
+  it('near-duplicate does NOT create a new row', () => {
+    const { ledger, db } = makeTestLedger();
+    ledger.createAssertion({
+      plane: 'project:Memex',
+      class_: 'monotonic',
+      claim: 'the sky is blue',
+      source_spans: ['session:s1'],
+    });
+
+    ledger.ingest({
+      plane: 'project:Memex',
+      class_: 'monotonic',
+      claim: 'sky is blue',
+      source_spans: ['session:s2'],
+    });
+
+    const count = db.prepare("SELECT COUNT(*) AS n FROM assertions WHERE plane = 'project:Memex'").get().n;
+    assert.equal(count, 1);
+  });
+});
