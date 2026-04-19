@@ -259,4 +259,23 @@ describe('server API', () => {
     assert.ok(status === 200 || status === 400, `expected 200 or 400, got ${status}`);
     assert.notEqual(status, 500);
   });
+
+  it('GET /api/assertions/:id returns 404 for unknown id', async () => {
+    const { status, json } = await fetch(`${baseUrl}/api/assertions/nonexistent`);
+    assert.equal(status, 404);
+    assert.ok(json.error);
+  });
+
+  it('GET /api/sessions/:project/:sessionId returns session data', async () => {
+    const { status, json } = await fetch(`${baseUrl}/api/sessions/TestProject/session-001`);
+    assert.equal(status, 200);
+    assert.equal(json.id, 'session-001');
+    assert.equal(json.project, 'TestProject');
+  });
+
+  it('GET /api/sessions/:project/:sessionId returns 404 for unknown session', async () => {
+    const { status, json } = await fetch(`${baseUrl}/api/sessions/TestProject/no-such-session`);
+    assert.equal(status, 404);
+    assert.ok(json.error);
+  });
 });

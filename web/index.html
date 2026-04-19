@@ -154,6 +154,33 @@
     </main>
   </div>
 
+  <!-- Assertion Detail Panel -->
+  <aside id="assertion-detail" class="detail-panel" aria-label="Assertion detail" hidden>
+    <div class="detail-panel-header">
+      <h2 id="detail-claim">Claim</h2>
+      <button id="detail-close" aria-label="Close detail panel">&#x2715;</button>
+    </div>
+    <div class="detail-panel-body">
+      <div class="detail-meta" id="detail-meta"></div>
+      <section class="detail-section">
+        <h3>Outcome Timeline</h3>
+        <div id="detail-outcomes"></div>
+      </section>
+      <section class="detail-section">
+        <h3>Lineage</h3>
+        <div id="detail-lineage"></div>
+      </section>
+      <section class="detail-section">
+        <h3>Why was this picked?</h3>
+        <div id="detail-why"></div>
+      </section>
+      <section class="detail-section">
+        <h3>Feedback</h3>
+        <div id="detail-feedback"></div>
+      </section>
+    </div>
+  </aside>
+
   <script src="app.js"></script>
 </body>
 </html>
