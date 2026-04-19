@@ -63,7 +63,9 @@ function initNavigation() {
 function switchView(view) {
   // Update nav buttons
   document.querySelectorAll('.nav-btn').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.view === view);
+    const isActive = btn.dataset.view === view;
+    btn.classList.toggle('active', isActive);
+    btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
   });
 
   // Update views
@@ -79,6 +81,9 @@ function switchView(view) {
   }
   if (view === 'sessions' && state.projects.length === 0) {
     loadProjectTabs();
+  }
+  if (view === 'assertions') {
+    loadAssertions(1);
   }
 }
 
@@ -391,11 +396,107 @@ function viewProject(name) {
 }
 
 // ─────────────────────────────────────────────────────────────
+// Assertions View
+// ─────────────────────────────────────────────────────────────
+
+const assertionsState = {
+  timeout: null,
+};
+
+async function loadAssertions(page = 1) {
+  const container = document.getElementById('assertions-list');
+  const q = (document.getElementById('assertions-search')?.value || '').trim();
+  const status = document.getElementById('assertions-status')?.value || '';
+  const limit = 50;
+
+  container.innerHTML = '<div class="loading">Loading...</div>';
+
+  const params = new URLSearchParams({ page, limit });
+  if (q) params.set('q', q);
+  if (status) params.set('status', status);
+
+  const data = await api.get(`/assertions?${params.toString()}`);
+
+  if (!data.assertions || data.assertions.length === 0) {
+    container.innerHTML = '<div class="empty-state">No assertions found</div>';
+    return;
+  }
+
+  const html = data.assertions.map(a => {
+    const confidence = typeof a.confidence === 'number'
+      ? `${Math.round(a.confidence * 100)}%`
+      : '—';
+    return `
+      <div class="assertion-item">
+        <div class="assertion-header">
+          <span class="assertion-claim">${esc(a.claim)}</span>
+          <span class="assertion-badge" data-status="${esc(a.status || '')}">${esc(a.status || 'unknown')}</span>
+        </div>
+        <div class="assertion-meta">
+          <span>Confidence: ${esc(confidence)}</span>
+          <span>Plane: ${esc(a.plane || '—')}</span>
+          <span>Class: ${esc(a.class || '—')}</span>
+          ${a.density_hint ? `<span>${esc(a.density_hint)}</span>` : ''}
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  container.innerHTML = html;
+}
+
+function initAssertions() {
+  const searchInput = document.getElementById('assertions-search');
+  const statusSelect = document.getElementById('assertions-status');
+
+  searchInput.addEventListener('input', () => {
+    clearTimeout(assertionsState.timeout);
+    assertionsState.timeout = setTimeout(() => loadAssertions(1), 300);
+  });
+
+  statusSelect.addEventListener('change', () => loadAssertions(1));
+}
+
+// ─────────────────────────────────────────────────────────────
+// Keyboard Navigation
+// ─────────────────────────────────────────────────────────────
+
+const VIEW_KEYS = ['dashboard', 'search', 'graph', 'sessions', 'assertions'];
+
+function initKeyboard() {
+  document.addEventListener('keydown', (e) => {
+    const tag = document.activeElement?.tagName?.toLowerCase();
+    const inInput = tag === 'input' || tag === 'textarea' || tag === 'select';
+
+    if (e.key === 'Escape') {
+      document.activeElement?.blur();
+      return;
+    }
+
+    if (e.key === '/' && !inInput) {
+      e.preventDefault();
+      switchView('search');
+      document.getElementById('search-input')?.focus();
+      return;
+    }
+
+    if (!inInput) {
+      const idx = parseInt(e.key, 10);
+      if (idx >= 1 && idx <= VIEW_KEYS.length) {
+        switchView(VIEW_KEYS[idx - 1]);
+      }
+    }
+  });
+}
+
+// ─────────────────────────────────────────────────────────────
 // Init
 // ─────────────────────────────────────────────────────────────
 
 document.addEventListener('DOMContentLoaded', () => {
   initNavigation();
   initSearch();
+  initAssertions();
+  initKeyboard();
   loadDashboard();
 });
