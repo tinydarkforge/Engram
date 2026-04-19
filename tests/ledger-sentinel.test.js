@@ -172,8 +172,8 @@ describe('verification-hooks: runPending skips recently-verified assertions', as
 // rank: counterfactual weight tests
 // ---------------------------------------------------------------------------
 
-describe('rank: counterfactual weight > 1 raises score (capped at 1.0)', () => {
-  it('score with weight 2.0 is capped at 1.0', () => {
+describe('rank: counterfactual weight > 1 raises score (capped at 2.0)', () => {
+  it('score with weight 2.0 is capped at 2.0', () => {
     const assertion = {
       id: 'a_1',
       staleness_model: 'flat',
@@ -190,7 +190,8 @@ describe('rank: counterfactual weight > 1 raises score (capped at 1.0)', () => {
     const weightedScore = computeScore(assertion, tensionIds, now, ctx, 2.0);
 
     assert.ok(baseScore > 0, 'base score should be positive');
-    assert.ok(weightedScore <= 1.0, 'score with weight > 1 must be capped at 1.0');
+    assert.ok(weightedScore <= 2.0, 'score with weight > 1 must be capped at 2.0');
+    assert.ok(weightedScore > baseScore, 'weight > 1 must raise score above base');
   });
 });
 

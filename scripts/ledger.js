@@ -11,6 +11,7 @@ const fs = require('fs');
 const { resolveMemexPath } = require('./paths');
 const { findNearDuplicate, findNegations } = require('./dedup');
 const { rankAssertions, selectForContext: _selectForContext } = require('./rank');
+const { computeOutcomePriors } = require('./feedback/outcome-prior');
 
 const MEMEX_PATH = resolveMemexPath(__dirname);
 const DB_PATH = path.join(MEMEX_PATH, '.cache', 'memex.db');
@@ -409,11 +410,15 @@ function createLedger(getDbFn) {
       }
     }
 
+    // Load outcome priors for the current assertions
+    const outcomePriors = computeOutcomePriors(db, ids);
+
     return rankAssertions(assertions, {
       tensionIds,
       now: now ?? new Date(),
       context: context ?? {},
       counterfactualWeights,
+      outcomePriors,
     });
   }
 
