@@ -130,13 +130,13 @@ START: "What am I building?"
               |     --> ORM: Drizzle
               |     --> Auth: Custom JWT (jose) or Clerk
               |     --> Deploy: Vercel
-              |     --> Example: ProjectA, ProjectB
+              |     --> Example: mid-complexity product apps
               |
               +-- Complex app (10+ entities, workflows, queues, roles)?
                     --> React + TypeScript + NestJS + PostgreSQL + Prisma
                     --> Auth: Custom JWT or Auth0
                     --> Deploy: DigitalOcean App Platform or Railway
-                    --> Example: DemoProject
+                    --> Example: large-scale monorepo apps
 ```
 
 ### Quick Decision Table
@@ -289,7 +289,7 @@ main (production)
 - Merge directly to main via PR.
 - Deploy on merge to main.
 
-**Tier 2 - Products with users (ProjectA, ProjectB, DemoProject):**
+**Tier 2 - Products with users:**
 ```
 main (production)
   |
@@ -567,7 +567,7 @@ Every project should have a `.mcp.json` that connects to Memex:
 ```
 
 This gives the AI assistant access to:
-- Cross-project knowledge ("how did we handle auth in ProjectA?")
+- Cross-project knowledge ("how did we handle auth in project X?")
 - Session history ("what did we work on last week?")
 - Institutional memory that persists across sessions
 
@@ -982,10 +982,7 @@ File: `docs/templates/mcp-template.json`
 |---------|-------|--------|--------|
 | Memex | Node.js | npm package (local) | Active |
 | AgentBridge | Python, FastAPI | Local service | Active |
-| ProjectB | HTML/JS/CSS, Vite | Vercel | Active |
-| ProjectA | React, TS, Vite, Drizzle, Vercel Postgres | Vercel | Active |
 | luna-qr | Static HTML/JS | Netlify | Active |
-| DemoProject | React, TS, NestJS, PostgreSQL, Prisma | DigitalOcean | Active |
 
 ---
 

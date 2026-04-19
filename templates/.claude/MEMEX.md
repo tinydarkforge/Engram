@@ -16,12 +16,12 @@ const context = loader.startup();
 
 // Context now contains:
 // - Global standards (commit, PR, branching, code, security)
-// - Current project metadata (DemoProject)
+// - Current project metadata
 // - Recent sessions
 // - Quick refs for instant answers
 ```
 
-**Location:** `~/code/cirrus/DevOps/Memex`
+**Location:** `~/code/<your-org>/Memex`
 
 ---
 
@@ -51,26 +51,9 @@ Example: feat(auth): add OAuth2 login
 - `develop` → Development
 - `feature/*` → Feature branches
 
-### Current Project: DemoProject
+### Current Project
 
-**Tech Stack:**
-- Frontend: Next.js, React, TypeScript, Tailwind CSS
-- Backend: NestJS, TypeScript, PostgreSQL, Prisma
-- Workers: Python (ingestion)
-- Testing: Jest, Cypress
-
-**Architecture:** Monorepo
-- `/apps/api/` - NestJS backend
-- `/apps/web/` - Next.js frontend
-- `/apps/cirrus-editor/` - Video editor
-- `/workers/ingestion/` - Python worker
-
-**Environments:**
-- Dev: https://dev.example.com
-- Staging: https://staging.example.com
-- Prod: https://example.com
-
-**Code Owners:** @Pamperito74, @Rhettyoungberg
+Fill in your project's tech stack, architecture, environments, and code owners here.
 
 ---
 
@@ -107,8 +90,8 @@ save-session "summary" --topics tags  # Save work
 If user asks about other projects:
 
 ```bash
-"How did we handle OAuth in ProjectAuth?"
-→ Load ~/code/cirrus/DevOps/Memex/projects/ProjectAuth/
+"How did we handle OAuth in <other-project>?"
+→ Load ~/code/<your-org>/Memex/projects/<other-project>/
 ```
 
 ---

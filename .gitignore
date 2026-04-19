@@ -4,9 +4,34 @@ node_modules/
 # Generated cache and manifest files
 .cache/
 .memex-manifest.json
+.memex-manifest.msgpack
 *.db
 *.db-journal
 .archive/
 
 # Neural memory (regenerate with: node scripts/neural-memory.js build)
 .neural/
+
+# Generated artifacts
+index.json
+index.json.backup
+slim-context.json
+graph.html
+graph-memex.html
+
+# Claude Code session locks
+.claude/*.lock
+
+# Schemas (generated from source)
+schemas/session.schema.msgpack
+
+# Private project summaries/metadata (only Memex is public)
+summaries/projects/*
+!summaries/projects/Memex/
+metadata/projects/*
+!metadata/projects/Memex.json
+!metadata/projects/Memex.msgpack
+
+# Private templates
+templates/AGENTS-*.md
+

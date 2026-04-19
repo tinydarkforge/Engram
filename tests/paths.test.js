@@ -94,7 +94,7 @@ describe('paths', () => {
 
     it('resolveProjectDirName() prefers an existing mixed-case legacy directory', () => {
       fs.mkdirSync(path.join(tmpDir, 'summaries', 'projects', 'DemoProject'));
-      const result = resolveProjectDirName(tmpDir, 'cirrustranslate');
+      const result = resolveProjectDirName(tmpDir, 'demoproject');
       assert.equal(result, 'DemoProject');
     });
 
