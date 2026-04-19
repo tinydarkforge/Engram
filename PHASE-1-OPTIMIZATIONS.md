@@ -36,7 +36,7 @@ Three "quick win" optimizations delivered in 1 week:
 node scripts/lazy-loader.js convert
 
 # Load specific session
-node scripts/lazy-loader.js load DemoProject ci-2025-12-03-hotfix
+node scripts/lazy-loader.js load <project> <session-id>
 
 # View stats
 node scripts/lazy-loader.js stats
@@ -49,10 +49,10 @@ node scripts/lazy-loader.js revert
 
 ```javascript
 // List sessions (lightweight, instant)
-const sessions = memex.listSessions('DemoProject');
+const sessions = memex.listSessions('<project>');
 
 // Load full details (on-demand)
-const details = memex.loadSessionDetails('DemoProject', 'session-id');
+const details = memex.loadSessionDetails('<project>', 'session-id');
 ```
 
 ---
