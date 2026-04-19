@@ -400,8 +400,8 @@ npm run convert-msgpack
 
 ## Links
 
-- **Repository:** https://github.com/Cirrus-Inc/Memex
-- **Releases:** https://github.com/Cirrus-Inc/Memex/releases
+- **Repository:** https://github.com/Pamperito74/Memex
+- **Releases:** https://github.com/Pamperito74/Memex/releases
 - **Roadmap:** [ROADMAP-V4.md](ROADMAP-V4.md)
 - **Documentation:** [README.md](README.md)
 

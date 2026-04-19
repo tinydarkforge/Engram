@@ -10,3 +10,26 @@ node_modules/
 
 # Neural memory (regenerate with: node scripts/neural-memory.js build)
 .neural/
+
+# Claude Code runtime state
+.claude/scheduled_tasks.lock
+.claude/*.lock
+
+# Ignore all project-scoped artifacts by default; whitelist public ones below.
+summaries/projects/*
+metadata/projects/*
+templates/AGENTS-*.md
+!summaries/projects/Memex/
+!metadata/projects/Memex.json
+!metadata/projects/Memex.msgpack
+
+# Generated artifacts that re-leak private refs on rebuild
+index.json
+index.json.backup
+index.msgpack
+slim-context.json
+graph.html
+graph-memex.html
+*.json.backup
+summaries/projects/Memex/sessions-index.json
+summaries/projects/Memex/sessions-index.msgpack

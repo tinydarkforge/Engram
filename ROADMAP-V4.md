@@ -419,7 +419,7 @@ Comment on issues with:
 - [README.md](README.md) - Getting started
 
 ### Issues
-- [#12-21](https://github.com/Cirrus-Inc/DevOps/issues) - v4.0 feature requests
+- Tracking: see GitHub Issues on this repository
 
 ### Research
 - [WebAssembly JSON Parsers](https://github.com/simdjson/simdjson)

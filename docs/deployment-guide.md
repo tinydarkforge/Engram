@@ -76,7 +76,7 @@ Each environment needs:
 - `NEXT_PUBLIC_API_URL` - API URL for that environment
 - `JWT_SECRET` - Unique per environment
 - `NEXT_PUBLIC_EDITOR_URL` - Editor URL
-- Service URLs (Mirage, CLEAR, S3, etc.)
+- Service URLs (object storage, downstream services, etc.)
 
 ---
 

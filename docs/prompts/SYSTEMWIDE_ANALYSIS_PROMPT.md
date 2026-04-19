@@ -20,7 +20,7 @@ I will be offline, so I need you to operate autonomously.
 
 📦 Repository
 
-https://github.com/Cirrus-Inc/CirrusTranslate
+https://github.com/<owner>/<repo>
 
 🎯 Mission Overview
 
