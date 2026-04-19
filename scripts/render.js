@@ -80,6 +80,10 @@ function renderAssertion(assertion, opts = {}) {
     text += ' ⚠ tension';
   }
 
+  if (opts.citation && assertion.id) {
+    text += ` [[A:${assertion.id}]]`;
+  }
+
   return text;
 }
 
