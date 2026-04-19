@@ -16,7 +16,7 @@ const os = require('os');
 
 function fetch(url) {
   return new Promise((resolve, reject) => {
-    http.get(url, (res) => {
+    http.get(url, { agent: false }, (res) => {
       let data = '';
       res.on('data', (chunk) => { data += chunk; });
       res.on('end', () => {
@@ -39,6 +39,7 @@ function postJSON(url, body) {
       port: parsed.port,
       path: parsed.pathname,
       method: 'POST',
+      agent: false,
       headers: {
         'Content-Type': 'application/json',
         'Content-Length': Buffer.byteLength(data),
@@ -111,16 +112,17 @@ describe('server API', () => {
   });
 
   after((_, done) => {
-    if (server) {
-      server.closeAllConnections();
-      server.close(done);
-    } else {
-      done();
-    }
     delete process.env.MEMEX_PATH;
     delete process.env.HOST;
     if (tmpDir) {
       fs.rmSync(tmpDir, { recursive: true, force: true });
+    }
+    if (server) {
+      server.closeAllConnections();
+      server.unref();
+      server.close(done);
+    } else {
+      done();
     }
   });
 
@@ -167,6 +169,7 @@ describe('server API', () => {
       assert.equal(json.version, 'fresh-test');
     } finally {
       freshServer.closeAllConnections();
+      freshServer.unref();
       await new Promise(resolve => freshServer.close(resolve));
       if (originalMemexPath === undefined) delete process.env.MEMEX_PATH;
       else process.env.MEMEX_PATH = originalMemexPath;
