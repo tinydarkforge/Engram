@@ -1,8 +1,44 @@
 # Memex v4.0 Roadmap
 
-**Status:** Planning Phase
+**Status:** Active Development
 **Target:** Q1-Q2 2026
 **Goal:** Next-generation performance, AI-powered search, and enterprise scalability
+
+---
+
+## Recent Completions
+
+### ✅ Phase 10: Assertion Ledger (Complete)
+**Completion:** 2026-04-19
+
+A fact database that builds confidence through corroboration and detects contradictions.
+
+**Key Features:**
+- Authority planes (user, project, session)
+- Confidence & quorum tracking
+- Contradiction detection via negation heuristic
+- Staleness models (flat, exponential, episodic, state_bound, contextual)
+- Transform script with user confirmation gate (Phase 9)
+- Full API + MCP tool wiring
+- 200+ tests
+
+**See Also:**
+- [PHASE-10-ASSERTION-LEDGER.md](./PHASE-10-ASSERTION-LEDGER.md)
+- [Ledger Guide](./docs/LEDGER-GUIDE.md)
+- [API Reference](./docs/ASSERTION-API-REFERENCE.md)
+
+---
+
+## Future Phases
+
+### Phase 11: Projection & Cross-Plane Reasoning (Planned)
+Transform individual facts into cross-plane assertions: "If project X uses React, then Y is true"
+
+### Phase 12: Counterfactual Analysis (Planned)
+"What if we switched to Rust?" — speculative reasoning over assertion graphs
+
+### Phase 13: Propagation & Cascading Updates (Planned)
+When a foundational fact changes, automatically propagate updates to dependent assertions
 
 ---
 

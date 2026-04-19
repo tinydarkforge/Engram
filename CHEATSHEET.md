@@ -48,6 +48,25 @@ build             # Rebuild git index
 stats             # Show index statistics
 ```
 
+### Ledger Commands (Phase 9-10)
+
+```bash
+# Transform assertions with confirmation
+node scripts/transform.js [options]
+  --plane <plane>              # Default: project:Memex
+  --action <action>            # all|promote|verify|fossilize|weight
+  --no-dry-run                 # Execute (default is dry-run)
+  --confidence <f>             # Min confidence for promotion (default: 0.7)
+  --stale-days <n>            # Days before state_bound needs verify (default: 14)
+  --yes                        # Skip confirmation prompt
+
+# Detect contradictions in a plane
+node scripts/contradiction-sentinel.js --plane project:Memex
+
+# Query ledger facts
+node scripts/ledger.js query project:Memex
+```
+
 ---
 
 ## npm Scripts
@@ -140,6 +159,13 @@ Configure in your AI assistant:
 | `get_topics` | Top topics with counts | - |
 | `query_concept` | Knowledge graph lookup | `concept` |
 | `cross_project_search` | Search across all repos | `query` |
+| `ledger_ingest` | Create assertion | `plane, claim, source_spans` |
+| `ledger_query` | Query assertions by plane | `plane` |
+| `ledger_select_context` | Get facts for prompt (budget-aware) | `plane, budget` |
+| `ledger_stats` | Assertion statistics | - |
+| `ledger_scan_sentinel` | Detect contradictions | `plane` |
+| `ledger_run_verifications` | Verify state_bound facts | `plane` |
+| `ledger_transform` | Bulk transform with confirmation | `plane` |
 
 ### MCP Resources
 
@@ -172,6 +198,8 @@ Memex/
 │   └── <Project>/
 │       ├── sessions-index.json        # Session list (lightweight)
 │       └── sessions/<id>.json         # Full session details
+├── .cache/
+│   └── memex.db                       # Assertion ledger (SQLite)
 ├── .neural/
 │   ├── bloom.json                     # Bloom filter
 │   ├── graph.msgpack                  # Concept graph
@@ -179,7 +207,12 @@ Memex/
 │   ├── git-index.msgpack              # Git commit index
 │   └── bundles/<project>.msgpack      # Pre-compiled context
 ├── scripts/                           # All executable scripts
-├── tests/                             # Test suite (194 tests)
+│   ├── ledger.js                      # Assertion ledger (core CRUD)
+│   ├── transform.js                   # Bulk transformation with user gate
+│   ├── contradiction-sentinel.js      # Negation-based tension detection
+│   ├── verification-hooks.js          # State-bound assertion verification
+│   └── ...
+├── tests/                             # Test suite (200+ tests)
 └── web/                               # Dashboard (index.html, app.js, style.css)
 ```
 
