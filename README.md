@@ -52,6 +52,7 @@ It is most useful for solo or small-team workflows where a local, file-backed me
 - MCP server over stdio
 - Streamable HTTP MCP server with API-key auth
 - AgentBridge integration for event-based coordination
+- **Assertion Ledger** — Facts with confidence, lineage, and contradiction detection. Build trust through corroboration, detect conflicts, bulk transform with user gates.
 
 ## What It Is Not
 

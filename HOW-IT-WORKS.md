@@ -64,6 +64,40 @@ summaries/projects/<ProjectName>/
 
 Lazy loading (`scripts/lazy-loader.js`) keeps session indexes small by storing detailed metadata in separate files.
 
+### Layer 4: Assertion Ledger (Phase 10)
+
+A fact database that builds confidence through corroboration and detects contradictions. Sessions feed structured facts into the ledger, where they accumulate evidence across sessions.
+
+```
+Session Notes (100-500 tokens)
+  ↓
+  Extract → Facts (terse, high-value)
+  ↓
+Assertion Ledger (SQLite, .cache/memex.db)
+  • plane: authority (user:daniel, project:Memex, session:xyz)
+  • claim: fact text (e.g., "React batch updates improve performance")
+  • confidence: [0.0-1.0] (starts at 0.5, grows with corroboration)
+  • quorum_count: number of independent sources
+  • status: tentative → established → fossilized
+  • staleness_model: flat|exponential|episodic|state_bound|contextual
+  • lineage: source_spans tracking which sessions contributed
+  ↓
+Ranking (decay × status × quorum × tension × weight)
+  ↓
+Context Selection (budget-aware, ~400-500 facts per 1M tokens)
+```
+
+**Key improvements:**
+- **Trustworthiness signal:** Facts gain weight through multiple sources (quorum), not just frequency
+- **Contradiction detection:** Automatic negation-based tension seeding; visible contradictions alert users
+- **Authority separation:** Facts from different sources don't mix; "personal opinion" ≠ "proven system fact"
+- **Staleness management:** Different decay curves for different fact types (architecture facts decay differently than build status)
+- **Bulk transformation:** Transform script reconciles assertions at scale with user confirmation gate
+
+**Storage:** SQLite (~2KB per assertion), lazy-loaded on first query. Query latency ~5-15ms for ranking 100 facts.
+
+See [PHASE-10-ASSERTION-LEDGER.md](./PHASE-10-ASSERTION-LEDGER.md) and [Ledger Guide](./docs/LEDGER-GUIDE.md) for details.
+
 ---
 
 ## Data Flow

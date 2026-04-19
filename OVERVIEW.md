@@ -26,15 +26,16 @@ Instead of loading all your docs every time (500KB = 50,000 tokens):
 
 ---
 
-## Three Smart Layers
+## Four Smart Layers
 
 | Layer | Size | Speed | What It Does |
 |-------|------|-------|--------------|
 | **Bloom Filter** | 243 bytes | 0.1ms | Instant "NO" answers |
 | **Index** | 4KB | 2ms | Quick summaries, answers 80% of queries |
 | **Full Details** | Per-file | 5ms | Complete info, loaded on-demand |
+| **Assertion Ledger** | ~2KB per fact | 5-15ms | Facts with confidence, lineage, contradictions |
 
-**Key:** Most queries stop at layer 1 or 2 = Massive savings!
+**Key:** Most queries stop at layer 1 or 2 = Massive savings! Layer 4 adds trustworthiness signals.
 
 ---
 
@@ -64,16 +65,25 @@ node scripts/memex-loader.js quick "commit format"
 3. **[HOW-MEMEX-SAVES-TOKENS.md](HOW-MEMEX-SAVES-TOKENS.md)** - Why it's so efficient
 
 **Want specifics?**
-- **[PHASE-1-OPTIMIZATIONS.md](PHASE-1-OPTIMIZATIONS.md)** - Latest features (v3.3)
+- **[PHASE-10-ASSERTION-LEDGER.md](PHASE-10-ASSERTION-LEDGER.md)** - Facts with confidence & lineage (new!)
+- **[Ledger Guide](docs/LEDGER-GUIDE.md)** - Practical ledger tutorials
+- **[Assertion API Reference](docs/ASSERTION-API-REFERENCE.md)** - Complete API docs
+- **[PHASE-1-OPTIMIZATIONS.md](PHASE-1-OPTIMIZATIONS.md)** - Earlier optimizations (v3.3)
 - **[ROADMAP-V4.md](ROADMAP-V4.md)** - Future plans
-- **[HOW-IT-WORKS.md](HOW-IT-WORKS.md)** - Technical deep dive
+- **[HOW-IT-WORKS.md](HOW-IT-WORKS.md)** - Technical deep dive (includes ledger layer 4)
 - **[CHEATSHEET.md](CHEATSHEET.md)** - Command reference
 
 ---
 
 ## Key Features
 
-### Phase 1 (v3.3 - Latest)
+### Phase 10 (v4.0 - Latest)
+- ✅ **Assertion Ledger**: Facts with confidence, lineage, contradiction detection
+- ✅ **Transform Script**: Bulk operations with user confirmation gate
+- ✅ **Contradiction Sentinel**: Automatic negation-based tension detection
+- ✅ **Verification Hooks**: Re-verify state-bound facts periodically
+
+### Phase 1 (v3.3)
 - ✅ **Lazy Loading**: 64% smaller index
 - ✅ **Bloom Filters**: 500-1000x faster negative queries
 - ✅ **Git Hooks**: Zero-effort session capture
