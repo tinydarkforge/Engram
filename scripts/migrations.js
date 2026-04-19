@@ -82,9 +82,72 @@ function runMigrations() {
   };
 }
 
+function runSqlMigrations(db) {
+  const fs = require('fs');
+  const path = require('path');
+
+  // Ensure schema_migrations table exists
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS schema_migrations (
+      version       TEXT PRIMARY KEY,
+      applied_at    TEXT NOT NULL
+    );
+  `);
+
+  // Read all .sql files from migrations/ directory
+  const migrationsDir = path.join(MEMEX_PATH, 'migrations');
+  if (!fs.existsSync(migrationsDir)) {
+    return { applied: [], skipped: [] };
+  }
+
+  const files = fs.readdirSync(migrationsDir)
+    .filter(f => f.endsWith('.sql'))
+    .sort();
+
+  const applied = [];
+  const skipped = [];
+
+  for (const filename of files) {
+    // Check if migration is already applied
+    const existing = db.prepare('SELECT version FROM schema_migrations WHERE version = ?').get(filename);
+    if (existing) {
+      skipped.push(filename);
+      continue;
+    }
+
+    // Read and execute migration
+    const filePath = path.join(migrationsDir, filename);
+    const content = fs.readFileSync(filePath, 'utf8');
+    db.exec(content);
+
+    // Record migration as applied
+    const now = new Date().toISOString();
+    db.prepare('INSERT INTO schema_migrations (version, applied_at) VALUES (?, ?)').run(filename, now);
+
+    applied.push(filename);
+  }
+
+  return { applied, skipped };
+}
+
 module.exports = {
   CURRENT_SCHEMA_VERSION,
   runMigrations,
-  getSchemaVersion
+  getSchemaVersion,
+  runSqlMigrations
 };
+
+if (require.main === module) {
+  const Database = require('better-sqlite3');
+  const path = require('path');
+  const MEMEX_PATH = resolveMemexPath(__dirname);
+  const DB_PATH = path.join(MEMEX_PATH, '.cache', 'memex.db');
+  const cacheDir = path.dirname(DB_PATH);
+  if (!require('fs').existsSync(cacheDir)) require('fs').mkdirSync(cacheDir, { recursive: true });
+  const db = new Database(DB_PATH);
+  const result = runSqlMigrations(db);
+  console.log('SQL migrations applied:', result.applied);
+  console.log('SQL migrations skipped:', result.skipped);
+  db.close();
+}
 
