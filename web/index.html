@@ -15,11 +15,12 @@
         <span class="logo-icon">🧠</span>
         <span class="logo-text">Memex</span>
       </div>
-      <nav>
-        <button class="nav-btn active" data-view="dashboard">Dashboard</button>
-        <button class="nav-btn" data-view="search">Search</button>
-        <button class="nav-btn" data-view="graph">Graph</button>
-        <button class="nav-btn" data-view="sessions">Sessions</button>
+      <nav id="main-nav" aria-label="Main navigation">
+        <button class="nav-btn active" data-view="dashboard" aria-label="Switch to Dashboard view" aria-pressed="true">Dashboard</button>
+        <button class="nav-btn" data-view="search" aria-label="Switch to Search view" aria-pressed="false">Search</button>
+        <button class="nav-btn" data-view="graph" aria-label="Switch to Graph view" aria-pressed="false">Graph</button>
+        <button class="nav-btn" data-view="sessions" aria-label="Switch to Sessions view" aria-pressed="false">Sessions</button>
+        <button class="nav-btn" data-view="assertions" aria-label="Switch to Assertions view" aria-pressed="false">Assertions</button>
       </nav>
       <div class="stats-mini" id="stats-mini">
         <span id="total-sessions">-</span> sessions
@@ -27,7 +28,7 @@
     </header>
 
     <!-- Main Content -->
-    <main>
+    <main role="main">
       <!-- Dashboard View -->
       <section id="view-dashboard" class="view active">
         <div class="dashboard-grid">
@@ -95,7 +96,7 @@
               </label>
             </div>
           </div>
-          <div id="search-results" class="search-results">
+          <div id="search-results" class="search-results" aria-live="polite">
             <div class="search-hint">
               Type to search across all sessions and projects
             </div>
@@ -117,6 +118,21 @@
             <input type="text" id="graph-search" placeholder="Find concept...">
           </div>
         </div>
+      </section>
+
+      <!-- Assertions View -->
+      <section id="view-assertions" class="view">
+        <div class="assertions-filter">
+          <input type="text" id="assertions-search" placeholder="Filter assertions...">
+          <select id="assertions-status">
+            <option value="">All</option>
+            <option value="tentative">tentative</option>
+            <option value="established">established</option>
+            <option value="fossilized">fossilized</option>
+            <option value="quarantined">quarantined</option>
+          </select>
+        </div>
+        <div id="assertions-list" class="assertions-list" aria-live="polite"></div>
       </section>
 
       <!-- Sessions View -->
