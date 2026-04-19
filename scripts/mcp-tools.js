@@ -519,6 +519,59 @@ function getGraphSummary() {
   };
 }
 
+// ─────────────────────────────────────────────────────────────
+// Ledger Tools (Phase 6)
+// ─────────────────────────────────────────────────────────────
+
+function ledgerIngest(params) {
+  try {
+    const ledger = require('./ledger.js');
+    const id = ledger.ingest(params);
+    return { ok: true, id };
+  } catch (e) {
+    return { error: `ledger ingest failed: ${e.message}` };
+  }
+}
+
+function ledgerQuery(plane, opts = {}) {
+  try {
+    const ledger = require('./ledger.js');
+    const assertions = ledger.queryActiveByPlane(plane, opts);
+    return { ok: true, plane, total: assertions.length, assertions };
+  } catch (e) {
+    return { error: `ledger query failed: ${e.message}` };
+  }
+}
+
+function ledgerSelectContext(plane, budget, opts = {}) {
+  try {
+    const ledger = require('./ledger.js');
+    const { renderBlock } = require('./render.js');
+    const assertions = ledger.selectForContext(plane, budget, opts);
+    const rendered = renderBlock(assertions, opts);
+    return {
+      ok: true,
+      plane,
+      budget,
+      selected: assertions.length,
+      used: assertions.reduce((sum, a) => sum + (a.claim?.length || 0), 0),
+      rendered
+    };
+  } catch (e) {
+    return { error: `ledger select context failed: ${e.message}` };
+  }
+}
+
+function ledgerStats() {
+  try {
+    const ledger = require('./ledger.js');
+    const stats = ledger.stats();
+    return { ok: true, stats };
+  } catch (e) {
+    return { error: `ledger stats failed: ${e.message}` };
+  }
+}
+
 module.exports = {
   loadIndex,
   loadSessionsIndex,
@@ -537,4 +590,8 @@ module.exports = {
   rebuildIndex,
   getStats,
   getGraphSummary,
+  ledgerIngest,
+  ledgerQuery,
+  ledgerSelectContext,
+  ledgerStats,
 };
