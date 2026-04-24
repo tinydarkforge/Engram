@@ -22,7 +22,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { execSync } = require('child_process');
+const { execSync, spawnSync } = require('child_process');
 const { encode: msgpackEncode, decode: msgpackDecode } = require('@msgpack/msgpack');
 const { resolveCodicilPath, resolveReposRoot } = require('./paths');
 const { readJSON } = require('./safe-json');
@@ -97,10 +97,12 @@ class GitIndexer {
       // and we get most value from subject + files anyway
       const RS = '\x1e';  // ASCII Record Separator
       const format = `%H${RS}%s${RS}%ai${RS}%an${RS}${RS}`;
-      const logOutput = execSync(
-        `git log --since="${since}" --format="${format}" --no-merges`,
+      const logResult = spawnSync(
+        'git', ['log', `--since=${since}`, `--format=${format}`, '--no-merges'],
         { cwd: repoPath, encoding: 'utf8', maxBuffer: 10 * 1024 * 1024 }
       );
+      if (logResult.status !== 0) return [];
+      const logOutput = logResult.stdout;
 
       // Split by double RS (record boundaries)
       const records = logOutput.split(RS + RS).filter(r => r.trim());
@@ -119,11 +121,13 @@ class GitIndexer {
         // Get changed files using diff-tree (safer than show)
         let files = [];
         try {
-          const filesOutput = execSync(
-            `git diff-tree --no-commit-id --name-only -r ${cleanHash}`,
+          const filesResult = spawnSync(
+            'git', ['diff-tree', '--no-commit-id', '--name-only', '-r', cleanHash],
             { cwd: repoPath, encoding: 'utf8' }
           );
-          files = filesOutput.split('\n').filter(f => f.trim());
+          if (filesResult.status === 0) {
+            files = filesResult.stdout.split('\n').filter(f => f.trim());
+          }
         } catch (e) {
           // Skip if can't get files
         }

@@ -41,6 +41,13 @@ const codicil = new Codicil();
 const app = express();
 app.use(express.json());
 
+app.use((_req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'");
+  next();
+});
+
 // Serve static web UI
 app.use(express.static(path.join(__dirname, '..', 'web')));
 
@@ -76,8 +83,8 @@ function sanitizeProject(name) {
 
 /** Clamp a numeric limit to a safe range */
 function clampLimit(value, defaultVal, max) {
-  const n = parseInt(value || String(defaultVal), 10);
-  if (isNaN(n) || n < 1) return defaultVal;
+  const n = parseInt(value, 10);
+  if (!Number.isInteger(n) || n < 1) return defaultVal;
   return Math.min(n, max);
 }
 
@@ -650,6 +657,7 @@ if (require.main === module) {
     consumer.stop();
     server.close(() => {
       try { codicil.persistentCache.close(); } catch { /* already closed */ }
+      try { if (_ledgerDb) _ledgerDb.close(); } catch { /* already closed */ }
       console.log('Shutdown complete');
       process.exit(0);
     });
