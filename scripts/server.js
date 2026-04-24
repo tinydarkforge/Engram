@@ -45,6 +45,27 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, '..', 'web')));
 
 // ─────────────────────────────────────────────────────────────
+// Rate limiter (in-memory, no deps)
+// ─────────────────────────────────────────────────────────────
+const _rateLimitWindows = new Map();
+function rateLimit(windowMs, max) {
+  return (req, res, next) => {
+    const key = req.ip || 'local';
+    const now = Date.now();
+    let entry = _rateLimitWindows.get(key);
+    if (!entry || now - entry.start > windowMs) {
+      entry = { start: now, count: 0 };
+      _rateLimitWindows.set(key, entry);
+    }
+    entry.count += 1;
+    if (entry.count > max) {
+      return res.status(429).json({ error: 'Too many requests' });
+    }
+    next();
+  };
+}
+
+// ─────────────────────────────────────────────────────────────
 // Helpers
 // ─────────────────────────────────────────────────────────────
 
@@ -209,7 +230,7 @@ app.get('/api/search', (req, res) => {
  * POST /api/semantic-search
  * Semantic search by meaning (body: {query, limit, useDecay})
  */
-app.post('/api/semantic-search', async (req, res) => {
+app.post('/api/semantic-search', rateLimit(60_000, 30), async (req, res) => {
   try {
     const query = (req.body.query || '').slice(0, 500);
     const limit = clampLimit(req.body.limit, 10, 100);

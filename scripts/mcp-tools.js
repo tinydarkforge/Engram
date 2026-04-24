@@ -156,10 +156,11 @@ function validateRememberInput(args) {
   if (projectRaw.length > 100) {
     return buildValidationError('CODICIL_ERR_PROJECT_TOO_LONG', 'project name must be 100 characters or fewer', 'project', projectRaw);
   }
-  if (projectRaw.includes('..')) {
+  const projectNormalized = projectRaw.normalize('NFC');
+  if (/[^a-zA-Z0-9._-]/.test(projectNormalized)) {
     return buildValidationError('CODICIL_ERR_PROJECT_INVALID_CHARS', 'project name may only contain letters, numbers, dots, underscores, and hyphens', 'project', projectRaw);
   }
-  if (/[^a-zA-Z0-9._-]/.test(projectRaw)) {
+  if (projectNormalized === '.' || projectNormalized === '..' || projectNormalized.includes('/') || projectNormalized.includes('\\')) {
     return buildValidationError('CODICIL_ERR_PROJECT_INVALID_CHARS', 'project name may only contain letters, numbers, dots, underscores, and hyphens', 'project', projectRaw);
   }
   if (RESERVED_PROJECTS.has(projectRaw)) {
@@ -172,7 +173,7 @@ function validateRememberInput(args) {
   return {
     summary,
     topics,
-    project: projectRaw,
+    project: projectNormalized,
     key_decisions: keyDecisions,
     learnings
   };
@@ -204,6 +205,7 @@ async function remember(args) {
       const embeddingResult = await vs.addSessionEmbedding(result.session, { persist: true });
       embeddingGenerated = embeddingResult.embedded === true;
     } catch (e) {
+      console.error('[codicil] embedding failed:', e.message);
       embeddingGenerated = false;
     }
 

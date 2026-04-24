@@ -839,7 +839,7 @@ if (require.main === module) {
           try {
             const bridge = await codicil._bridge;
             if (bridge.isConnected()) {
-              bridgeStatus = `connected (${process.env.AGENTBRIDGE_URL})`;
+              bridgeStatus = 'connected';
             }
           } catch {
             bridgeStatus = 'error';
