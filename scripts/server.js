@@ -613,6 +613,9 @@ app.get('/health', (req, res) => {
 if (require.main === module) {
   const server = app.listen(PORT, HOST, () => {
     const displayHost = HOST === '0.0.0.0' ? 'localhost' : HOST;
+    if (HOST !== '127.0.0.1' && HOST !== 'localhost') {
+      console.warn(`WARNING: Dashboard server bound to ${HOST} with no authentication. Do not expose to untrusted networks.`);
+    }
     console.log(`Codicil server listening on http://${displayHost}:${PORT}`);
     console.log(`  Bound host: ${HOST}`);
     console.log(`  Dashboard: http://${displayHost}:${PORT}/`);

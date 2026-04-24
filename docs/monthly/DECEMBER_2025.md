@@ -1,7 +1,7 @@
 # Codicil - December 2025 Task Report
 
 **Month:** December 2025
-**Assignee:** @Pamperito74 + Claude
+**Assignee:** maintainer + Claude
 **Total Versions Released:** 6 (v3.1.0, v3.1.1, v3.2.0, v3.3.0, v3.4.0, v4.0.0)
 **Total Epics Completed:** 2 (Phase 1 Optimizations, Epic F1)
 **Total Tasks Completed:** 40+

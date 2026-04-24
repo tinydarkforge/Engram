@@ -55,7 +55,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Pamperito74/Codicil.git"
+    "url": "https://github.com/tinydarkforge/codicil.git"
   },
   "engines": {
     "node": ">=20.0.0"

@@ -115,7 +115,7 @@ Over 100 sessions = 90,000 tokens saved
 | Without Codicil | With Codicil |
 |---------------|------------|
 | Different commit formats | Always `<type>(<scope>): <desc>` |
-| Forget to assign issues | Always assign to Pamperito74 |
+| Forget to assign issues | Always assign to maintainer |
 | Inconsistent branch names | Always `feat/`, `fix/`, etc. |
 | Miss steps in workflow | Workflow documented and followed |
 

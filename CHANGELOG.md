@@ -400,8 +400,8 @@ npm run convert-msgpack
 
 ## Links
 
-- **Repository:** https://github.com/Pamperito74/Codicil
-- **Releases:** https://github.com/Pamperito74/Codicil/releases
+- **Repository:** https://github.com/tinydarkforge/codicil
+- **Releases:** https://github.com/tinydarkforge/codicil/releases
 - **Roadmap:** [ROADMAP-V4.md](ROADMAP-V4.md)
 - **Documentation:** [README.md](README.md)
 

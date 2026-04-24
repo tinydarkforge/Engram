@@ -150,9 +150,9 @@ async function loadBridgeStatus() {
       </div>
       ${data.bridge_url ? `<div class="bridge-row bridge-meta">${esc(data.bridge_url)}</div>` : ''}
       <div class="bridge-row bridge-meta">
-        Events: ${consumer.events_processed || 0} processed, ${consumer.errors || 0} errors
+        Events: ${esc(String(consumer.events_processed || 0))} processed, ${esc(String(consumer.errors || 0))} errors
       </div>
-      ${consumer.last_event_at ? `<div class="bridge-row bridge-meta">Last: ${consumer.last_event_at}</div>` : ''}
+      ${consumer.last_event_at ? `<div class="bridge-row bridge-meta">Last: ${esc(String(consumer.last_event_at))}</div>` : ''}
     `;
   } catch {
     container.innerHTML = '<div class="bridge-row bridge-meta">Status unavailable</div>';

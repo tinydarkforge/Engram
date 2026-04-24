@@ -5,8 +5,8 @@ Codicil is a local memory layer for engineering work. You save short session rec
 ## 1. Install
 
 ```bash
-git clone https://github.com/Pamperito74/Codicil.git
-cd Codicil
+git clone https://github.com/tinydarkforge/codicil.git
+cd codicil
 npm install
 npm run setup
 node scripts/codicil-loader.js status

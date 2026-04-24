@@ -1,7 +1,7 @@
 # Codicil - November 2025 Task Report
 
 **Month:** November 2025
-**Assignee:** @Pamperito74 + Claude
+**Assignee:** maintainer + Claude
 **Total Versions Released:** 3 (v2.0.0, v3.0.0, Initial)
 **Total Tasks Completed:** 15+
 **Last Updated:** December 4, 2025
