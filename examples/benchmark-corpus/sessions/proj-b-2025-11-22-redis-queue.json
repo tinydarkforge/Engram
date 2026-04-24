@@ -1,0 +1,57 @@
+{
+  "id": "proj-b-2025-11-22-redis-queue",
+  "project": "proj-b",
+  "date": "2025-11-22",
+  "summary": "Migrated email delivery from synchronous SendGrid calls to a BullMQ Redis queue. Workers run in a separate process pool with exponential backoff retry (max 5 attempts). Throughput improved from 120 emails/min to 4,200 emails/min under load test.",
+  "topics": [
+    "redis",
+    "bullmq",
+    "queue",
+    "email",
+    "performance",
+    "background-jobs"
+  ],
+  "key_decisions": [
+    "BullMQ over raw Redis LPUSH — job visibility, retries, and dead-letter queue built in",
+    "Separate worker process pool (4 workers) so email failures cannot affect request latency",
+    "Store only email_id + template_name in queue payload, hydrate from DB in worker to keep payloads small"
+  ],
+  "outcomes": {
+    "completed": [
+      "EmailQueue service wrapper",
+      "Worker process with graceful shutdown",
+      "Dead-letter queue with Slack alert on DLQ growth",
+      "Load test confirming 4,200 emails/min"
+    ],
+    "blocked": [],
+    "next_steps": [
+      "Add queue depth dashboard in Grafana",
+      "Implement priority lanes for transactional vs. marketing emails"
+    ]
+  },
+  "learnings": [
+    "BullMQ requires Redis 6.2+ for LMPOP — check version before deploy",
+    "Worker concurrency of 20 per process saturated SendGrid rate limit at 5k/min — cap at 15"
+  ],
+  "code_changes": {
+    "files_added": [
+      "src/queues/email-queue.ts",
+      "src/workers/email-worker.ts",
+      "src/workers/email-worker.test.ts",
+      "docker/email-worker.Dockerfile"
+    ],
+    "files_modified": [
+      "src/services/email-service.ts",
+      "src/config/redis.ts",
+      "docker-compose.yml"
+    ],
+    "files_deleted": [
+      "src/services/email-service-sync.ts"
+    ],
+    "lines_added": 620,
+    "lines_removed": 145
+  },
+  "_lazy_loaded": false,
+  "_index_size_bytes": 940,
+  "_full_size_bytes": 2010
+}

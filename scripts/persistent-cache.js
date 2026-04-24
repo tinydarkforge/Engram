@@ -13,7 +13,7 @@
 const Database = require('better-sqlite3');
 const path = require('path');
 const fs = require('fs');
-const msgpack = require('msgpack-lite');
+const { encode: msgpackEncode, decode: msgpackDecode } = require('@msgpack/msgpack');
 const { resolveCodicilPath } = require('./paths');
 
 const CODICIL_PATH = resolveCodicilPath(__dirname);
@@ -113,7 +113,7 @@ class PersistentCache {
     // Decode msgpack
     let value;
     try {
-      value = msgpack.decode(row.value);
+      value = msgpackDecode(row.value);
     } catch (e) {
       console.warn(`Failed to decode cache entry for key: ${key}`, e.message);
       this.delete(key);
@@ -166,7 +166,7 @@ class PersistentCache {
     }
 
     // Encode value with msgpack
-    const encoded = msgpack.encode(value);
+    const encoded = msgpackEncode(value);
 
     // Preserve last_accessed_at on updates, set to now for new entries
     const lastAccessedAt = existing ? existing.last_accessed_at : now;

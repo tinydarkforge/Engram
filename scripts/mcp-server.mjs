@@ -62,6 +62,7 @@ const {
   ledgerQuery,
   ledgerSelectContext,
   ledgerStats,
+  findDuplicates,
 } = require('./mcp-tools.js');
 const { listPrompts, renderPrompt } = require('./mcp-prompts.js');
 
@@ -299,6 +300,25 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
         }
       },
       {
+        name: 'find_duplicates',
+        description: 'Find duplicate or near-duplicate sessions using embedding similarity. Returns pairs of sessions above the similarity threshold.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            threshold: {
+              type: 'number',
+              description: 'Similarity threshold 0–1 (default: 0.85). Lower = more results.',
+              default: 0.85
+            },
+            limit: {
+              type: 'number',
+              description: 'Max duplicate pairs to return (default: 20)',
+              default: 20
+            }
+          }
+        }
+      },
+      {
         name: 'ledger_ingest',
         description: 'Write an assertion to the ledger. Creates new or reinforces existing assertions.',
         inputSchema: {
@@ -453,6 +473,10 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
     case 'rebuild_index':
       result = rebuildIndex(args || {});
+      break;
+
+    case 'find_duplicates':
+      result = await findDuplicates({ threshold: args?.threshold, limit: args?.limit });
       break;
 
     case 'ledger_ingest':

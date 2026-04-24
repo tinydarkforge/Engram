@@ -1,0 +1,53 @@
+{
+  "id": "proj-a-2025-12-08-perf-regression",
+  "project": "proj-a",
+  "date": "2025-12-08",
+  "summary": "Diagnosed and fixed a p99 latency regression (180ms -> 2,400ms) on the /api/reports endpoint introduced by the audit-log migration. Root cause: N+1 query pattern in the new audit repo — each report row triggered a separate audit count query. Fixed with a single JOIN and added a query performance test.",
+  "topics": [
+    "performance",
+    "postgresql",
+    "n-plus-one",
+    "regression",
+    "debugging",
+    "audit-log"
+  ],
+  "key_decisions": [
+    "Add EXPLAIN ANALYZE output to CI for queries exceeding 50ms in tests",
+    "Use DataLoader pattern for batching audit counts in GraphQL resolvers",
+    "Add p99 latency assertion (< 300ms) to /api/reports integration test"
+  ],
+  "outcomes": {
+    "completed": [
+      "N+1 fix: batch audit count via LEFT JOIN with GROUP BY",
+      "DataLoader for audit counts in GraphQL resolver",
+      "p99 latency test for /api/reports",
+      "EXPLAIN ANALYZE helper in test utilities"
+    ],
+    "blocked": [],
+    "next_steps": [
+      "Audit all repository methods added in migration PR for similar patterns",
+      "Add query-count assertion to critical path tests"
+    ]
+  },
+  "learnings": [
+    "Sequelize eager loading does NOT batch by default for hasMany — must use separate query + map",
+    "pg slow query log threshold should be 100ms in staging, not 1000ms"
+  ],
+  "code_changes": {
+    "files_added": [
+      "src/repositories/audit-log-repo.test.ts",
+      "tests/integration/reports-latency.test.ts"
+    ],
+    "files_modified": [
+      "src/repositories/audit-log-repo.ts",
+      "src/resolvers/report-resolver.ts",
+      "src/loaders/audit-count-loader.ts"
+    ],
+    "files_deleted": [],
+    "lines_added": 290,
+    "lines_removed": 65
+  },
+  "_lazy_loaded": false,
+  "_index_size_bytes": 810,
+  "_full_size_bytes": 1710
+}

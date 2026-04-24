@@ -17,7 +17,7 @@ const assert = require('node:assert/strict');
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
-const msgpack = require('msgpack-lite');
+const { encode: msgpackEncode } = require('@msgpack/msgpack');
 
 let tmpDir;
 let tools;
@@ -94,7 +94,7 @@ describe('MCP Tools', () => {
         docker: [{ c: 'auth', w: 2 }],
       },
     };
-    fs.writeFileSync(path.join(neuralDir, 'graph.msgpack'), msgpack.encode(graph));
+    fs.writeFileSync(path.join(neuralDir, 'graph.msgpack'), msgpackEncode(graph));
 
     // Create .neural/bundles/TestProject.msgpack
     const bundlesDir = path.join(neuralDir, 'bundles');
@@ -108,7 +108,7 @@ describe('MCP Tools', () => {
       r: [{ id: 'tp-001', summary: 'Added auth flow' }],
       c: ['auth', 'docker'],
     };
-    fs.writeFileSync(path.join(bundlesDir, 'TestProject.msgpack'), msgpack.encode(bundle));
+    fs.writeFileSync(path.join(bundlesDir, 'TestProject.msgpack'), msgpackEncode(bundle));
 
     // Override CODICIL_PATH by setting env var before requiring the module
     process.env.CODICIL_PATH = tmpDir;

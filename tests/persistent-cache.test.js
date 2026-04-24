@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* eslint-disable */
 
 const { describe, it, before, after } = require('node:test');
 const assert = require('node:assert/strict');
