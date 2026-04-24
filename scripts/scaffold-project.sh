@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# TinyDarkForge Project Scaffold
+# Codicil Project Scaffold
 # Usage: ./scaffold-project.sh <project-name> [--public]
 #
-# Creates a new project with the standard TinyDarkForge structure:
+# Creates a new project with a standard structure:
 # - GitHub repo (private by default)
 # - SPEC.md template
 # - .claude/CLAUDE.md template
@@ -15,8 +15,8 @@
 set -euo pipefail
 
 TEMPLATE_DIR="$(dirname "$0")/../docs/templates"
-ORG="TinyDarkForge"
-BASE_DIR="$HOME/code/$ORG"
+ORG="${CODICIL_ORG:-${GITHUB_USER:-$(git config --global user.name | tr ' ' '-')}}"
+BASE_DIR="${CODICIL_BASE_DIR:-$HOME/code/$ORG}"
 
 # Parse arguments
 PROJECT_NAME="${1:-}"
@@ -25,7 +25,8 @@ VISIBILITY="--private"
 if [ -z "$PROJECT_NAME" ]; then
   echo "Usage: $0 <project-name> [--public]"
   echo ""
-  echo "Creates a new TinyDarkForge project with standard scaffold."
+  echo "Creates a new project with the Codicil standard scaffold."
+  echo "Override org/base dir via CODICIL_ORG and CODICIL_BASE_DIR env vars."
   exit 1
 fi
 
@@ -35,7 +36,7 @@ fi
 
 PROJECT_DIR="$BASE_DIR/$PROJECT_NAME"
 
-echo "=== TinyDarkForge Project Scaffold ==="
+echo "=== Codicil Project Scaffold ==="
 echo "Project: $PROJECT_NAME"
 echo "Directory: $PROJECT_DIR"
 echo "Visibility: ${VISIBILITY#--}"
@@ -105,14 +106,12 @@ echo "[7/8] Creating initial commit..."
 git add -A
 git commit -m "chore: initial project scaffold
 
-TinyDarkForge standard structure with:
+Standard structure with:
 - SPEC template (12 questions)
 - CLAUDE.md for AI assistant context
 - CI pipeline (GitHub Actions)
 - Codicil MCP integration
-- Standard README, .gitignore, .env.example
-
-Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>"
+- Standard README, .gitignore, .env.example"
 git push -u origin main
 
 # Create GitHub labels

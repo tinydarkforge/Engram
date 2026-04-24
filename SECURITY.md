@@ -6,7 +6,7 @@ The latest release on the `main` branch receives security fixes.
 
 ## Reporting a vulnerability
 
-Email **REDACTED@example.com** with:
+Email **tinydarkforge@gmail.com** with:
 
 1. Description of the vulnerability
 2. Steps to reproduce

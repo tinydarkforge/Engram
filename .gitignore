@@ -50,3 +50,6 @@ metadata/projects/*
 
 # Private templates
 templates/AGENTS-*.md
+
+# Internal roadmap/strategy docs (never public)
+docs/internal/

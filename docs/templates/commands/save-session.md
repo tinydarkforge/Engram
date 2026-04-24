@@ -16,7 +16,7 @@ git log --oneline -10
 
 3. Save to Codicil:
 ```bash
-~/code/TinyDarkForge/Codicil/scripts/remember "<summary of what was done>" --topics <topic1>,<topic2>
+npx codicil remember "<summary of what was done>" --topics <topic1>,<topic2>
 ```
 
 4. Report what was saved.

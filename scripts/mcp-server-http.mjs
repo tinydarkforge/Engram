@@ -20,7 +20,7 @@ import {
   isInitializeRequest,
 } from '@modelcontextprotocol/sdk/types.js';
 
-import { randomUUID } from 'node:crypto';
+import { randomUUID, timingSafeEqual } from 'node:crypto';
 import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
@@ -429,7 +429,9 @@ function requireApiKey(req, res, next) {
     return;
   }
 
-  if (provided !== MCP_API_KEY) {
+  const providedBuf = Buffer.from(provided);
+  const expectedBuf = Buffer.from(MCP_API_KEY);
+  if (providedBuf.length !== expectedBuf.length || !timingSafeEqual(providedBuf, expectedBuf)) {
     res.status(403).send('Forbidden');
     return;
   }
