@@ -192,7 +192,7 @@ class Memex {
       const pkgPath = path.join(cwd, 'package.json');
       const pkg = readJSON(pkgPath);
       if (pkg) {
-        const projectName = pkg.name?.replace('@cirrus/', '');
+        const projectName = pkg.name?.replace(/^@[^/]+\//, '');
         if (projectName && this.index.p[projectName]) {
           this.currentProject = projectName;
           return { method: 'package.json', project: projectName };

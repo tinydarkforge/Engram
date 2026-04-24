@@ -10,7 +10,7 @@ On startup, Claude should run:
 
 ```javascript
 // Load Memex for this project
-const memex = require('~/code/cirrus/DevOps/Memex/scripts/memex-loader.js');
+const memex = require('~/code/<your-org>/Memex/scripts/memex-loader.js');
 const loader = new memex();
 const context = loader.startup();
 
