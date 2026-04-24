@@ -1,0 +1,8 @@
+{
+  "id": "q1-auth-context",
+  "description": "Developer resumes work on JWT auth — needs context about past auth decisions",
+  "type": "resume-work",
+  "text": "What did we decide about JWT authentication and tenant key handling?",
+  "relevant_topics": ["auth", "jwt", "middleware", "security"],
+  "relevant_projects": ["proj-a"]
+}

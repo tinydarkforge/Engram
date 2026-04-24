@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* eslint-disable */
 
 /**
  * Codicil Loader v2.0
@@ -10,7 +11,7 @@ const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
 const { gunzipSync } = require('zlib');
-const msgpack = require('msgpack-lite');
+const { decode: msgpackDecode } = require('@msgpack/msgpack');
 const PersistentCache = require('./persistent-cache');
 const ManifestManager = require('./manifest-manager');
 const VectorSearch = require('./vector-search');
@@ -106,7 +107,7 @@ class Codicil {
     if (fs.existsSync(msgpackPath)) {
       try {
         const buffer = fs.readFileSync(msgpackPath);
-        this.index = msgpack.decode(buffer);
+        this.index = msgpackDecode(buffer);
         format = 'msgpack';
       } catch (e) {
         console.warn('⚠️  Failed to load MessagePack, trying fallback:', e.message);

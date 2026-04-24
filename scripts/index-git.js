@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* eslint-disable */
 
 /**
  * Git-Native Indexing for Neural Memory
@@ -22,7 +23,7 @@
 const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
-const msgpack = require('msgpack-lite');
+const { encode: msgpackEncode, decode: msgpackDecode } = require('@msgpack/msgpack');
 const { resolveCodicilPath, resolveReposRoot } = require('./paths');
 const { readJSON } = require('./safe-json');
 
@@ -285,7 +286,7 @@ class GitIndexer {
       stats: projectStats,
     };
 
-    const buffer = msgpack.encode(index);
+    const buffer = msgpackEncode(index);
     fs.writeFileSync(GIT_INDEX_PATH, buffer);
 
     console.log(`\n✅ Index saved: ${Math.round(buffer.length / 1024)}KB`);
@@ -312,7 +313,7 @@ class GitIndexer {
     }
 
     const buffer = fs.readFileSync(GIT_INDEX_PATH);
-    this.index = msgpack.decode(buffer);
+    this.index = msgpackDecode(buffer);
     return this.index;
   }
 

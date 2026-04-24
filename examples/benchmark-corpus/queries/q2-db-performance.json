@@ -1,0 +1,8 @@
+{
+  "id": "q2-db-performance",
+  "description": "Developer debugging a slow query — needs context about recent DB work and known patterns",
+  "type": "debugging",
+  "text": "What database performance issues have we seen and how did we fix them?",
+  "relevant_topics": ["database", "postgresql", "performance", "migration", "n-plus-one", "audit-log"],
+  "relevant_projects": ["proj-a"]
+}

@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* eslint-disable */
 
 /**
  * MCP Tool Implementations
@@ -34,18 +35,18 @@ function loadSessionsIndex(project) {
 }
 
 function loadGraph() {
-  const msgpack = require('msgpack-lite');
+  const { decode } = require('@msgpack/msgpack');
   const graphPath = path.join(CODICIL_PATH, '.neural/graph.msgpack');
   if (!fs.existsSync(graphPath)) return null;
-  return msgpack.decode(fs.readFileSync(graphPath));
+  return decode(fs.readFileSync(graphPath));
 }
 
 function loadBundle(projectName) {
   const sanitized = resolveProjectDirName(CODICIL_PATH, projectName) || projectName.replace(/[^a-zA-Z0-9._-]/g, '');
-  const msgpack = require('msgpack-lite');
+  const { decode } = require('@msgpack/msgpack');
   const bundlePath = path.join(CODICIL_PATH, '.neural/bundles', `${sanitized}.msgpack`);
   if (!fs.existsSync(bundlePath)) return null;
-  return msgpack.decode(fs.readFileSync(bundlePath));
+  return decode(fs.readFileSync(bundlePath));
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -640,6 +641,16 @@ async function ledgerTransform(plane, opts = {}) {
   }
 }
 
+async function findDuplicates(options = {}) {
+  const { threshold = 0.85, limit = 20 } = options;
+  try {
+    const result = vectorSearch.findDuplicates({ threshold, limit });
+    return result;
+  } catch (e) {
+    return { error: e.message, threshold, limit, duplicates_found: 0, duplicates: [] };
+  }
+}
+
 async function ledgerReportOutcome(params) {
   try {
     const { session_id, reply_text, mode = 'post_hoc' } = params || {};
@@ -710,4 +721,5 @@ module.exports = {
   ledgerWeight,
   ledgerTransform,
   ledgerReportOutcome,
+  findDuplicates,
 };

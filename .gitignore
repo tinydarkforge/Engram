@@ -5,6 +5,7 @@ node_modules/
 .cache/
 .codicil-manifest.json
 .codicil-manifest.msgpack
+.codicil-manifest.*
 *.db
 *.db-journal
 .archive/
@@ -18,6 +19,17 @@ index.json.backup
 slim-context.json
 graph.html
 graph-codicil.html
+
+# Coverage
+coverage/
+.nyc_output/
+
+# Security scan outputs (never commit, never publish)
+codicil.html
+secgate-*.json
+secgate-*.html
+*.secgate.json
+*.secgate.html
 
 # Claude Code session locks
 .claude/*.lock
@@ -38,5 +50,3 @@ metadata/projects/*
 
 # Private templates
 templates/AGENTS-*.md
-
-.memex-manifest.*
