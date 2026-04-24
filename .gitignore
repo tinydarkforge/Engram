@@ -3,8 +3,8 @@ node_modules/
 
 # Generated cache and manifest files
 .cache/
-.memex-manifest.json
-.memex-manifest.msgpack
+.codicil-manifest.json
+.codicil-manifest.msgpack
 *.db
 *.db-journal
 .archive/
@@ -17,7 +17,7 @@ index.json
 index.json.backup
 slim-context.json
 graph.html
-graph-memex.html
+graph-codicil.html
 
 # Claude Code session locks
 .claude/*.lock
@@ -26,16 +26,17 @@ graph-memex.html
 # Schemas (generated from source)
 schemas/session.schema.msgpack
 
-# Private project summaries/metadata (only Memex is public)
+# Private project summaries/metadata (only Codicil is public)
 summaries/projects/*
-!summaries/projects/Memex/
+!summaries/projects/Codicil/
 
 # Session logs (use examples/sessions/ for curated demos)
 summaries/projects/*/sessions/*.json
 metadata/projects/*
-!metadata/projects/Memex.json
-!metadata/projects/Memex.msgpack
+!metadata/projects/Codicil.json
+!metadata/projects/Codicil.msgpack
 
 # Private templates
 templates/AGENTS-*.md
 
+.memex-manifest.*

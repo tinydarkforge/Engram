@@ -5,9 +5,9 @@
  *
  * Validates the full AgentBridge round-trip:
  *   1. Mock AgentBridge server receives agent registration
- *   2. Memex emits memex.session.saved event
- *   3. AgentBridge sends memex.query.requested event
- *   4. EventConsumer processes it, runs search, emits memex.query.result
+ *   2. Codicil emits codicil.session.saved event
+ *   3. AgentBridge sends codicil.query.requested event
+ *   4. EventConsumer processes it, runs search, emits codicil.query.result
  *
  * Also tests the HTTP server API with AgentBridge status endpoint.
  */
@@ -160,16 +160,16 @@ describe('E2E: AgentBridge round-trip', () => {
 
     const registration = bridgeLog.find(e => e.url === '/agents' && e.method === 'POST');
     assert.ok(registration, 'Should register agent');
-    assert.equal(registration.body.agent_id, 'memex');
+    assert.equal(registration.body.agent_id, 'codicil');
 
     const schemas = bridgeLog.filter(e => e.url === '/bus/schemas');
     assert.equal(schemas.length, 3, 'Should register 3 event schemas');
 
     const schemaTypes = schemas.map(s => s.body.event_type).sort();
     assert.deepEqual(schemaTypes, [
-      'memex.query.requested',
-      'memex.query.result',
-      'memex.session.saved',
+      'codicil.query.requested',
+      'codicil.query.result',
+      'codicil.session.saved',
     ]);
   });
 
@@ -185,7 +185,7 @@ describe('E2E: AgentBridge round-trip', () => {
 
     bridgeLog = []; // clear registration logs
 
-    const result = await bridge.emit('memex.session.saved', {
+    const result = await bridge.emit('codicil.session.saved', {
       session_id: 'test-001',
       project: 'TestProject',
       summary: 'Added feature X',
@@ -195,8 +195,8 @@ describe('E2E: AgentBridge round-trip', () => {
 
     const eventPost = bridgeLog.find(e => e.url === '/bus/events' && e.method === 'POST');
     assert.ok(eventPost, 'Should POST event');
-    assert.equal(eventPost.body.event_type, 'memex.session.saved');
-    assert.equal(eventPost.body.agent_id, 'memex');
+    assert.equal(eventPost.body.event_type, 'codicil.session.saved');
+    assert.equal(eventPost.body.agent_id, 'codicil');
     assert.equal(eventPost.body.metadata.session_id, 'test-001');
     assert.equal(eventPost.body.metadata.project, 'TestProject');
   });
@@ -207,7 +207,7 @@ describe('E2E: AgentBridge round-trip', () => {
     // Inject a query event for the consumer to pick up
     pendingEvents = [{
       id: 'e2e-query-001',
-      event_type: 'memex.query.requested',
+      event_type: 'codicil.query.requested',
       timestamp: new Date().toISOString(),
       metadata: {
         query: 'authentication',
@@ -216,8 +216,8 @@ describe('E2E: AgentBridge round-trip', () => {
       },
     }];
 
-    // Create mock memex with search
-    const mockMemex = {
+    // Create mock codicil with search
+    const mockCodicil = {
       search: (query) => ({
         query,
         results: [{ type: 'topic', topic: 'auth' }],
@@ -242,7 +242,7 @@ describe('E2E: AgentBridge round-trip', () => {
     const consumer = new EventConsumer({
       url: `http://127.0.0.1:${mockBridgePort}`,
       pollInterval: 60000,
-      memex: mockMemex,
+      codicil: mockCodicil,
       bridge: mockBridgeClient,
     });
 
@@ -260,7 +260,7 @@ describe('E2E: AgentBridge round-trip', () => {
 
     // Verify result was emitted back
     assert.equal(emitted.length, 1);
-    assert.equal(emitted[0].type, 'memex.query.result');
+    assert.equal(emitted[0].type, 'codicil.query.result');
     assert.equal(emitted[0].meta.query, 'authentication');
     assert.equal(emitted[0].meta.source, 'keyword');
     assert.equal(emitted[0].meta.requester, 'test-agent');
@@ -271,7 +271,7 @@ describe('E2E: AgentBridge round-trip', () => {
   it('EventConsumer handles semantic search mode', async () => {
     pendingEvents = [{
       id: 'e2e-semantic-001',
-      event_type: 'memex.query.requested',
+      event_type: 'codicil.query.requested',
       timestamp: new Date().toISOString(),
       metadata: {
         query: 'memory leak debugging',
@@ -281,7 +281,7 @@ describe('E2E: AgentBridge round-trip', () => {
     }];
 
     const emitted = [];
-    const mockMemex = {
+    const mockCodicil = {
       semanticSearch: async (query) => ({
         query,
         results: [{ session_id: 'mem-001', score: 0.85 }],
@@ -297,7 +297,7 @@ describe('E2E: AgentBridge round-trip', () => {
     const consumer = new EventConsumer({
       url: `http://127.0.0.1:${mockBridgePort}`,
       pollInterval: 60000,
-      memex: mockMemex,
+      codicil: mockCodicil,
       bridge: { emit: (t, m) => { emitted.push({ t, m }); return Promise.resolve({ sent: true }); } },
     });
 
@@ -317,7 +317,7 @@ describe('E2E: Server AgentBridge endpoints', () => {
   before((_, done) => {
     // Clear module cache
     Object.keys(require.cache)
-      .filter(k => k.includes('server.js') || k.includes('memex-loader') ||
+      .filter(k => k.includes('server.js') || k.includes('codicil-loader') ||
         k.includes('persistent-cache') || k.includes('safe-json') ||
         k.includes('agentbridge-client') || k.includes('event-consumer'))
       .forEach(k => delete require.cache[k]);

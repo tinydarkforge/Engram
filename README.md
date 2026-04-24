@@ -1,17 +1,17 @@
-# Memex
+# Codicil
 
 Local-first memory and assertion ledger for AI coding agents. MCP-native.
 
-![Memex demo](docs/assets/demo.gif)
+![Codicil demo](docs/assets/demo.gif)
 <!-- demo.gif coming soon -->
 
-Memex keeps a persistent, queryable record of your engineering sessions across every repo. It feeds that memory to AI assistants through MCP — so you stop re-explaining the same context every session. The assertion ledger layer goes further: it tracks facts with confidence, detects contradictions, and builds trust through corroboration across sessions.
+Codicil keeps a persistent, queryable record of your engineering sessions across every repo. It feeds that memory to AI assistants through MCP — so you stop re-explaining the same context every session. The assertion ledger layer goes further: it tracks facts with confidence, detects contradictions, and builds trust through corroboration across sessions.
 
 ---
 
 ## Why Not mem0 / Letta / Zep?
 
-| Feature | **Memex** | mem0 | Letta / Zep |
+| Feature | **Codicil** | mem0 | Letta / Zep |
 |---|---|---|---|
 | Local-first (no cloud required) | Yes | No — cloud hosted | No — cloud hosted |
 | Assertion ledger | Yes — confidence, lineage, quorum | No | No |
@@ -26,8 +26,8 @@ Memex keeps a persistent, queryable record of your engineering sessions across e
 ## Quick Start
 
 ```bash
-git clone https://github.com/Pamperito74/Memex.git
-cd Memex
+git clone https://github.com/Pamperito74/Codicil.git
+cd Codicil
 npm install && npm run setup
 ```
 
@@ -40,7 +40,7 @@ Save a session:
 Query memory:
 
 ```bash
-node scripts/memex-loader.js semantic "authentication work"
+node scripts/codicil-loader.js semantic "authentication work"
 ```
 
 Full setup guide: [QUICKSTART.md](QUICKSTART.md)
@@ -50,10 +50,10 @@ Full setup guide: [QUICKSTART.md](QUICKSTART.md)
 ## Connect Claude Code (MCP)
 
 ```bash
-claude mcp add memex -s user -- node /path/to/Memex/scripts/mcp-server.mjs
+claude mcp add codicil -s user -- node /path/to/Codicil/scripts/mcp-server.mjs
 ```
 
-That's it. Memex tools are now available in every Claude Code session: `neural_search`, `remember`, `ledger_ingest`, `ledger_query`, `ledger_select_context`, and more.
+That's it. Codicil tools are now available in every Claude Code session: `neural_search`, `remember`, `ledger_ingest`, `ledger_query`, `ledger_select_context`, and more.
 
 Remote HTTP transport with API-key auth: [docs/remote-setup.md](docs/remote-setup.md)
 
@@ -90,7 +90,7 @@ Queries go through four layers, stopping as early as possible:
 | Session details | Per-file | ~5 ms | On-demand, loaded only when needed |
 | Assertion ledger | ~2 KB/fact | 5–15 ms | Ranked facts with confidence and lineage |
 
-Average query: ~1,000 tokens vs ~50,000 tokens without Memex.
+Average query: ~1,000 tokens vs ~50,000 tokens without Codicil.
 
 Benchmarks: [docs/BENCHMARKS.md](docs/BENCHMARKS.md)
 

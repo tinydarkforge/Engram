@@ -1,6 +1,6 @@
 {
   "mcpServers": {
-    "memex": {
+    "codicil": {
       "command": "node",
       "args": ["./scripts/mcp-server.mjs"]
     }

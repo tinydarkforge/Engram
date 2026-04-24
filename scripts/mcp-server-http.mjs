@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * Memex MCP Server (Streamable HTTP)
+ * Codicil MCP Server (Streamable HTTP)
  *
  * Exposes MCP tools over HTTP for remote agents.
  * Auth (optional): set MCP_API_KEY and use Authorization: Bearer <key> or X-API-Key.
@@ -52,7 +52,7 @@ const MCP_ALLOWED_HOSTS = process.env.MCP_ALLOWED_HOSTS || '';
 function createServer() {
   const server = new Server(
     {
-      name: 'memex',
+      name: 'codicil',
       version: '1.0.0',
     },
     {
@@ -69,7 +69,7 @@ function createServer() {
       tools: [
         {
           name: 'remember',
-          description: 'Save a memory or session to Memex. Call at end of session, after completing a feature, or when recording a decision.',
+          description: 'Save a memory or session to Codicil. Call at end of session, after completing a feature, or when recording a decision.',
           inputSchema: {
             type: 'object',
             properties: {
@@ -138,7 +138,7 @@ function createServer() {
             properties: {
               project: {
                 type: 'string',
-                description: 'Project name (e.g., "Memex", "ProjectA", "ProjectB")',
+                description: 'Project name (e.g., "Codicil", "ProjectA", "ProjectB")',
               },
             },
             required: ['project'],
@@ -152,7 +152,7 @@ function createServer() {
             properties: {
               project: {
                 type: 'string',
-                description: 'Project name (e.g., "Memex", "ProjectA", "ProjectB")',
+                description: 'Project name (e.g., "Codicil", "ProjectA", "ProjectB")',
               },
               session_id: {
                 type: 'string',
@@ -256,7 +256,7 @@ function createServer() {
         },
         {
           name: 'rebuild_index',
-          description: 'Rebuild Memex indexes (bloom, git, embeddings).',
+          description: 'Rebuild Codicil indexes (bloom, git, embeddings).',
           inputSchema: {
             type: 'object',
             properties: {
@@ -361,13 +361,13 @@ function createServer() {
     return {
       resources: [
         {
-          uri: 'memex://stats',
+          uri: 'codicil://stats',
           name: 'Neural Memory Stats',
           description: 'Overview statistics of the Neural Memory system',
           mimeType: 'application/json',
         },
         {
-          uri: 'memex://graph',
+          uri: 'codicil://graph',
           name: 'Concept Graph',
           description: 'The full concept relationship graph',
           mimeType: 'application/json',
@@ -379,14 +379,14 @@ function createServer() {
   server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
     const { uri } = request.params;
 
-    if (uri === 'memex://stats') {
+    if (uri === 'codicil://stats') {
       const stats = getStats();
       return {
         contents: [{ uri, mimeType: 'application/json', text: JSON.stringify(stats, null, 2) }],
       };
     }
 
-    if (uri === 'memex://graph') {
+    if (uri === 'codicil://graph') {
       const summary = getGraphSummary();
       return {
         contents: [{ uri, mimeType: 'application/json', text: JSON.stringify(summary, null, 2) }],

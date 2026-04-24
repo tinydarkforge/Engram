@@ -1,8 +1,8 @@
-# How Memex Works - Technical Deep Dive
+# How Codicil Works - Technical Deep Dive
 
 ## Overview
 
-Memex is a persistent memory system that stores, indexes, and retrieves project knowledge across AI sessions. It uses a three-layer architecture optimized for minimal token usage.
+Codicil is a persistent memory system that stores, indexes, and retrieves project knowledge across AI sessions. It uses a three-layer architecture optimized for minimal token usage.
 
 ---
 
@@ -73,8 +73,8 @@ Session Notes (100-500 tokens)
   ↓
   Extract → Facts (terse, high-value)
   ↓
-Assertion Ledger (SQLite, .cache/memex.db)
-  • plane: authority (user:daniel, project:Memex, session:xyz)
+Assertion Ledger (SQLite, .cache/codicil.db)
+  • plane: authority (user:daniel, project:Codicil, session:xyz)
   • claim: fact text (e.g., "React batch updates improve performance")
   • confidence: [0.0-1.0] (starts at 0.5, grows with corroboration)
   • quorum_count: number of independent sources
@@ -113,26 +113,26 @@ User runs `remember "summary" --topics x,y`
       3. Write session file to summaries/projects/<proj>/sessions/
       4. Update sessions-index.json
       5. Update index.json (project + topic counters)
-      6. Emit memex.session.saved to AgentBridge (if configured)
+      6. Emit codicil.session.saved to AgentBridge (if configured)
 ```
 
 ### Querying
 
 ```
-User runs `memex search "auth"`
-  → scripts/memex-loader.js
+User runs `codicil search "auth"`
+  → scripts/codicil-loader.js
     1. Bloom filter check (0.1ms) → skip if not found
     2. Load index.json (4KB)
     3. Search topics, projects, sessions by keyword
     4. Return matches with metadata
-    5. Emit memex.query.result to AgentBridge (if configured)
+    5. Emit codicil.query.result to AgentBridge (if configured)
 ```
 
 ### Semantic Search
 
 ```
-User runs `memex semantic "authentication work"`
-  → scripts/memex-loader.js → scripts/vector-search.js
+User runs `codicil semantic "authentication work"`
+  → scripts/codicil-loader.js → scripts/vector-search.js
     1. Load/build embeddings (.neural/embeddings.msgpack)
     2. Encode query with all-MiniLM-L6-v2 (384 dimensions)
     3. Cosine similarity against all session embeddings
@@ -186,8 +186,8 @@ All JSON reads use `safe-json.js` which wraps `JSON.parse` in try/catch with sch
 
 ## Key Components
 
-### scripts/memex-loader.js
-Main entry point. The `Memex` class provides:
+### scripts/codicil-loader.js
+Main entry point. The `Codicil` class provides:
 - `loadIndex()` - Load the main index
 - `search(query)` - Keyword search
 - `semanticSearch(query)` - Vector similarity search
@@ -225,8 +225,8 @@ Thin HTTP client for AgentBridge communication:
 
 ### scripts/event-consumer.js
 Polls AgentBridge for incoming events:
-- Listens for `memex.query.requested` events
-- Runs searches and emits `memex.query.result` responses
+- Listens for `codicil.query.requested` events
+- Runs searches and emits `codicil.query.result` responses
 - Deduplicates events by ID
 - Tracks processing stats
 
@@ -234,10 +234,10 @@ Polls AgentBridge for incoming events:
 
 ## AgentBridge Integration
 
-Memex integrates with AgentBridge for inter-agent communication:
+Codicil integrates with AgentBridge for inter-agent communication:
 
 ```
-Agent A                  AgentBridge              Memex
+Agent A                  AgentBridge              Codicil
   |                         |                       |
   |-- query.requested ----->|                       |
   |                         |----> poll (5s) ------>|
@@ -247,9 +247,9 @@ Agent A                  AgentBridge              Memex
 ```
 
 **Event types:**
-- `memex.session.saved` - Emitted when a session is saved
-- `memex.query.requested` - Received from other agents wanting to search
-- `memex.query.result` - Emitted with search results
+- `codicil.session.saved` - Emitted when a session is saved
+- `codicil.query.requested` - Received from other agents wanting to search
+- `codicil.query.result` - Emitted with search results
 
 **Configuration:** Set `AGENTBRIDGE_URL=http://localhost:7890` to enable. When unset, all AgentBridge calls are no-ops with zero overhead.
 

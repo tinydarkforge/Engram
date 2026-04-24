@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 
 /**
- * Memex HTTP Server
+ * Codicil HTTP Server
  *
- * Serves the Memex web dashboard and REST API.
- * Reuses existing Memex class for all data operations.
+ * Serves the Codicil web dashboard and REST API.
+ * Reuses existing Codicil class for all data operations.
  *
  * Endpoints:
  *   GET  /api/stats              - Dashboard overview stats
@@ -26,17 +26,17 @@ const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
 const msgpack = require('msgpack-lite');
-const Memex = require('./memex-loader');
+const Codicil = require('./codicil-loader');
 const EventConsumer = require('./event-consumer');
-const { resolveMemexPath } = require('./paths');
+const { resolveCodicilPath } = require('./paths');
 const { readJSON } = require('./safe-json');
 
-const MEMEX_PATH = resolveMemexPath(__dirname);
+const CODICIL_PATH = resolveCodicilPath(__dirname);
 const PORT = parseInt(process.env.PORT || '3000', 10);
 const HOST = process.env.HOST || '127.0.0.1';
 
-// Initialize Memex (lazy index load)
-const memex = new Memex();
+// Initialize Codicil (lazy index load)
+const codicil = new Codicil();
 
 const app = express();
 app.use(express.json());
@@ -61,8 +61,8 @@ function clampLimit(value, defaultVal, max) {
 }
 
 function ensureIndexLoaded() {
-  if (!memex.index) {
-    memex.loadIndex();
+  if (!codicil.index) {
+    codicil.loadIndex();
   }
 }
 
@@ -88,7 +88,7 @@ app.use('/api', (req, res, next) => {
  */
 app.get('/api/stats', (req, res) => {
   try {
-    const index = memex.index;
+    const index = codicil.index;
     const projects = Object.entries(index.p || {}).map(([name, data]) => ({
       name,
       sessions: data.sc || 0,
@@ -115,7 +115,7 @@ app.get('/api/stats', (req, res) => {
  */
 app.get('/api/projects', (req, res) => {
   try {
-    const projects = Object.entries(memex.index.p || {}).map(([name, data]) => ({
+    const projects = Object.entries(codicil.index.p || {}).map(([name, data]) => ({
       name,
       sessions: data.sc || 0,
       description: data.d || '',
@@ -140,7 +140,7 @@ app.get('/api/sessions/:project', (req, res) => {
     const project = sanitizeProject(req.params.project);
     const limit = clampLimit(req.query.limit, 100, 500);
 
-    const sessions = memex.listSessions(project);
+    const sessions = codicil.listSessions(project);
 
     // Sort by date descending
     sessions.sort((a, b) => new Date(b.date) - new Date(a.date));
@@ -162,7 +162,7 @@ app.get('/api/sessions/:project', (req, res) => {
 app.get('/api/topics', (req, res) => {
   try {
     const limit = clampLimit(req.query.limit, 30, 200);
-    const index = memex.index;
+    const index = codicil.index;
 
     const topics = Object.entries(index.t || {})
       .filter(([name]) => name)
@@ -196,7 +196,7 @@ app.get('/api/search', (req, res) => {
       return res.json({ query: '', results: [], total: 0 });
     }
 
-    const results = memex.search(query);
+    const results = codicil.search(query);
     results.results = results.results.slice(0, limit);
 
     res.json(results);
@@ -219,7 +219,7 @@ app.post('/api/semantic-search', async (req, res) => {
       return res.json({ query: '', results: [], total: 0 });
     }
 
-    const results = await memex.semanticSearch(query, {
+    const results = await codicil.semanticSearch(query, {
       limit,
       useDecay,
       minSimilarity: 0.15,
@@ -237,7 +237,7 @@ app.post('/api/semantic-search', async (req, res) => {
  */
 app.get('/api/graph', (req, res) => {
   try {
-    const graphPath = path.join(MEMEX_PATH, '.neural', 'graph.msgpack');
+    const graphPath = path.join(CODICIL_PATH, '.neural', 'graph.msgpack');
 
     if (!fs.existsSync(graphPath)) {
       return res.json({ nodes: [], edges: [] });
@@ -299,7 +299,7 @@ let _ledgerDb = null;
 function getLedgerDb() {
   if (_ledgerDb) return _ledgerDb;
   const Database = require('better-sqlite3');
-  const dbPath = path.join(MEMEX_PATH, '.cache', 'memex.db');
+  const dbPath = path.join(CODICIL_PATH, '.cache', 'codicil.db');
   if (!fs.existsSync(dbPath)) return null;
   _ledgerDb = new Database(dbPath, { readonly: false });
   return _ledgerDb;
@@ -441,7 +441,7 @@ app.get('/api/sessions/:project/:sessionId', (req, res) => {
     const project = sanitizeProject(req.params.project);
     const sessionId = req.params.sessionId;
 
-    const sessions = memex.listSessions(project);
+    const sessions = codicil.listSessions(project);
     const session = sessions.find(s => s.id === sessionId);
     if (!session) {
       return res.status(404).json({ error: 'not found' });
@@ -533,8 +533,8 @@ app.post('/api/feedback', (req, res) => {
 // ─────────────────────────────────────────────────────────────
 
 const consumer = new EventConsumer({
-  memex,
-  bridge: memex._bridge,
+  codicil,
+  bridge: codicil._bridge,
 });
 
 // Auto-start if AgentBridge is configured
@@ -550,7 +550,7 @@ app.get('/api/agentbridge/status', async (req, res) => {
 
     let bridgeConnected = false;
     try {
-      const bridge = await memex._bridge;
+      const bridge = await codicil._bridge;
       bridgeConnected = bridge.isConnected();
     } catch { /* ignore */ }
 
@@ -592,14 +592,14 @@ app.get('/health', (req, res) => {
     res.status(200).json({
       status: 'healthy',
       uptime: Math.floor(process.uptime()),
-      version: memex.index?.v || 'unknown',
+      version: codicil.index?.v || 'unknown',
       timestamp: new Date().toISOString(),
     });
   } catch (e) {
     res.status(503).json({
       status: 'unhealthy',
       uptime: Math.floor(process.uptime()),
-      version: memex.index?.v || 'unknown',
+      version: codicil.index?.v || 'unknown',
       timestamp: new Date().toISOString(),
       error: e.message,
     });
@@ -613,7 +613,7 @@ app.get('/health', (req, res) => {
 if (require.main === module) {
   const server = app.listen(PORT, HOST, () => {
     const displayHost = HOST === '0.0.0.0' ? 'localhost' : HOST;
-    console.log(`Memex server listening on http://${displayHost}:${PORT}`);
+    console.log(`Codicil server listening on http://${displayHost}:${PORT}`);
     console.log(`  Bound host: ${HOST}`);
     console.log(`  Dashboard: http://${displayHost}:${PORT}/`);
     console.log(`  API:       http://${displayHost}:${PORT}/api/stats`);
@@ -625,7 +625,7 @@ if (require.main === module) {
     console.log(`\n${signal} received, shutting down...`);
     consumer.stop();
     server.close(() => {
-      try { memex.persistentCache.close(); } catch { /* already closed */ }
+      try { codicil.persistentCache.close(); } catch { /* already closed */ }
       console.log('Shutdown complete');
       process.exit(0);
     });

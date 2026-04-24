@@ -1,6 +1,6 @@
-# What is Memex?
+# What is Codicil?
 
-> A simple guide to understanding Memex - AI assistant's memory system.
+> A simple guide to understanding Codicil - AI assistant's memory system.
 
 ---
 
@@ -17,19 +17,19 @@ Every time you start a new AI assistant session, AI assistant forgets everything
 
 ---
 
-## The Solution: Memex
+## The Solution: Codicil
 
-**Memex is a "memory system" for AI assistant.**
+**Codicil is a "memory system" for AI assistant.**
 
-Think of it like a notebook. Before Memex, AI assistant woke up with amnesia every day. After Memex, AI assistant reads the notebook first and knows the rules + history.
+Think of it like a notebook. Before Codicil, AI assistant woke up with amnesia every day. After Codicil, AI assistant reads the notebook first and knows the rules + history.
 
-### What Memex Does
+### What Codicil Does
 
 1. **AGENTS.md files** - Instructions that AI assistant reads automatically when starting
    - `~/.agents/AGENTS.md` = Global rules (all projects)
    - `project/.agents/AGENTS.md` = Project-specific rules
 
-2. **Session memory** - When we finish working, we save what we did to Memex
+2. **Session memory** - When we finish working, we save what we did to Codicil
 
 3. **Smart search** - AI assistant can search past sessions to find how we solved problems before
 
@@ -77,7 +77,7 @@ So when you ask something, AI assistant **already knows**:
 The **session history** (past conversations) - AI assistant only searches those when you ask:
 
 ```bash
-node ~/code/Memex/scripts/neural-memory.js query "how did we fix X"
+node ~/code/Codicil/scripts/neural-memory.js query "how did we fix X"
 ```
 
 ---
@@ -86,7 +86,7 @@ node ~/code/Memex/scripts/neural-memory.js query "how did we fix X"
 
 ### 1. Token Savings
 
-| Without Memex | With Memex |
+| Without Codicil | With Codicil |
 |---------------|------------|
 | Explain commit format every session (~100 tokens) | Already knows (0 tokens) |
 | Explain project structure (~500 tokens) | Already knows (0 tokens) |
@@ -101,7 +101,7 @@ Over 100 sessions = 90,000 tokens saved
 
 ### 2. Time Savings
 
-| Task | Without Memex | With Memex |
+| Task | Without Codicil | With Codicil |
 |------|---------------|------------|
 | Explain standards | 2-5 minutes | 0 minutes |
 | Find past solution | 10-30 minutes searching | 30 seconds (neural search) |
@@ -112,7 +112,7 @@ Over 100 sessions = 90,000 tokens saved
 
 ### 3. Consistency
 
-| Without Memex | With Memex |
+| Without Codicil | With Codicil |
 |---------------|------------|
 | Different commit formats | Always `<type>(<scope>): <desc>` |
 | Forget to assign issues | Always assign to Pamperito74 |
@@ -133,25 +133,25 @@ Over 100 sessions = 90,000 tokens saved
 ### Save What You Did
 
 ```bash
-~/code/Memex/scripts/remember "what you did" --topics tag1,tag2
+~/code/Codicil/scripts/remember "what you did" --topics tag1,tag2
 ```
 
 ### Search Past Sessions
 
 ```bash
-node ~/code/Memex/scripts/neural-memory.js query "your question"
+node ~/code/Codicil/scripts/neural-memory.js query "your question"
 ```
 
 ### Get Project Context
 
 ```bash
-node ~/code/Memex/scripts/neural-memory.js bundle <ProjectName>
+node ~/code/Codicil/scripts/neural-memory.js bundle <ProjectName>
 ```
 
 ### Deploy to All Repos
 
 ```bash
-node ~/code/Memex/scripts/deploy-neural.js
+node ~/code/Codicil/scripts/deploy-neural.js
 ```
 
 ---
@@ -162,13 +162,13 @@ node ~/code/Memex/scripts/deploy-neural.js
 ~/.agents/AGENTS.md                    ← Global rules (all projects)
 ~/code/<project>/.agents/AGENTS.md      ← Project-specific rules
 
-~/code/Memex/
+~/code/Codicil/
 ├── .neural/
 │   ├── embeddings.msgpack             # Sessions as vectors (for search)
 │   ├── graph.msgpack                  # Concepts linked together
 │   └── bundles/*.msgpack              # Pre-compiled contexts
 ├── docs/
-│   └── WHAT-IS-MEMEX.md               # This file!
+│   └── WHAT-IS-CODICIL.md               # This file!
 └── scripts/
     ├── neural-memory.js               # Build/query neural structures
     ├── deploy-neural.js               # Deploy to all repos
@@ -179,7 +179,7 @@ node ~/code/Memex/scripts/deploy-neural.js
 
 ## Simple Analogy for Non-Technical People
 
-> **Memex is like giving AI assistant a company handbook.**
+> **Codicil is like giving AI assistant a company handbook.**
 >
 > Before: Every new employee (AI assistant session) starts on day 1 knowing nothing.
 >

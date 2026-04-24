@@ -14,10 +14,10 @@
 
 const fs = require('fs');
 const path = require('path');
-const { resolveMemexPath } = require('./paths');
+const { resolveCodicilPath } = require('./paths');
 
-const MEMEX_PATH = resolveMemexPath(__dirname);
-const NEURAL_PATH = path.join(MEMEX_PATH, '.neural');
+const CODICIL_PATH = resolveCodicilPath(__dirname);
+const NEURAL_PATH = path.join(CODICIL_PATH, '.neural');
 const GIT_INDEX_PATH = path.join(NEURAL_PATH, 'git-index.msgpack');
 
 // CLI

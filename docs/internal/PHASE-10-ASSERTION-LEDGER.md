@@ -17,7 +17,7 @@ Before ledger: Facts exist as unstructured session notes with no confidence trac
 
 | Feature | Benefit |
 |---------|---------|
-| **Authority Planes** | Separate claims by source: `user:daniel`, `project:Memex`, `session:xyz` — no mixing concerns |
+| **Authority Planes** | Separate claims by source: `user:daniel`, `project:Codicil`, `session:xyz` — no mixing concerns |
 | **Confidence & Quorum** | Start at 0.5 confidence; gain trust through multiple sources. 5+ corroborating sources → trustworthy |
 | **Assertion Classes** | monotonic (always true), episodic (context-dependent), state_bound (needs re-verification), contextual (external state drives truth) |
 | **Staleness Models** | flat (never stale), exponential (2% decay/day), episodic (flat if active, exponential if idle), state_bound (halves if unverified >14d), contextual (depends on external signal) |
@@ -41,7 +41,7 @@ Before ledger: Facts exist as unstructured session notes with no confidence trac
 **With Ledger:**
 ```javascript
 ledger.createAssertion({
-  plane: "project:Memex",
+  plane: "project:Codicil",
   class_: "monotonic",
   claim: "React batch updates improve performance",
   confidence: 0.6,
@@ -61,7 +61,7 @@ ledger.reinforceAssertion(id, { source_span: "session:150", confidence_delta: 0.
 | Metric | Before | After | Savings |
 |--------|--------|-------|---------|
 | Facts per 1M tokens used | 150–200 | 400–500 | +150% more facts in same budget |
-| Storage overhead | — | ~2KB per assertion | Negligible (SQLite, .cache/memex.db) |
+| Storage overhead | — | ~2KB per assertion | Negligible (SQLite, .cache/codicil.db) |
 | Context selection latency | N/A | ~5ms (ranking 100 facts) | <0.1% of total inference |
 | Token cost reduction | — | 15–25% (budget-aware selection) | By prioritizing high-confidence facts |
 
@@ -72,7 +72,7 @@ const ledger = require('./scripts/ledger');
 
 // Create a fact with multiple sources
 const factId = ledger.createAssertion({
-  plane: 'project:Memex',
+  plane: 'project:Codicil',
   class_: 'monotonic',
   claim: 'The team uses conventional commits',
   confidence: 0.7,
@@ -91,12 +91,12 @@ ledger.reinforceAssertion(factId, {
 ledger.maybePromote(factId, 2);  // ✓ now 'established'
 
 // Query all active facts in the plane
-const facts = ledger.queryActiveByPlane('project:Memex');
+const facts = ledger.queryActiveByPlane('project:Codicil');
 console.log(`Found ${facts.length} active facts`);
 
 // Rank by importance and select top N for prompt context
-const ranked = ledger.rankActive('project:Memex');
-const contextFacts = ledger.selectForContext('project:Memex', 2000); // tokens budget
+const ranked = ledger.rankActive('project:Codicil');
+const contextFacts = ledger.selectForContext('project:Codicil', 2000); // tokens budget
 console.log('Top facts for LLM context:', contextFacts.map(f => f.claim));
 
 // Check for contradictions
@@ -105,7 +105,7 @@ console.log(`Found ${tensions.length} unresolved contradictions`);
 
 // Bulk transform with confirmation (Phase 9)
 const { transformPlane } = require('./scripts/transform');
-await transformPlane('project:Memex', {
+await transformPlane('project:Codicil', {
   dryRun: false,
   action: 'all',
   confidenceThreshold: 0.7
@@ -114,7 +114,7 @@ await transformPlane('project:Memex', {
 
 ## Database & Storage
 
-- **Location:** `.cache/memex.db` (SQLite)
+- **Location:** `.cache/codicil.db` (SQLite)
 - **Schema:** 6 tables (assertions, assertion_lineage, supersession_edges, tension_pairs, counterfactual_weights, schema_migrations)
 - **Scope:** Per-project isolation via planes; global querying supported
 - **Migration:** Idempotent schema runner (`scripts/migrations.js`) — safe to run multiple times
@@ -126,7 +126,7 @@ All ledger operations are exposed as MCP tools for Claude Code and agents:
 ```javascript
 // Create assertion
 await ledgerIngest({
-  plane: 'project:Memex',
+  plane: 'project:Codicil',
   class_: 'state_bound',
   claim: 'Deployment succeeded',
   confidence: 0.9,
@@ -134,24 +134,24 @@ await ledgerIngest({
 });
 
 // Query by plane
-const facts = await ledgerQuery('project:Memex', { limit: 50 });
+const facts = await ledgerQuery('project:Codicil', { limit: 50 });
 
 // Get high-confidence facts for context (budget-aware)
-const context = await ledgerSelectContext('project:Memex', 2000);
+const context = await ledgerSelectContext('project:Codicil', 2000);
 
 // Detect contradictions
-await ledgerScanSentinel('project:Memex');
+await ledgerScanSentinel('project:Codicil');
 
 // Verify state_bound facts
-await ledgerRunVerifications('project:Memex', { staleDays: 14 });
+await ledgerRunVerifications('project:Codicil', { staleDays: 14 });
 
 // Bulk transform
-await ledgerTransform('project:Memex', { dryRun: false, action: 'all' });
+await ledgerTransform('project:Codicil', { dryRun: false, action: 'all' });
 ```
 
 ## Integration Points
 
-- **Memex loader:** Sessions become source spans for assertions
+- **Codicil loader:** Sessions become source spans for assertions
 - **MCP server:** All tools wired up and callable from Claude Code
 - **Rendering:** renderAssertion() formats facts for display
 - **Contradiction sentinel:** Negation-based auto-detection (Phase 8)

@@ -35,12 +35,12 @@ npx tsc --noEmit     # Type check (TypeScript projects)
 
 ## Deep Queries
 ```bash
-node ~/code/TinyDarkForge/Memex/scripts/memex-loader.js quick "<query>"
+node ~/code/TinyDarkForge/Codicil/scripts/codicil-loader.js quick "<query>"
 ```
 
 ## Save Session
 ```bash
-~/code/TinyDarkForge/Memex/scripts/remember "what you did" --topics tag1,tag2
+~/code/TinyDarkForge/Codicil/scripts/remember "what you did" --topics tag1,tag2
 ```
 
 ---

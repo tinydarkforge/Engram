@@ -7,9 +7,9 @@ const path = require('path');
 const os = require('os');
 const BloomFilter = require('../scripts/bloom-filter');
 
-// Create a minimal test fixture that mimics the Memex data structure
+// Create a minimal test fixture that mimics the Codicil data structure
 function createTestFixture() {
-  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'memex-test-'));
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'codicil-test-'));
 
   const index = {
     v: '4.0.0',
@@ -106,32 +106,32 @@ function cleanupFixture(tmpDir) {
   fs.rmSync(tmpDir, { recursive: true, force: true });
 }
 
-// We need to override the path resolution so memex-loader uses our fixture
-function loadMemexWithFixture(fixturePath) {
+// We need to override the path resolution so codicil-loader uses our fixture
+function loadCodicilWithFixture(fixturePath) {
   // Clear module cache to get fresh instances
   const modulesToClear = Object.keys(require.cache).filter(
-    (k) => k.includes('memex-loader') || k.includes('persistent-cache') || k.includes('manifest-manager') || k.includes('vector-search') || k.includes('bloom-filter') || k.includes('paths')
+    (k) => k.includes('codicil-loader') || k.includes('persistent-cache') || k.includes('manifest-manager') || k.includes('vector-search') || k.includes('bloom-filter') || k.includes('paths')
   );
   modulesToClear.forEach((k) => delete require.cache[k]);
 
-  // Override resolveMemexPath before requiring memex-loader
+  // Override resolveCodicilPath before requiring codicil-loader
   const pathsModule = require('../scripts/paths');
-  const originalResolve = pathsModule.resolveMemexPath;
-  pathsModule.resolveMemexPath = () => fixturePath;
+  const originalResolve = pathsModule.resolveCodicilPath;
+  pathsModule.resolveCodicilPath = () => fixturePath;
 
-  const Memex = require('../scripts/memex-loader');
-  return { Memex, restore: () => { pathsModule.resolveMemexPath = originalResolve; } };
+  const Codicil = require('../scripts/codicil-loader');
+  return { Codicil, restore: () => { pathsModule.resolveCodicilPath = originalResolve; } };
 }
 
-describe('Memex Loader', () => {
+describe('Codicil Loader', () => {
   let fixturePath;
-  let Memex;
+  let Codicil;
   let restore;
 
   before(() => {
     fixturePath = createTestFixture();
-    const loaded = loadMemexWithFixture(fixturePath);
-    Memex = loaded.Memex;
+    const loaded = loadCodicilWithFixture(fixturePath);
+    Codicil = loaded.Codicil;
     restore = loaded.restore;
   });
 
@@ -142,8 +142,8 @@ describe('Memex Loader', () => {
 
   describe('loadIndex()', () => {
     it('loads index from JSON', () => {
-      const memex = new Memex();
-      const result = memex.loadIndex();
+      const codicil = new Codicil();
+      const result = codicil.loadIndex();
 
       assert.equal(result.loaded, true);
       assert.equal(result.format, 'json');
@@ -153,60 +153,60 @@ describe('Memex Loader', () => {
     });
 
     it('returns correct project count', () => {
-      const memex = new Memex();
-      const result = memex.loadIndex();
+      const codicil = new Codicil();
+      const result = codicil.loadIndex();
       assert.equal(result.projects.length, 2);
     });
 
     it('returns correct global standards count', () => {
-      const memex = new Memex();
-      const result = memex.loadIndex();
+      const codicil = new Codicil();
+      const result = codicil.loadIndex();
       assert.equal(result.global_standards.length, 5);
     });
   });
 
   describe('quickAnswer()', () => {
     it('answers commit questions from index', () => {
-      const memex = new Memex();
-      memex.loadIndex();
-      const answer = memex.quickAnswer('what is our commit format?');
+      const codicil = new Codicil();
+      codicil.loadIndex();
+      const answer = codicil.quickAnswer('what is our commit format?');
       assert.deepEqual(answer, { format: '<type>(<scope>): <desc>' });
     });
 
     it('answers PR questions from index', () => {
-      const memex = new Memex();
-      memex.loadIndex();
-      const answer = memex.quickAnswer('pull request guidelines');
+      const codicil = new Codicil();
+      codicil.loadIndex();
+      const answer = codicil.quickAnswer('pull request guidelines');
       assert.deepEqual(answer, { rule: '1 approval' });
     });
 
     it('answers branch questions from index', () => {
-      const memex = new Memex();
-      memex.loadIndex();
-      const answer = memex.quickAnswer('branching strategy');
+      const codicil = new Codicil();
+      codicil.loadIndex();
+      const answer = codicil.quickAnswer('branching strategy');
       assert.deepEqual(answer, { prefixes: ['feature/', 'fix/'] });
     });
 
     it('answers security questions from index', () => {
-      const memex = new Memex();
-      memex.loadIndex();
-      const answer = memex.quickAnswer('security policy');
+      const codicil = new Codicil();
+      codicil.loadIndex();
+      const answer = codicil.quickAnswer('security policy');
       assert.deepEqual(answer, { rule: 'No secrets in code' });
     });
 
     it('returns null for unknown queries', () => {
-      const memex = new Memex();
-      memex.loadIndex();
-      const answer = memex.quickAnswer('favorite pizza topping');
+      const codicil = new Codicil();
+      codicil.loadIndex();
+      const answer = codicil.quickAnswer('favorite pizza topping');
       assert.equal(answer, null);
     });
   });
 
   describe('search()', () => {
     it('finds topics by keyword', () => {
-      const memex = new Memex();
-      memex.loadIndex();
-      const results = memex.search('auth');
+      const codicil = new Codicil();
+      codicil.loadIndex();
+      const results = codicil.search('auth');
 
       assert.ok(results.total > 0);
       const topicResult = results.results.find((r) => r.type === 'topic');
@@ -215,9 +215,9 @@ describe('Memex Loader', () => {
     });
 
     it('finds projects by name', () => {
-      const memex = new Memex();
-      memex.loadIndex();
-      const results = memex.search('TestProject');
+      const codicil = new Codicil();
+      codicil.loadIndex();
+      const results = codicil.search('TestProject');
 
       const projectResult = results.results.find((r) => r.type === 'project');
       assert.ok(projectResult);
@@ -225,9 +225,9 @@ describe('Memex Loader', () => {
     });
 
     it('finds projects by description', () => {
-      const memex = new Memex();
-      memex.loadIndex();
-      const results = memex.search('unit tests');
+      const codicil = new Codicil();
+      codicil.loadIndex();
+      const results = codicil.search('unit tests');
 
       const projectResult = results.results.find((r) => r.type === 'project');
       assert.ok(projectResult);
@@ -235,9 +235,9 @@ describe('Memex Loader', () => {
     });
 
     it('finds sessions by summary text', () => {
-      const memex = new Memex();
-      memex.loadIndex();
-      const results = memex.search('project setup');
+      const codicil = new Codicil();
+      codicil.loadIndex();
+      const results = codicil.search('project setup');
 
       const sessionResult = results.results.find((r) => r.type === 'session');
       assert.ok(sessionResult);
@@ -245,27 +245,27 @@ describe('Memex Loader', () => {
     });
 
     it('does not bloom-skip multi-word queries when one term exists', () => {
-      const memex = new Memex();
-      memex.loadIndex();
-      const results = memex.search('auth workflow');
+      const codicil = new Codicil();
+      codicil.loadIndex();
+      const results = codicil.search('auth workflow');
 
       assert.equal(results.bloom_filter_skip, false);
       assert.equal(Array.isArray(results.results), true);
     });
 
     it('returns empty for nonexistent terms', () => {
-      const memex = new Memex();
-      memex.loadIndex();
-      const results = memex.search('xyznonexistent');
+      const codicil = new Codicil();
+      codicil.loadIndex();
+      const results = codicil.search('xyznonexistent');
       assert.equal(results.total, 0);
     });
   });
 
   describe('listProjects()', () => {
     it('lists all projects with metadata', () => {
-      const memex = new Memex();
-      memex.loadIndex();
-      const projects = memex.listProjects();
+      const codicil = new Codicil();
+      codicil.loadIndex();
+      const projects = codicil.listProjects();
 
       assert.equal(projects.length, 2);
       const tp = projects.find((p) => p.name === 'TestProject');
@@ -277,9 +277,9 @@ describe('Memex Loader', () => {
 
   describe('listSessions()', () => {
     it('lists sessions for a project', () => {
-      const memex = new Memex();
-      memex.loadIndex();
-      const sessions = memex.listSessions('TestProject');
+      const codicil = new Codicil();
+      codicil.loadIndex();
+      const sessions = codicil.listSessions('TestProject');
 
       assert.equal(sessions.length, 2);
       assert.equal(sessions[0].id, 'tp-2025-12-01-auth-abc1');
@@ -287,18 +287,18 @@ describe('Memex Loader', () => {
     });
 
     it('returns empty array for nonexistent project', () => {
-      const memex = new Memex();
-      memex.loadIndex();
-      const sessions = memex.listSessions('NonExistent');
+      const codicil = new Codicil();
+      codicil.loadIndex();
+      const sessions = codicil.listSessions('NonExistent');
       assert.deepEqual(sessions, []);
     });
   });
 
   describe('loadSessionDetails()', () => {
     it('loads session details from file', () => {
-      const memex = new Memex();
-      memex.loadIndex();
-      const details = memex.loadSessionDetails('TestProject', 'tp-2025-12-01-auth-abc1');
+      const codicil = new Codicil();
+      codicil.loadIndex();
+      const details = codicil.loadSessionDetails('TestProject', 'tp-2025-12-01-auth-abc1');
 
       assert.ok(details);
       assert.equal(details.id, 'tp-2025-12-01-auth-abc1');
@@ -307,10 +307,10 @@ describe('Memex Loader', () => {
     });
 
     it('falls back to sessions-index for non-lazy sessions', () => {
-      const memex = new Memex();
-      memex.loadIndex();
+      const codicil = new Codicil();
+      codicil.loadIndex();
       // This session has no detail file, should fall back to sessions-index
-      const details = memex.loadSessionDetails('TestProject', 'tp-2025-11-15-setup-xyz2');
+      const details = codicil.loadSessionDetails('TestProject', 'tp-2025-11-15-setup-xyz2');
 
       assert.ok(details);
       assert.equal(details.id, 'tp-2025-11-15-setup-xyz2');
@@ -318,54 +318,54 @@ describe('Memex Loader', () => {
     });
 
     it('returns null for nonexistent session', () => {
-      const memex = new Memex();
-      memex.loadIndex();
-      const details = memex.loadSessionDetails('TestProject', 'nonexistent-session');
+      const codicil = new Codicil();
+      codicil.loadIndex();
+      const details = codicil.loadSessionDetails('TestProject', 'nonexistent-session');
       assert.equal(details, null);
     });
   });
 
   describe('loadProjectMetadata()', () => {
     it('loads metadata from file', () => {
-      const memex = new Memex();
-      memex.loadIndex();
-      const metadata = memex.loadProjectMetadata('TestProject');
+      const codicil = new Codicil();
+      codicil.loadIndex();
+      const metadata = codicil.loadProjectMetadata('TestProject');
 
       assert.ok(metadata);
       assert.deepEqual(metadata.ts, ['Node.js', 'JavaScript']);
     });
 
     it('returns null for nonexistent project', () => {
-      const memex = new Memex();
-      memex.loadIndex();
-      const metadata = memex.loadProjectMetadata('NonExistent');
+      const codicil = new Codicil();
+      codicil.loadIndex();
+      const metadata = codicil.loadProjectMetadata('NonExistent');
       assert.equal(metadata, null);
     });
   });
 
   describe('expand()', () => {
     it('expands abbreviated keys using legend', () => {
-      const memex = new Memex();
-      memex.loadIndex();
-      const expanded = memex.expand({ v: '4.0.0', m: 'test' }, 'root');
+      const codicil = new Codicil();
+      codicil.loadIndex();
+      const expanded = codicil.expand({ v: '4.0.0', m: 'test' }, 'root');
 
       assert.equal(expanded.version, '4.0.0');
       assert.equal(expanded.metadata, 'test');
     });
 
     it('returns data as-is when no legend exists for context', () => {
-      const memex = new Memex();
-      memex.loadIndex();
+      const codicil = new Codicil();
+      codicil.loadIndex();
       const data = { foo: 'bar' };
-      const expanded = memex.expand(data, 'nonexistent');
+      const expanded = codicil.expand(data, 'nonexistent');
       assert.deepEqual(expanded, data);
     });
   });
 
   describe('startup()', () => {
     it('returns complete startup payload', () => {
-      const memex = new Memex();
-      const result = memex.startup();
+      const codicil = new Codicil();
+      const result = codicil.startup();
 
       assert.equal(result.status, 'ready');
       assert.equal(result.version, '4.0.0');

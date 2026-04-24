@@ -7,75 +7,75 @@ const fs = require('fs');
 const os = require('os');
 
 describe('paths', () => {
-  let originalMemexPath;
+  let originalCodicilPath;
   let originalReposRoot;
-  let resolveMemexPath;
+  let resolveCodicilPath;
   let resolveReposRoot;
   let resolveProjectDirName;
   let normalizeProjectSlug;
   let tmpDir;
 
   before(() => {
-    originalMemexPath = process.env.MEMEX_PATH;
-    originalReposRoot = process.env.MEMEX_REPOS_ROOT;
+    originalCodicilPath = process.env.CODICIL_PATH;
+    originalReposRoot = process.env.CODICIL_REPOS_ROOT;
 
     // Clear module cache
     Object.keys(require.cache)
       .filter(k => k.includes('paths'))
       .forEach(k => delete require.cache[k]);
 
-    ({ resolveMemexPath, resolveReposRoot, resolveProjectDirName, normalizeProjectSlug } = require('../scripts/paths'));
-    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'memex-paths-'));
+    ({ resolveCodicilPath, resolveReposRoot, resolveProjectDirName, normalizeProjectSlug } = require('../scripts/paths'));
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'codicil-paths-'));
     fs.mkdirSync(path.join(tmpDir, 'summaries', 'projects'), { recursive: true });
   });
 
   after(() => {
-    if (originalMemexPath !== undefined) {
-      process.env.MEMEX_PATH = originalMemexPath;
+    if (originalCodicilPath !== undefined) {
+      process.env.CODICIL_PATH = originalCodicilPath;
     } else {
-      delete process.env.MEMEX_PATH;
+      delete process.env.CODICIL_PATH;
     }
     if (originalReposRoot !== undefined) {
-      process.env.MEMEX_REPOS_ROOT = originalReposRoot;
+      process.env.CODICIL_REPOS_ROOT = originalReposRoot;
     } else {
-      delete process.env.MEMEX_REPOS_ROOT;
+      delete process.env.CODICIL_REPOS_ROOT;
     }
     if (tmpDir) {
       fs.rmSync(tmpDir, { recursive: true, force: true });
     }
   });
 
-  describe('resolveMemexPath()', () => {
-    it('uses MEMEX_PATH env var when set', () => {
-      process.env.MEMEX_PATH = '/custom/memex';
-      const result = resolveMemexPath('/some/dir');
-      assert.equal(result, path.resolve('/custom/memex'));
+  describe('resolveCodicilPath()', () => {
+    it('uses CODICIL_PATH env var when set', () => {
+      process.env.CODICIL_PATH = '/custom/codicil';
+      const result = resolveCodicilPath('/some/dir');
+      assert.equal(result, path.resolve('/custom/codicil'));
     });
 
     it('defaults to parent of fromDir', () => {
-      delete process.env.MEMEX_PATH;
-      const result = resolveMemexPath('/a/b/scripts');
+      delete process.env.CODICIL_PATH;
+      const result = resolveCodicilPath('/a/b/scripts');
       assert.equal(result, path.resolve('/a/b'));
     });
 
     it('defaults to parent of __dirname when no arg', () => {
-      delete process.env.MEMEX_PATH;
-      const result = resolveMemexPath();
+      delete process.env.CODICIL_PATH;
+      const result = resolveCodicilPath();
       // Should resolve relative to current working directory's parent
       assert.ok(path.isAbsolute(result));
     });
   });
 
   describe('resolveReposRoot()', () => {
-    it('uses MEMEX_REPOS_ROOT env var when set', () => {
-      process.env.MEMEX_REPOS_ROOT = '/custom/repos';
-      const result = resolveReposRoot('/some/memex');
+    it('uses CODICIL_REPOS_ROOT env var when set', () => {
+      process.env.CODICIL_REPOS_ROOT = '/custom/repos';
+      const result = resolveReposRoot('/some/codicil');
       assert.equal(result, path.resolve('/custom/repos'));
     });
 
-    it('defaults to parent of memexPath', () => {
-      delete process.env.MEMEX_REPOS_ROOT;
-      const result = resolveReposRoot('/code/org/Memex');
+    it('defaults to parent of codicilPath', () => {
+      delete process.env.CODICIL_REPOS_ROOT;
+      const result = resolveReposRoot('/code/org/Codicil');
       assert.equal(result, path.resolve('/code/org'));
     });
   });
@@ -87,8 +87,8 @@ describe('paths', () => {
     });
 
     it('resolveProjectDirName() returns slug when exact dir not present', () => {
-      const memexPath = '/tmp/memex';
-      const result = resolveProjectDirName(memexPath, 'MyProject');
+      const codicilPath = '/tmp/codicil';
+      const result = resolveProjectDirName(codicilPath, 'MyProject');
       assert.equal(result, 'myproject');
     });
 

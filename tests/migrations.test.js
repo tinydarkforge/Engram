@@ -12,7 +12,7 @@ describe('Migrations', () => {
   let runMigrations;
 
   before(() => {
-    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'memex-migrate-'));
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'codicil-migrate-'));
     const index = {
       v: '4.0.0',
       u: new Date().toISOString(),
@@ -24,9 +24,9 @@ describe('Migrations', () => {
     fs.writeFileSync(path.join(tmpDir, 'index.json'), JSON.stringify(index, null, 2));
 
     const pathsModule = require('../scripts/paths');
-    const originalResolve = pathsModule.resolveMemexPath;
-    pathsModule.resolveMemexPath = () => tmpDir;
-    restoreResolve = () => { pathsModule.resolveMemexPath = originalResolve; };
+    const originalResolve = pathsModule.resolveCodicilPath;
+    pathsModule.resolveCodicilPath = () => tmpDir;
+    restoreResolve = () => { pathsModule.resolveCodicilPath = originalResolve; };
 
     delete require.cache[require.resolve('../scripts/migrations')];
     ({ runMigrations } = require('../scripts/migrations'));

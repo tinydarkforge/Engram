@@ -1,4 +1,4 @@
-# How Memex Saves Tokens
+# How Codicil Saves Tokens
 
 **The simple guide: 94-98% token savings**
 
@@ -6,12 +6,12 @@
 
 ## The Big Picture
 
-**Without Memex:**
+**Without Codicil:**
 - Load all docs every time: 500KB
 - Cost: ~50,000 tokens per query
 - Monthly: ~$37/month
 
-**With Memex:**
+**With Codicil:**
 - Load tiny index: 4KB
 - Cost: ~1,000 tokens per query
 - Monthly: ~$2/month
@@ -22,7 +22,7 @@
 
 ## How It Works: Three Smart Layers
 
-Think of Memex like a **smart library** with three layers:
+Think of Codicil like a **smart library** with three layers:
 
 ### 🚪 Layer 1: Bloom Filter (The Guard)
 
@@ -87,14 +87,14 @@ Question → Bloom Filter → Index → Full Details
 
 **Question:** "What's our commit format and show me docker work"
 
-### Without Memex:
+### Without Codicil:
 ```
 1. Load all docs (500KB)
 2. Search everything
 Total: 100,000 tokens
 ```
 
-### With Memex:
+### With Codicil:
 ```
 1. Bloom filter: "commit" exists ✓, "docker" exists ✓
 2. Load index (4KB): Get commit format from quick_ref
@@ -124,12 +124,12 @@ Only deep dives need full details!
 
 **Your usage:**
 - 100 AI assistant sessions/month
-- 5 Memex queries per session
+- 5 Codicil queries per session
 - = 500 queries/month
 
 **Cost comparison:**
 
-| | Without Memex | With Memex | Savings |
+| | Without Codicil | With Codicil | Savings |
 |---|---|---|---|
 | Tokens/query | 25,000 | 1,500 | 94% |
 | Total/month | 12.5M tokens | 750K tokens | 11.75M |
@@ -139,7 +139,7 @@ Only deep dives need full details!
 
 ## Simple Analogy
 
-**Bad library (no Memex):**
+**Bad library (no Codicil):**
 ```
 You: "Do you have a book on elephants?"
 Librarian: *brings all 1000 books*
@@ -147,7 +147,7 @@ Librarian: *searches through them*
 Librarian: "No, we don't."
 ```
 
-**Smart library (Memex):**
+**Smart library (Codicil):**
 ```
 You: "Do you have a book on elephants?"
 Guard: "Nope!" (checked tiny list)
@@ -178,7 +178,7 @@ Librarian: *gets just that one book*
 
 ## Bottom Line
 
-Memex = A smart assistant who:
+Codicil = A smart assistant who:
 1. ✅ Knows what you DON'T have (bloom filter)
 2. ✅ Knows what you DO have (index)
 3. ✅ Fetches full details only when needed (lazy loading)

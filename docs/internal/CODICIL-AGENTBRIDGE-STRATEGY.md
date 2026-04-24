@@ -1,11 +1,11 @@
-# Memex + AgentBridge Strategy Note
+# Codicil + AgentBridge Strategy Note
 
 ## Executive Summary
 
-Yes, Memex can be improved significantly.
+Yes, Codicil can be improved significantly.
 
 Recommendation:
-1. Keep Memex and AgentBridge as separate products.
+1. Keep Codicil and AgentBridge as separate products.
 2. Integrate them through a thin contract layer.
 3. Share schemas and events, not a monolithic codebase.
 
@@ -15,10 +15,10 @@ A full merge into one repository is likely to increase maintenance cost and redu
 
 Why:
 1. Different core concerns:
-   - Memex: memory indexing, retrieval, token efficiency.
+   - Codicil: memory indexing, retrieval, token efficiency.
    - AgentBridge: multi-agent messaging, transport, coordination.
 2. Different runtime stacks:
-   - Memex: Node.js ecosystem.
+   - Codicil: Node.js ecosystem.
    - AgentBridge: Python/FastAPI/MCP stack.
 3. Monolith risk:
    - Tighter coupling, harder releases, and more fragile dependency graph.
@@ -30,12 +30,12 @@ Why:
 2. Better reliability posture from tests (`../AgentBridge/tests/test_server.py`).
 3. Practical ops features: auth token, heartbeat, backup, schema validation.
 
-### Memex strengths
+### Codicil strengths
 1. Strong core concept and cost/performance intent.
 2. Useful memory architecture: index + lazy loading + bloom + semantic search.
 3. Practical workflow integration via save/remember scripts.
 
-### Memex gaps to address first
+### Codicil gaps to address first
 1. Product surface consistency issues:
    - Version/docs drift (`README.md` vs `package.json`).
    - Command naming drift (`remember` vs `recuerda`).
@@ -47,13 +47,13 @@ Why:
 ## Recommendation: Integrate, Don’t Merge
 
 Build a thin interoperability layer:
-1. Memex remains the knowledge/memory backend.
+1. Codicil remains the knowledge/memory backend.
 2. AgentBridge remains the communication/event backbone.
 3. Integration via events + APIs.
 
 This preserves separation of concerns while enabling shared value.
 
-## Highest-Impact Memex Improvements (Priority)
+## Highest-Impact Codicil Improvements (Priority)
 
 1. Stabilize interface and docs
    - Align versioning across `README.md`, `package.json`, changelog, and startup output.
@@ -61,7 +61,7 @@ This preserves separation of concerns while enabling shared value.
    - Fix docs that reference non-existent script names/paths.
 
 2. Add test coverage for core behavior
-   - `scripts/memex-loader.js`
+   - `scripts/codicil-loader.js`
    - `scripts/save-session.js`
    - `scripts/vector-search.js`
    - Add migration/compat tests for index/session formats.
@@ -79,9 +79,9 @@ This preserves separation of concerns while enabling shared value.
 
 ## Proposed Integration Contract (Phase 1)
 
-### Event: `memex.session.saved`
+### Event: `codicil.session.saved`
 
-Producer: Memex
+Producer: Codicil
 Consumer: AgentBridge subscribers
 
 Payload fields:
@@ -93,10 +93,10 @@ Payload fields:
 6. `artifacts[]` (optional)
 7. `git` object (optional: branch, commit, files changed)
 
-### Event: `memex.query.requested`
+### Event: `codicil.query.requested`
 
 Producer: AgentBridge tools/agents
-Consumer: Memex lookup endpoint/tool
+Consumer: Codicil lookup endpoint/tool
 
 Payload fields:
 1. `query`
@@ -104,9 +104,9 @@ Payload fields:
 3. `limit`
 4. `requester`
 
-### Event: `memex.query.result`
+### Event: `codicil.query.result`
 
-Producer: Memex
+Producer: Codicil
 Consumer: AgentBridge
 
 Payload fields:
@@ -117,16 +117,16 @@ Payload fields:
 
 ## Suggested 30-Day Plan
 
-1. Week 1: Memex consistency pass
+1. Week 1: Codicil consistency pass
    - Fix docs/version/command naming drift.
    - Remove or gate implicit git side effects.
 
-2. Week 2: Memex core tests
+2. Week 2: Codicil core tests
    - Add baseline test suite for loader, save, and search modules.
 
 3. Week 3: Integration MVP
-   - Emit `memex.session.saved` into AgentBridge.
-   - Add AgentBridge command/tool to query Memex.
+   - Emit `codicil.session.saved` into AgentBridge.
+   - Add AgentBridge command/tool to query Codicil.
 
 4. Week 4: Hardening
    - Add schema validation + error handling + perf metrics.
@@ -146,8 +146,8 @@ Current evidence suggests these are not true right now.
 Do not merge repositories today.
 
 Instead:
-1. Keep Memex and AgentBridge independent.
+1. Keep Codicil and AgentBridge independent.
 2. Build a stable integration contract.
-3. Raise Memex’s operational maturity (consistency + tests + safer defaults).
+3. Raise Codicil’s operational maturity (consistency + tests + safer defaults).
 
 This yields faster progress with lower risk and preserves optionality for future architecture decisions.

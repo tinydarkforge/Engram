@@ -10,40 +10,40 @@
 const fs = require('fs');
 const path = require('path');
 const { execFileSync } = require('child_process');
-const { resolveMemexPath, resolveProjectDirName } = require('./paths');
+const { resolveCodicilPath, resolveProjectDirName } = require('./paths');
 const { readJSON } = require('./safe-json');
 const { updateMetrics } = require('./metrics');
 
-const MEMEX_PATH = resolveMemexPath(__dirname);
+const CODICIL_PATH = resolveCodicilPath(__dirname);
 
 // ─────────────────────────────────────────────────────────────
 // Helper Functions
 // ─────────────────────────────────────────────────────────────
 
 function loadIndex() {
-  const indexPath = path.join(MEMEX_PATH, 'index.json');
+  const indexPath = path.join(CODICIL_PATH, 'index.json');
   const data = readJSON(indexPath);
-  if (!data) throw new Error(`Memex index not found at ${indexPath}`);
+  if (!data) throw new Error(`Codicil index not found at ${indexPath}`);
   return data;
 }
 
 function loadSessionsIndex(project) {
-  const projectDirName = resolveProjectDirName(MEMEX_PATH, project);
-  const indexPath = path.join(MEMEX_PATH, 'summaries/projects', projectDirName, 'sessions-index.json');
+  const projectDirName = resolveProjectDirName(CODICIL_PATH, project);
+  const indexPath = path.join(CODICIL_PATH, 'summaries/projects', projectDirName, 'sessions-index.json');
   return readJSON(indexPath);
 }
 
 function loadGraph() {
   const msgpack = require('msgpack-lite');
-  const graphPath = path.join(MEMEX_PATH, '.neural/graph.msgpack');
+  const graphPath = path.join(CODICIL_PATH, '.neural/graph.msgpack');
   if (!fs.existsSync(graphPath)) return null;
   return msgpack.decode(fs.readFileSync(graphPath));
 }
 
 function loadBundle(projectName) {
-  const sanitized = resolveProjectDirName(MEMEX_PATH, projectName) || projectName.replace(/[^a-zA-Z0-9._-]/g, '');
+  const sanitized = resolveProjectDirName(CODICIL_PATH, projectName) || projectName.replace(/[^a-zA-Z0-9._-]/g, '');
   const msgpack = require('msgpack-lite');
-  const bundlePath = path.join(MEMEX_PATH, '.neural/bundles', `${sanitized}.msgpack`);
+  const bundlePath = path.join(CODICIL_PATH, '.neural/bundles', `${sanitized}.msgpack`);
   if (!fs.existsSync(bundlePath)) return null;
   return msgpack.decode(fs.readFileSync(bundlePath));
 }
@@ -55,7 +55,7 @@ function loadBundle(projectName) {
 const VectorSearch = require('./vector-search.js');
 const vectorSearch = new VectorSearch();
 let vectorSearchReady = null;
-let memexLoader = null;
+let codicilLoader = null;
 
 async function getVectorSearch() {
   if (!vectorSearchReady) {
@@ -65,12 +65,12 @@ async function getVectorSearch() {
   return vectorSearch;
 }
 
-function getMemexLoader() {
-  if (!memexLoader) {
-    const Memex = require('./memex-loader');
-    memexLoader = new Memex();
+function getCodicilLoader() {
+  if (!codicilLoader) {
+    const Codicil = require('./codicil-loader');
+    codicilLoader = new Codicil();
   }
-  return memexLoader;
+  return codicilLoader;
 }
 
 async function neuralSearch(query, limit = 10, useDecay = true) {
@@ -124,45 +124,45 @@ function buildValidationError(code, message, field, value) {
 
 function validateRememberInput(args) {
   if (!args || typeof args !== 'object') {
-    return buildValidationError('MEMEX_ERR_SUMMARY_REQUIRED', 'summary is required', 'summary', '');
+    return buildValidationError('CODICIL_ERR_SUMMARY_REQUIRED', 'summary is required', 'summary', '');
   }
 
   const summary = typeof args.summary === 'string' ? args.summary.trim() : '';
   if (!summary) {
-    return buildValidationError('MEMEX_ERR_SUMMARY_REQUIRED', 'summary is required', 'summary', args.summary);
+    return buildValidationError('CODICIL_ERR_SUMMARY_REQUIRED', 'summary is required', 'summary', args.summary);
   }
   if (summary.length > 1000) {
-    return buildValidationError('MEMEX_ERR_SUMMARY_TOO_LONG', `summary must be 1000 characters or fewer (got ${summary.length})`, 'summary', summary);
+    return buildValidationError('CODICIL_ERR_SUMMARY_TOO_LONG', `summary must be 1000 characters or fewer (got ${summary.length})`, 'summary', summary);
   }
 
   const topics = Array.isArray(args.topics) ? args.topics.map(t => (typeof t === 'string' ? t.trim() : '')).filter(Boolean) : [];
   if (topics.length === 0) {
-    return buildValidationError('MEMEX_ERR_TOPICS_REQUIRED', 'topics must be a non-empty array', 'topics', args.topics);
+    return buildValidationError('CODICIL_ERR_TOPICS_REQUIRED', 'topics must be a non-empty array', 'topics', args.topics);
   }
   if (topics.length > 20) {
-    return buildValidationError('MEMEX_ERR_TOPICS_TOO_MANY', 'topics must contain 20 or fewer items', 'topics', topics.length);
+    return buildValidationError('CODICIL_ERR_TOPICS_TOO_MANY', 'topics must contain 20 or fewer items', 'topics', topics.length);
   }
   for (let i = 0; i < topics.length; i++) {
     if (topics[i].length > 50) {
-      return buildValidationError('MEMEX_ERR_TOPIC_TOO_LONG', `each topic must be 50 characters or fewer (got '${topics[i].slice(0, 10)}...' at index ${i})`, 'topics', topics[i]);
+      return buildValidationError('CODICIL_ERR_TOPIC_TOO_LONG', `each topic must be 50 characters or fewer (got '${topics[i].slice(0, 10)}...' at index ${i})`, 'topics', topics[i]);
     }
   }
 
   const projectRaw = typeof args.project === 'string' ? args.project.trim() : '';
   if (!projectRaw) {
-    return buildValidationError('MEMEX_ERR_PROJECT_REQUIRED', 'project is required when calling remember via MCP', 'project', args.project);
+    return buildValidationError('CODICIL_ERR_PROJECT_REQUIRED', 'project is required when calling remember via MCP', 'project', args.project);
   }
   if (projectRaw.length > 100) {
-    return buildValidationError('MEMEX_ERR_PROJECT_TOO_LONG', 'project name must be 100 characters or fewer', 'project', projectRaw);
+    return buildValidationError('CODICIL_ERR_PROJECT_TOO_LONG', 'project name must be 100 characters or fewer', 'project', projectRaw);
   }
   if (projectRaw.includes('..')) {
-    return buildValidationError('MEMEX_ERR_PROJECT_INVALID_CHARS', 'project name may only contain letters, numbers, dots, underscores, and hyphens', 'project', projectRaw);
+    return buildValidationError('CODICIL_ERR_PROJECT_INVALID_CHARS', 'project name may only contain letters, numbers, dots, underscores, and hyphens', 'project', projectRaw);
   }
   if (/[^a-zA-Z0-9._-]/.test(projectRaw)) {
-    return buildValidationError('MEMEX_ERR_PROJECT_INVALID_CHARS', 'project name may only contain letters, numbers, dots, underscores, and hyphens', 'project', projectRaw);
+    return buildValidationError('CODICIL_ERR_PROJECT_INVALID_CHARS', 'project name may only contain letters, numbers, dots, underscores, and hyphens', 'project', projectRaw);
   }
   if (RESERVED_PROJECTS.has(projectRaw)) {
-    return buildValidationError('MEMEX_ERR_PROJECT_RESERVED', `project name '${projectRaw}' is reserved`, 'project', projectRaw);
+    return buildValidationError('CODICIL_ERR_PROJECT_RESERVED', `project name '${projectRaw}' is reserved`, 'project', projectRaw);
   }
 
   const keyDecisions = Array.isArray(args.key_decisions) ? args.key_decisions : [];
@@ -224,7 +224,7 @@ async function remember(args) {
       metrics.remember_failures_total += 1;
       return metrics;
     }).catch(() => {});
-    return buildValidationError('MEMEX_ERR_WRITE_FAILED', `failed to save session: ${e.message}`, 'session', '');
+    return buildValidationError('CODICIL_ERR_WRITE_FAILED', `failed to save session: ${e.message}`, 'session', '');
   }
 }
 
@@ -261,7 +261,7 @@ function listProjects() {
 }
 
 function recentSessions(limit = 10) {
-  const projectsDir = path.join(MEMEX_PATH, 'summaries/projects');
+  const projectsDir = path.join(CODICIL_PATH, 'summaries/projects');
   if (!fs.existsSync(projectsDir)) return { total: 0, sessions: [] };
 
   const allSessions = [];
@@ -296,11 +296,11 @@ function searchSessions(query, project = null, limit = 10) {
   }
 
   const results = [];
-  const projectsDir = path.join(MEMEX_PATH, 'summaries/projects');
+  const projectsDir = path.join(CODICIL_PATH, 'summaries/projects');
 
   let projectDirs = [];
   if (project) {
-    const resolved = resolveProjectDirName(MEMEX_PATH, project);
+    const resolved = resolveProjectDirName(CODICIL_PATH, project);
     if (!resolved) {
       return { query, project, total: 0, results: [] };
     }
@@ -309,13 +309,13 @@ function searchSessions(query, project = null, limit = 10) {
     projectDirs = fs.readdirSync(projectsDir);
   }
 
-  const memex = getMemexLoader();
+  const codicil = getCodicilLoader();
 
   for (const projectDirName of projectDirs) {
     let sessions = [];
     try {
-      memex.loadIndex();
-      sessions = memex.listSessions(projectDirName) || [];
+      codicil.loadIndex();
+      sessions = codicil.listSessions(projectDirName) || [];
     } catch {
       const indexPath = path.join(projectsDir, projectDirName, 'sessions-index.json');
       const sessionsIndex = readJSON(indexPath);
@@ -353,17 +353,17 @@ function getSession(project, sessionId) {
   const id = typeof sessionId === 'string' ? sessionId.trim() : '';
 
   if (!projectName) {
-    return buildValidationError('MEMEX_ERR_PROJECT_REQUIRED', 'project is required', 'project', project);
+    return buildValidationError('CODICIL_ERR_PROJECT_REQUIRED', 'project is required', 'project', project);
   }
   if (!id) {
-    return buildValidationError('MEMEX_ERR_SESSION_NOT_FOUND', 'session_id is required', 'session_id', sessionId);
+    return buildValidationError('CODICIL_ERR_SESSION_NOT_FOUND', 'session_id is required', 'session_id', sessionId);
   }
 
-  const memex = getMemexLoader();
-  const session = memex.loadSessionDetails(projectName, id);
+  const codicil = getCodicilLoader();
+  const session = codicil.loadSessionDetails(projectName, id);
   if (!session) {
     return buildValidationError(
-      'MEMEX_ERR_SESSION_NOT_FOUND',
+      'CODICIL_ERR_SESSION_NOT_FOUND',
       `session '${id}' not found in project '${projectName}'`,
       'session_id',
       id
@@ -455,7 +455,7 @@ function rebuildIndex(args = {}) {
   try {
     if (doBloom) {
       execFileSync(process.execPath, [path.join(__dirname, 'bloom-filter.js'), 'build'], {
-        cwd: MEMEX_PATH,
+        cwd: CODICIL_PATH,
         stdio: 'ignore'
       });
       results.bloom = 'rebuilt';
@@ -467,7 +467,7 @@ function rebuildIndex(args = {}) {
   try {
     if (doGit) {
       execFileSync(process.execPath, [path.join(__dirname, 'index-git.js'), 'build'], {
-        cwd: MEMEX_PATH,
+        cwd: CODICIL_PATH,
         stdio: 'ignore'
       });
       results.git = 'rebuilt';
@@ -479,7 +479,7 @@ function rebuildIndex(args = {}) {
   try {
     if (doEmbeddings) {
       execFileSync(process.execPath, [path.join(__dirname, 'vector-search.js'), 'generate'], {
-        cwd: MEMEX_PATH,
+        cwd: CODICIL_PATH,
         stdio: 'ignore'
       });
       results.embeddings = 'rebuilt';
@@ -656,8 +656,8 @@ async function ledgerReportOutcome(params) {
 
     const Database = require('better-sqlite3');
     const path = require('path');
-    const { resolveMemexPath } = require('./paths');
-    const dbPath = path.join(resolveMemexPath(__dirname), '.cache', 'memex.db');
+    const { resolveCodicilPath } = require('./paths');
+    const dbPath = path.join(resolveCodicilPath(__dirname), '.cache', 'codicil.db');
     const fs = require('fs');
     if (!fs.existsSync(dbPath)) {
       return { ok: true, session_id, post_hoc: null, citation: null, message: 'ledger DB not initialized' };

@@ -23,27 +23,27 @@ const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
 const msgpack = require('msgpack-lite');
-const { resolveMemexPath, resolveReposRoot } = require('./paths');
+const { resolveCodicilPath, resolveReposRoot } = require('./paths');
 const { readJSON } = require('./safe-json');
 
-const MEMEX_PATH = resolveMemexPath(__dirname);
-const NEURAL_PATH = path.join(MEMEX_PATH, '.neural');
+const CODICIL_PATH = resolveCodicilPath(__dirname);
+const NEURAL_PATH = path.join(CODICIL_PATH, '.neural');
 const GIT_INDEX_PATH = path.join(NEURAL_PATH, 'git-index.msgpack');
 
 function buildProjectMap() {
-  if (process.env.MEMEX_PROJECTS_JSON) {
+  if (process.env.CODICIL_PROJECTS_JSON) {
     try {
-      return JSON.parse(process.env.MEMEX_PROJECTS_JSON);
+      return JSON.parse(process.env.CODICIL_PROJECTS_JSON);
     } catch (e) {
-      console.warn('⚠️  Invalid MEMEX_PROJECTS_JSON, falling back to discovery');
+      console.warn('⚠️  Invalid CODICIL_PROJECTS_JSON, falling back to discovery');
     }
   }
 
-  const indexPath = path.join(MEMEX_PATH, 'index.json');
+  const indexPath = path.join(CODICIL_PATH, 'index.json');
   const index = readJSON(indexPath);
   if (!index) return {};
 
-  const reposRoot = resolveReposRoot(MEMEX_PATH);
+  const reposRoot = resolveReposRoot(CODICIL_PATH);
   const projects = Object.keys(index.p || {});
   const map = {};
 

@@ -11,10 +11,10 @@ describe('PersistentCache', () => {
   let PersistentCache;
 
   before(() => {
-    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'memex-cache-test-'));
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'codicil-cache-test-'));
 
-    // Set MEMEX_PATH so cache writes to our tmp dir
-    process.env.MEMEX_PATH = tmpDir;
+    // Set CODICIL_PATH so cache writes to our tmp dir
+    process.env.CODICIL_PATH = tmpDir;
 
     // Ensure .cache subdir exists
     fs.mkdirSync(path.join(tmpDir, '.cache'), { recursive: true });
@@ -28,7 +28,7 @@ describe('PersistentCache', () => {
   });
 
   after(() => {
-    delete process.env.MEMEX_PATH;
+    delete process.env.CODICIL_PATH;
     fs.rmSync(tmpDir, { recursive: true, force: true });
   });
 

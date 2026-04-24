@@ -1,15 +1,15 @@
 # Quickstart
 
-Memex is a local memory layer for engineering work. You save short session records, then query them later from CLI, HTTP, web UI, or MCP.
+Codicil is a local memory layer for engineering work. You save short session records, then query them later from CLI, HTTP, web UI, or MCP.
 
 ## 1. Install
 
 ```bash
-git clone https://github.com/Pamperito74/Memex.git
-cd Memex
+git clone https://github.com/Pamperito74/Codicil.git
+cd Codicil
 npm install
 npm run setup
-node scripts/memex-loader.js status
+node scripts/codicil-loader.js status
 ```
 
 If status shows warnings:
@@ -35,29 +35,29 @@ Interactive mode:
 Git-hook capture:
 
 ```bash
-/path/to/Memex/scripts/git-hook-capture.sh install
+/path/to/Codicil/scripts/git-hook-capture.sh install
 ```
 
-That makes Memex useful quickly: save a few real sessions before judging the search quality.
+That makes Codicil useful quickly: save a few real sessions before judging the search quality.
 
 ## 3. Query Memory
 
 Quick lookup:
 
 ```bash
-node scripts/memex-loader.js quick "commit format"
+node scripts/codicil-loader.js quick "commit format"
 ```
 
 Keyword search:
 
 ```bash
-node scripts/memex-loader.js search auth
+node scripts/codicil-loader.js search auth
 ```
 
 Semantic search:
 
 ```bash
-node scripts/memex-loader.js semantic "authentication work"
+node scripts/codicil-loader.js semantic "authentication work"
 ```
 
 Duplicate detection:
@@ -69,8 +69,8 @@ node scripts/vector-search.js duplicates --threshold 0.9 --limit 10
 Status and project list:
 
 ```bash
-node scripts/memex-loader.js status
-node scripts/memex-loader.js list
+node scripts/codicil-loader.js status
+node scripts/codicil-loader.js list
 ```
 
 ## 4. Run The Dashboard / API
@@ -105,7 +105,7 @@ Use `HOST=0.0.0.0` only when you intentionally want other machines on your netwo
 MCP over stdio:
 
 ```bash
-claude mcp add memex -s user -- node /path/to/Memex/scripts/mcp-server.mjs
+claude mcp add codicil -s user -- node /path/to/Codicil/scripts/mcp-server.mjs
 ```
 
 Remote MCP over HTTP:
@@ -115,9 +115,9 @@ See [docs/remote-setup.md](docs/remote-setup.md).
 ## Optional Shell Aliases
 
 ```bash
-export MEMEX_PATH="$HOME/path/to/Memex"
-alias memex='node $MEMEX_PATH/scripts/memex-loader.js'
-alias remember='$MEMEX_PATH/scripts/remember'
+export CODICIL_PATH="$HOME/path/to/Codicil"
+alias codicil='node $CODICIL_PATH/scripts/codicil-loader.js'
+alias remember='$CODICIL_PATH/scripts/remember'
 ```
 
 ## What Gets Stored
@@ -138,7 +138,7 @@ Main storage locations:
 
 ## Good First Validation
 
-If you want to validate whether Memex is useful for you:
+If you want to validate whether Codicil is useful for you:
 1. Save 3-5 sessions from real work.
 2. Run both keyword and semantic search.
 3. Open the dashboard.

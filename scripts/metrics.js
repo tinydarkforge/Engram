@@ -1,9 +1,9 @@
 const fs = require('fs');
 const path = require('path');
-const { resolveMemexPath } = require('./paths');
+const { resolveCodicilPath } = require('./paths');
 
-const MEMEX_PATH = resolveMemexPath(__dirname);
-const METRICS_PATH = path.join(MEMEX_PATH, '.cache', 'metrics.json');
+const CODICIL_PATH = resolveCodicilPath(__dirname);
+const METRICS_PATH = path.join(CODICIL_PATH, '.cache', 'metrics.json');
 const LOCK_TTL_MS = 30 * 1000;
 
 function atomicWriteFileSync(targetPath, content) {

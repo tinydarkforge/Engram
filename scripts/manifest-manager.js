@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * Manifest Manager for Memex
+ * Manifest Manager for Codicil
  *
  * Tracks file changes for incremental updates (100x faster)
  * - Generate manifest with mtimes and hashes
@@ -13,10 +13,10 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const { glob } = require('glob');
-const { resolveMemexPath } = require('./paths');
+const { resolveCodicilPath } = require('./paths');
 
-const MEMEX_PATH = resolveMemexPath(__dirname);
-const MANIFEST_PATH = path.join(MEMEX_PATH, '.memex-manifest.json');
+const CODICIL_PATH = resolveCodicilPath(__dirname);
+const MANIFEST_PATH = path.join(CODICIL_PATH, '.codicil-manifest.json');
 
 class ManifestManager {
   constructor() {
@@ -63,7 +63,7 @@ class ManifestManager {
   }
 
   /**
-   * Scan all Memex files and generate manifest
+   * Scan all Codicil files and generate manifest
    */
   async generate() {
     const startTime = Date.now();
@@ -83,10 +83,10 @@ class ManifestManager {
     let fileCount = 0;
 
     for (const pattern of patterns) {
-      const matches = await glob(pattern, { cwd: MEMEX_PATH });
+      const matches = await glob(pattern, { cwd: CODICIL_PATH });
 
       for (const file of matches) {
-        const fullPath = path.join(MEMEX_PATH, file);
+        const fullPath = path.join(CODICIL_PATH, file);
         const metadata = this.getFileMetadata(fullPath);
 
         files[file] = metadata;
@@ -96,8 +96,8 @@ class ManifestManager {
     }
 
     // Count projects and sessions
-    const projectFiles = await glob('metadata/projects/*.json', { cwd: MEMEX_PATH });
-    const sessionFiles = await glob('summaries/projects/*/sessions-index.json', { cwd: MEMEX_PATH });
+    const projectFiles = await glob('metadata/projects/*.json', { cwd: CODICIL_PATH });
+    const sessionFiles = await glob('summaries/projects/*/sessions-index.json', { cwd: CODICIL_PATH });
 
     this.manifest = {
       version: '4.0.0',
@@ -212,7 +212,7 @@ class ManifestManager {
     for (const file of indexFiles) {
       if (!oldManifest.files[file]) continue;
 
-      const fullPath = path.join(MEMEX_PATH, file);
+      const fullPath = path.join(CODICIL_PATH, file);
       if (!fs.existsSync(fullPath)) continue;
 
       const currentMeta = this.getFileMetadata(fullPath);
@@ -259,7 +259,7 @@ if (require.main === module) {
     try {
       switch (command) {
         case 'generate':
-          console.log('🔍 Scanning Memex files...');
+          console.log('🔍 Scanning Codicil files...');
           await manager.generate();
           manager.save();
           console.log('✅ Manifest generated');

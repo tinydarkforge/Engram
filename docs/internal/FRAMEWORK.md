@@ -191,21 +191,21 @@ echo "node_modules/\n.DS_Store\n.env\n*.db\n*.db-journal\ndist/\n.cache/" > .git
 mkdir -p .claude/commands .github/workflows docs scripts tests
 
 # Create SPEC
-cp ~/code/<your-org>/Memex/docs/templates/SPEC-TEMPLATE.md SPEC.md
+cp ~/code/<your-org>/Codicil/docs/templates/SPEC-TEMPLATE.md SPEC.md
 
 # Create CLAUDE.md (critical for AI workflow)
-cp ~/code/<your-org>/Memex/docs/templates/CLAUDE-TEMPLATE.md .claude/CLAUDE.md
+cp ~/code/<your-org>/Codicil/docs/templates/CLAUDE-TEMPLATE.md .claude/CLAUDE.md
 
 # Create CI
-cp ~/code/<your-org>/Memex/docs/templates/ci-node.yml .github/workflows/ci.yml
+cp ~/code/<your-org>/Codicil/docs/templates/ci-node.yml .github/workflows/ci.yml
 # OR for Python:
-# cp ~/code/<your-org>/Memex/docs/templates/ci-python.yml .github/workflows/ci.yml
+# cp ~/code/<your-org>/Codicil/docs/templates/ci-python.yml .github/workflows/ci.yml
 
 # Create README
-cp ~/code/<your-org>/Memex/docs/templates/README-TEMPLATE.md README.md
+cp ~/code/<your-org>/Codicil/docs/templates/README-TEMPLATE.md README.md
 
-# MCP config for Memex integration
-cp ~/code/<your-org>/Memex/docs/templates/mcp-template.json .mcp.json
+# MCP config for Codicil integration
+cp ~/code/<your-org>/Codicil/docs/templates/mcp-template.json .mcp.json
 
 # Initial commit
 git add -A
@@ -229,7 +229,7 @@ Every project follows this layout (adapt based on stack):
   .github/
     workflows/
       ci.yml               # CI pipeline
-  .mcp.json                # Memex + AgentBridge MCP config
+  .mcp.json                # Codicil + AgentBridge MCP config
   docs/                    # Project documentation
   scripts/                 # Utility scripts
   tests/                   # Test files
@@ -279,7 +279,7 @@ gh label create "v2" --color "5319e7" --repo <your-org>/<project-name>
 
 Keep it simple. Two tiers based on project complexity:
 
-**Tier 1 - Simple projects (Memex, luna-qr, AgentBridge, tools):**
+**Tier 1 - Simple projects (Codicil, luna-qr, AgentBridge, tools):**
 ```
 main (production)
   |
@@ -482,7 +482,7 @@ npx tsc --noEmit     # Type check
 
 ## Deep Queries
 ```bash
-node ~/code/<your-org>/Memex/scripts/memex-loader.js quick "<query>"
+node ~/code/<your-org>/Codicil/scripts/codicil-loader.js quick "<query>"
 ```
 ```
 
@@ -551,16 +551,16 @@ Start a new feature branch with proper setup.
 3. Report: "Ready to build on feature/$ARGUMENTS"
 ```
 
-### 5.3 MCP Integration (Memex + AgentBridge)
+### 5.3 MCP Integration (Codicil + AgentBridge)
 
-Every project should have a `.mcp.json` that connects to Memex:
+Every project should have a `.mcp.json` that connects to Codicil:
 
 ```json
 {
   "mcpServers": {
-    "memex": {
+    "codicil": {
       "command": "node",
-      "args": ["~/code/<user>/<your-org>/Memex/scripts/mcp-server.mjs"]
+      "args": ["~/code/<user>/<your-org>/Codicil/scripts/mcp-server.mjs"]
     }
   }
 }
@@ -576,9 +576,9 @@ This gives the AI assistant access to:
 ```json
 {
   "mcpServers": {
-    "memex": {
+    "codicil": {
       "command": "node",
-      "args": ["~/code/<user>/<your-org>/Memex/scripts/mcp-server.mjs"]
+      "args": ["~/code/<user>/<your-org>/Codicil/scripts/mcp-server.mjs"]
     },
     "agentbridge": {
       "command": "python",
@@ -594,10 +594,10 @@ This gives the AI assistant access to:
 At the end of every significant coding session, save what you did:
 
 ```bash
-~/code/<your-org>/Memex/scripts/remember "what you accomplished" --topics tag1,tag2
+~/code/<your-org>/Codicil/scripts/remember "what you accomplished" --topics tag1,tag2
 ```
 
-This feeds Memex and makes future AI sessions smarter. Do this especially for:
+This feeds Codicil and makes future AI sessions smarter. Do this especially for:
 - Architecture decisions ("chose Drizzle over Prisma because of Vercel size limits")
 - Bug fixes ("fixed auth token refresh loop -- was caused by stale cookie")
 - Deployment changes ("moved from Netlify to Vercel for serverless functions")
@@ -662,7 +662,7 @@ Use the same labels across all repos (created in Phase 3):
 
 1. **Weekly planning** (15 min): Move items from Backlog to Todo.
 2. **During work**: Move Todo to In Progress when starting, Done when PR merged.
-3. **End of week**: Review Done column. Save a Memex session summarizing the week.
+3. **End of week**: Review Done column. Save a Codicil session summarizing the week.
 
 **Claude Code integration:**
 
@@ -813,7 +813,7 @@ Every project must have:
 
 ## Appendix A: Templates
 
-All templates live in `~/code/<user>/<your-org>/Memex/docs/templates/`.
+All templates live in `~/code/<user>/<your-org>/Codicil/docs/templates/`.
 Copy them when scaffolding a new project.
 
 ### SPEC Template
@@ -860,7 +860,7 @@ npm run build        # Production build
 
 ## Deep Queries
 \`\`\`bash
-node ~/code/<your-org>/Memex/scripts/memex-loader.js quick "<query>"
+node ~/code/<your-org>/Codicil/scripts/codicil-loader.js quick "<query>"
 \`\`\`
 ```
 
@@ -940,9 +940,9 @@ File: `docs/templates/mcp-template.json`
 ```json
 {
   "mcpServers": {
-    "memex": {
+    "codicil": {
       "command": "node",
-      "args": ["~/code/<user>/<your-org>/Memex/scripts/mcp-server.mjs"]
+      "args": ["~/code/<user>/<your-org>/Codicil/scripts/mcp-server.mjs"]
     }
   }
 }
@@ -973,14 +973,14 @@ File: `docs/templates/mcp-template.json`
 | **Deploy (complex)** | DigitalOcean App Platform | Docker, background workers |
 | **CI** | GitHub Actions | |
 | **Monitoring** | Vercel Analytics or Sentry | |
-| **AI Memory** | Memex | Always |
+| **AI Memory** | Codicil | Always |
 | **Agent Comms** | AgentBridge | Multi-agent workflows |
 
 ### Existing Projects Quick Reference
 
 | Project | Stack | Deploy | Status |
 |---------|-------|--------|--------|
-| Memex | Node.js | npm package (local) | Active |
+| Codicil | Node.js | npm package (local) | Active |
 | AgentBridge | Python, FastAPI | Local service | Active |
 | luna-qr | Static HTML/JS | Netlify | Active |
 
@@ -995,12 +995,12 @@ Use this checklist every time you start a new project:
 [ ] 2. Walk the Tech Decision Tree -- pick your stack
 [ ] 3. Run the scaffold script (Phase 3)
 [ ] 4. Fill in .claude/CLAUDE.md with project-specific context
-[ ] 5. Set up .mcp.json for Memex integration
+[ ] 5. Set up .mcp.json for Codicil integration
 [ ] 6. Create GitHub Project board (4 columns)
 [ ] 7. Create v1 issues from SPEC.md non-negotiables
 [ ] 8. Start building (feature branch per issue)
 [ ] 9. PR with CI gates before merge
-[ ] 10. Save session to Memex when done
+[ ] 10. Save session to Codicil when done
 ```
 
 **Time from idea to first commit: 30 minutes.**
@@ -1016,7 +1016,7 @@ This entire framework can become a web application:
 2. System walks the decision tree automatically
 3. System generates: repo, scaffold, CLAUDE.md, CI, board, labels
 4. User opens Claude Code and starts building with full context
-5. Memex tracks progress across projects
+5. Codicil tracks progress across projects
 6. AgentBridge coordinates multiple AI agents on the same project
 
 The framework document you are reading IS the specification for that web app.

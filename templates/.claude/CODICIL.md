@@ -1,6 +1,6 @@
-# Memex - Auto-Load Context
+# Codicil - Auto-Load Context
 
-**This file tells Claude to load Memex knowledge on startup.**
+**This file tells Claude to load Codicil knowledge on startup.**
 
 ---
 
@@ -9,9 +9,9 @@
 On startup, Claude should run:
 
 ```javascript
-// Load Memex for this project
-const memex = require('~/code/<your-org>/Memex/scripts/memex-loader.js');
-const loader = new memex();
+// Load Codicil for this project
+const codicil = require('~/code/<your-org>/Codicil/scripts/codicil-loader.js');
+const loader = new codicil();
 const context = loader.startup();
 
 // Context now contains:
@@ -21,7 +21,7 @@ const context = loader.startup();
 // - Quick refs for instant answers
 ```
 
-**Location:** `~/code/<your-org>/Memex`
+**Location:** `~/code/<your-org>/Codicil`
 
 ---
 
@@ -62,7 +62,7 @@ Fill in your project's tech stack, architecture, environments, and code owners h
 When user asks questions, you can:
 
 1. **Check index first** (80% of queries)
-   - Use quick_ref from Memex index
+   - Use quick_ref from Codicil index
    - No file loading needed
 
 2. **Search if needed** (15% of queries)
@@ -77,9 +77,9 @@ When user asks questions, you can:
 Users can also explicitly call:
 
 ```bash
-memex startup              # See full context
-memex quick "commit"       # Quick answer
-memex search auth          # Search across projects
+codicil startup              # See full context
+codicil quick "commit"       # Quick answer
+codicil search auth          # Search across projects
 save-session "summary" --topics tags  # Save work
 ```
 
@@ -91,7 +91,7 @@ If user asks about other projects:
 
 ```bash
 "How did we handle OAuth in <other-project>?"
-→ Load ~/code/<your-org>/Memex/projects/<other-project>/
+→ Load ~/code/<your-org>/Codicil/projects/<other-project>/
 ```
 
 ---

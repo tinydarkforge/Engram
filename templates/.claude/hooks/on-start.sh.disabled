@@ -1,17 +1,17 @@
 #!/bin/bash
-# Auto-load Memex on Claude startup
+# Auto-load Codicil on Claude startup
 
-MEMEX_PATH="${MEMEX_PATH:-$HOME/code/cirrus/DevOps/Memex}"
+CODICIL_PATH="${CODICIL_PATH:-$HOME/code/cirrus/DevOps/Codicil}"
 
-# Check if Memex exists
-if [ ! -d "$MEMEX_PATH" ]; then
-  echo "⚠️  Memex not found at $MEMEX_PATH"
+# Check if Codicil exists
+if [ ! -d "$CODICIL_PATH" ]; then
+  echo "⚠️  Codicil not found at $CODICIL_PATH"
   exit 0
 fi
 
-# Load Memex context
-echo "🧠 Loading Memex..."
-node "$MEMEX_PATH/scripts/memex-loader.js" startup
+# Load Codicil context
+echo "🧠 Loading Codicil..."
+node "$CODICIL_PATH/scripts/codicil-loader.js" startup
 
 # Sync latest knowledge (background, non-blocking)
-(cd "$MEMEX_PATH" && git pull --quiet origin main 2>/dev/null &)
+(cd "$CODICIL_PATH" && git pull --quiet origin main 2>/dev/null &)
