@@ -3,14 +3,14 @@
 ```text
                            █████ █████ ████  █████ █████ █████ █
     ╔═══════════╗          █     █   █ █   █   █   █       █   █
-    ║ ~~~~~~~~~ ║          █     █   █ █   █   █   █       █   █
-    ║  §CODEX§  ║          █     █   █ █   █   █   █       █   █
-    ║ ═════════ ║          █████ █████ ████  █████ █████ █████ █████
-    ║ I.  auth  ║
-    ║ II. deps  ║          ━━━━━━━━━━ MEMORY LEDGER ━━━━━━━━━━━━━
-    ║ III. db   ║          Sessions · Facts · Confidence · MCP
-    ║  ~~~~~~~  ║          · Local-first — one ledger, one
-    ║   ●──wax  ║            confidence model, one context
+    ║   ╓─╥─╖   ║          █     █   █ █   █   █   █       █   █
+    ║  ╔═════╗  ║          █     █   █ █   █   █   █       █   █
+    ║  ║● · ●║  ║          █████ █████ ████  █████ █████ █████ █████
+    ║  ║  ▬  ║  ║
+    ║  ╚══╤══╝  ║          ━━━━━━━━━━ MEMORY LEDGER ━━━━━━━━━━━━━
+    ║  ███████  ║          Sessions · Facts · Confidence · MCP
+    ║   ▀▀ ▀▀   ║          · Local-first — one ledger, one
+    ║ CodiCil_  ║            confidence model, one context
     ╚═══════════╝            budget. MIT · No account · No tel.
 ```
 
