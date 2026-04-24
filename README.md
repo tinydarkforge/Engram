@@ -25,7 +25,7 @@
 
 > **Codicil** is a local-first memory and assertion ledger for AI coding agents. It persists session notes across every repo, ranks facts by confidence and corroboration, surfaces contradictions, and feeds the whole thing to Claude Code over MCP. No account. No telemetry. Local files only.
 
-> **Status:** Pre-1.0 (`v4.0.2`). Available on npm. MCP server is stable; assertion ledger is active development.
+> **Status:** Pre-1.0 (`v4.0.3`). Available on npm. MCP server is stable; assertion ledger is active development.
 
 ---
 
@@ -156,29 +156,29 @@ Remote HTTP transport with API-key auth: [`docs/remote-setup.md`](docs/remote-se
 
 ```bash
 # Save a session
-./scripts/remember "Implemented OAuth callback handling" --topics auth,oauth
+codicil remember "Implemented OAuth callback handling" --topics auth,oauth
 
 # Interactive save
-./scripts/remember --interactive
+codicil remember --interactive
 
 # Git-hook capture (auto-save on commit)
-./scripts/git-hook-capture.sh install
+./scripts/git-hook-capture.sh install   # from source clone
 
 # Semantic search
-node scripts/codicil-loader.js semantic "authentication work"
+codicil semantic "authentication work"
 
 # Keyword search
-node scripts/codicil-loader.js search "oauth"
+codicil search "oauth"
 
 # Status
-node scripts/codicil-loader.js status
+codicil status
 
 # Launch dashboard
-npm start   # http://127.0.0.1:3000/
+codicil start   # http://127.0.0.1:3000/
 
 # Ledger CLI
-npm run ledger:stats
-npm run ledger:migrate
+codicil status   # includes ledger health
+npm run ledger:stats   # from source clone
 ```
 
 Full CLI reference: [`CHEATSHEET.md`](docs/CHEATSHEET.md) · deep dive: [`HOW-IT-WORKS.md`](HOW-IT-WORKS.md).

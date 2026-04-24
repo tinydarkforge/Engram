@@ -17,7 +17,7 @@ const { resolveCodicilPath } = require('./paths');
 const { readJSON } = require('./safe-json');
 
 const CODICIL_PATH = resolveCodicilPath(__dirname);
-const SAVE_SESSION = path.join(CODICIL_PATH, 'scripts', 'save-session.js');
+const SAVE_SESSION = path.join(__dirname, 'save-session.js');
 
 /**
  * Check if we should update recent session instead of creating new one

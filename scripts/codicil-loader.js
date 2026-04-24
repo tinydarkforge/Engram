@@ -920,6 +920,23 @@ if (require.main === module) {
         return;
       }
 
+      case 'remember': {
+        const { spawnSync } = require('child_process');
+        const rememberPath = path.join(__dirname, 'remember');
+        const args = process.argv.slice(3);
+        const result = spawnSync(process.execPath, [rememberPath, ...args], { stdio: 'inherit' });
+        process.exit(result.status || 0);
+        break;
+      }
+
+      case 'start': {
+        const { spawnSync } = require('child_process');
+        const serverPath = path.join(__dirname, 'server.js');
+        const result = spawnSync(process.execPath, [serverPath], { stdio: 'inherit' });
+        process.exit(result.status || 0);
+        break;
+      }
+
       case 'setup': {
         const { main: runSetup } = require('./setup');
         runSetup();
@@ -935,12 +952,14 @@ if (require.main === module) {
       }
 
       default:
-        console.log('Codicil v4.0.2 - Local memory and assertion ledger for AI coding agents');
+        console.log('Codicil v4.0.3 - Local memory and assertion ledger for AI coding agents');
         console.log('');
         console.log('Usage: codicil [command] [args]');
         console.log('');
         console.log('Commands:');
         console.log('  setup              - Initialize data directory (~/.codicil)');
+        console.log('  remember [summary] - Save a session note');
+        console.log('  start              - Start web dashboard (http://127.0.0.1:3000/)');
         console.log('  startup            - Load and display startup info');
         console.log('  search <query>     - Search across all projects (keyword)');
         console.log('  semantic <query>   - Semantic search by meaning (AI-powered)');
