@@ -1,0 +1,13 @@
+{
+  "id": "me-2025-12-03-bugfix",
+  "date": "2025-12-03",
+  "summary": "Fix",
+  "topics": [
+    "bugfix",
+    "cache",
+    "project-detection"
+  ],
+  "_lazy_loaded": true,
+  "_index_size_bytes": 113,
+  "_full_size_bytes": 113
+}
