@@ -1,6 +1,6 @@
 {
-  "name": "codicil",
-  "version": "4.0.0",
+  "name": "@tinydarkforge/codicil",
+  "version": "4.0.1",
   "description": "Persistent memory for AI coding assistants - 94-98% token savings (benchmarked)",
   "main": "scripts/codicil-loader.js",
   "bin": {
@@ -38,7 +38,8 @@
     "web/",
     "examples/benchmark-corpus/",
     "setup-aliases.sh",
-    "QUICKSTART.md"
+    "QUICKSTART.md",
+    "HOW-IT-WORKS.md"
   ],
   "keywords": [
     "codicil",
