@@ -25,7 +25,7 @@
 
 > **Codicil** is a local-first memory and assertion ledger for AI coding agents. It persists session notes across every repo, ranks facts by confidence and corroboration, surfaces contradictions, and feeds the whole thing to Claude Code over MCP. No account. No telemetry. Local files only.
 
-> **Status:** Pre-1.0 (`v4.0.0`). Not yet on npm — install from source. MCP server is stable; assertion ledger is active development.
+> **Status:** Pre-1.0 (`v4.0.2`). Available on npm. MCP server is stable; assertion ledger is active development.
 
 ---
 
@@ -122,20 +122,18 @@ Codicil is **not** a hosted memory SaaS, a vector-DB-as-a-service, or a RAG fram
 
 ## ░▒▓█ Install
 
-### From source (currently the only install path)
+```bash
+npm install -g @tinydarkforge/codicil
+codicil setup
+```
+
+Or from source:
 
 ```bash
 git clone https://github.com/tinydarkforge/Codicil.git
 cd Codicil
 npm install
 npm run setup
-node scripts/codicil-loader.js status
-```
-
-npm publish is pending (tracked in issue #28). Once published:
-
-```bash
-npm install -g codicil   # not yet available
 ```
 
 ### Connect Claude Code
