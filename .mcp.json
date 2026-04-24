@@ -2,7 +2,7 @@
   "mcpServers": {
     "memex": {
       "command": "node",
-      "args": ["/Users/doceno/code/DarkForgeAI/Memex/scripts/mcp-server.mjs"]
+      "args": ["./scripts/mcp-server.mjs"]
     }
   }
 }

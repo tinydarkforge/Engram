@@ -1,4 +1,4 @@
-# TheDarkFactory Development Framework
+# TinyDarkForge Development Framework
 
 A complete, repeatable system for going from idea to shipped product.
 Built for a 2-person team that builds with AI coding assistants.
@@ -180,7 +180,7 @@ Run this for every new project:
 
 ```bash
 # Create repo
-gh repo create TheDarkFactory/<project-name> --private --clone
+gh repo create <your-org>/<project-name> --private --clone
 cd <project-name>
 
 # Initialize
@@ -191,21 +191,21 @@ echo "node_modules/\n.DS_Store\n.env\n*.db\n*.db-journal\ndist/\n.cache/" > .git
 mkdir -p .claude/commands .github/workflows docs scripts tests
 
 # Create SPEC
-cp ~/code/TheDarkFactory/Memex/docs/templates/SPEC-TEMPLATE.md SPEC.md
+cp ~/code/<your-org>/Memex/docs/templates/SPEC-TEMPLATE.md SPEC.md
 
 # Create CLAUDE.md (critical for AI workflow)
-cp ~/code/TheDarkFactory/Memex/docs/templates/CLAUDE-TEMPLATE.md .claude/CLAUDE.md
+cp ~/code/<your-org>/Memex/docs/templates/CLAUDE-TEMPLATE.md .claude/CLAUDE.md
 
 # Create CI
-cp ~/code/TheDarkFactory/Memex/docs/templates/ci-node.yml .github/workflows/ci.yml
+cp ~/code/<your-org>/Memex/docs/templates/ci-node.yml .github/workflows/ci.yml
 # OR for Python:
-# cp ~/code/TheDarkFactory/Memex/docs/templates/ci-python.yml .github/workflows/ci.yml
+# cp ~/code/<your-org>/Memex/docs/templates/ci-python.yml .github/workflows/ci.yml
 
 # Create README
-cp ~/code/TheDarkFactory/Memex/docs/templates/README-TEMPLATE.md README.md
+cp ~/code/<your-org>/Memex/docs/templates/README-TEMPLATE.md README.md
 
 # MCP config for Memex integration
-cp ~/code/TheDarkFactory/Memex/docs/templates/mcp-template.json .mcp.json
+cp ~/code/<your-org>/Memex/docs/templates/mcp-template.json .mcp.json
 
 # Initial commit
 git add -A
@@ -249,7 +249,7 @@ Apply these settings to every repo:
 
 ```bash
 # Enable branch protection on main
-gh api repos/TheDarkFactory/<project-name>/branches/main/protection \
+gh api repos/<your-org>/<project-name>/branches/main/protection \
   --method PUT \
   --field required_status_checks='{"strict":true,"contexts":["test"]}' \
   --field enforce_admins=false \
@@ -257,18 +257,18 @@ gh api repos/TheDarkFactory/<project-name>/branches/main/protection \
   --field restrictions=null
 
 # Enable issues
-gh repo edit TheDarkFactory/<project-name> --enable-issues
+gh repo edit <your-org>/<project-name> --enable-issues
 
 # Add standard labels
-gh label create "enhancement" --color "a2eeef" --repo TheDarkFactory/<project-name>
-gh label create "bug" --color "d73a4a" --repo TheDarkFactory/<project-name>
-gh label create "security" --color "e4e669" --repo TheDarkFactory/<project-name>
-gh label create "documentation" --color "0075ca" --repo TheDarkFactory/<project-name>
-gh label create "testing" --color "bfd4f2" --repo TheDarkFactory/<project-name>
-gh label create "devops" --color "d4c5f9" --repo TheDarkFactory/<project-name>
-gh label create "ui" --color "f9d0c4" --repo TheDarkFactory/<project-name>
-gh label create "v1" --color "006b75" --repo TheDarkFactory/<project-name>
-gh label create "v2" --color "5319e7" --repo TheDarkFactory/<project-name>
+gh label create "enhancement" --color "a2eeef" --repo <your-org>/<project-name>
+gh label create "bug" --color "d73a4a" --repo <your-org>/<project-name>
+gh label create "security" --color "e4e669" --repo <your-org>/<project-name>
+gh label create "documentation" --color "0075ca" --repo <your-org>/<project-name>
+gh label create "testing" --color "bfd4f2" --repo <your-org>/<project-name>
+gh label create "devops" --color "d4c5f9" --repo <your-org>/<project-name>
+gh label create "ui" --color "f9d0c4" --repo <your-org>/<project-name>
+gh label create "v1" --color "006b75" --repo <your-org>/<project-name>
+gh label create "v2" --color "5319e7" --repo <your-org>/<project-name>
 ```
 
 ---
@@ -482,7 +482,7 @@ npx tsc --noEmit     # Type check
 
 ## Deep Queries
 ```bash
-node ~/code/TheDarkFactory/Memex/scripts/memex-loader.js quick "<query>"
+node ~/code/<your-org>/Memex/scripts/memex-loader.js quick "<query>"
 ```
 ```
 
@@ -509,12 +509,12 @@ Run the test suite and report results.
 ## Steps
 1. Run tests:
 ```bash
-cd /Users/doceno/code/TheDarkFactory/<project> && npm test 2>&1
+cd ~/code/<user>/<your-org>/<project> && npm test 2>&1
 ```
 
 2. If TypeScript project, also run type check:
 ```bash
-cd /Users/doceno/code/TheDarkFactory/<project> && npx tsc --noEmit 2>&1 | tail -30
+cd ~/code/<user>/<your-org>/<project> && npx tsc --noEmit 2>&1 | tail -30
 ```
 
 3. Report: total tests, passed, failed (with details).
@@ -560,7 +560,7 @@ Every project should have a `.mcp.json` that connects to Memex:
   "mcpServers": {
     "memex": {
       "command": "node",
-      "args": ["/Users/doceno/code/TheDarkFactory/Memex/scripts/mcp-server.mjs"]
+      "args": ["~/code/<user>/<your-org>/Memex/scripts/mcp-server.mjs"]
     }
   }
 }
@@ -578,12 +578,12 @@ This gives the AI assistant access to:
   "mcpServers": {
     "memex": {
       "command": "node",
-      "args": ["/Users/doceno/code/TheDarkFactory/Memex/scripts/mcp-server.mjs"]
+      "args": ["~/code/<user>/<your-org>/Memex/scripts/mcp-server.mjs"]
     },
     "agentbridge": {
       "command": "python",
       "args": ["-m", "agentbridge.mcp_server"],
-      "cwd": "/Users/doceno/code/TheDarkFactory/AgentBridge"
+      "cwd": "~/code/<user>/<your-org>/AgentBridge"
     }
   }
 }
@@ -594,7 +594,7 @@ This gives the AI assistant access to:
 At the end of every significant coding session, save what you did:
 
 ```bash
-~/code/TheDarkFactory/Memex/scripts/remember "what you accomplished" --topics tag1,tag2
+~/code/<your-org>/Memex/scripts/remember "what you accomplished" --topics tag1,tag2
 ```
 
 This feeds Memex and makes future AI sessions smarter. Do this especially for:
@@ -668,16 +668,16 @@ Use the same labels across all repos (created in Phase 3):
 
 ```bash
 # List current tasks
-gh issue list --repo TheDarkFactory/<project> --state open
+gh issue list --repo <your-org>/<project> --state open
 
 # Create a task
-gh issue create --repo TheDarkFactory/<project> \
+gh issue create --repo <your-org>/<project> \
   --title "feat(auth): add password reset" \
   --label "enhancement,v1" \
   --assignee Pamperito74
 
 # Close a task
-gh issue close <number> --repo TheDarkFactory/<project>
+gh issue close <number> --repo <your-org>/<project>
 ```
 
 ---
@@ -813,7 +813,7 @@ Every project must have:
 
 ## Appendix A: Templates
 
-All templates live in `/Users/doceno/code/TheDarkFactory/Memex/docs/templates/`.
+All templates live in `~/code/<user>/<your-org>/Memex/docs/templates/`.
 Copy them when scaffolding a new project.
 
 ### SPEC Template
@@ -860,7 +860,7 @@ npm run build        # Production build
 
 ## Deep Queries
 \`\`\`bash
-node ~/code/TheDarkFactory/Memex/scripts/memex-loader.js quick "<query>"
+node ~/code/<your-org>/Memex/scripts/memex-loader.js quick "<query>"
 \`\`\`
 ```
 
@@ -942,7 +942,7 @@ File: `docs/templates/mcp-template.json`
   "mcpServers": {
     "memex": {
       "command": "node",
-      "args": ["/Users/doceno/code/TheDarkFactory/Memex/scripts/mcp-server.mjs"]
+      "args": ["~/code/<user>/<your-org>/Memex/scripts/mcp-server.mjs"]
     }
   }
 }
@@ -952,7 +952,7 @@ File: `docs/templates/mcp-template.json`
 
 ## Appendix B: Stack Reference
 
-### TheDarkFactory Standard Stack (2026)
+### TinyDarkForge Standard Stack (2026)
 
 | Layer | Default Choice | When to Use Something Else |
 |-------|---------------|---------------------------|
@@ -1023,5 +1023,5 @@ The framework document you are reading IS the specification for that web app.
 
 ---
 
-*TheDarkFactory Development Framework v1.0 -- 2026-02-20*
+*TinyDarkForge Development Framework v1.0 -- 2026-02-20*
 *Built for humans who build with AI.*

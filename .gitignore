@@ -21,6 +21,7 @@ graph-memex.html
 
 # Claude Code session locks
 .claude/*.lock
+.claude/settings.local.json
 
 # Schemas (generated from source)
 schemas/session.schema.msgpack

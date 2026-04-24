@@ -12,10 +12,10 @@
 ## Commands
 ```bash
 # Search git history (semantic)
-node ~/code/cirrus/DevOps/Memex/scripts/neural-memory.js search "your question"
+node scripts/neural-memory.js search "your question"
 
 # Save session note
-~/code/cirrus/DevOps/Memex/scripts/remember "what you did" --topics tag1,tag2
+node scripts/remember.js "what you did" --topics tag1,tag2
 ```
 
 ---

@@ -2,7 +2,7 @@
   "$schema": "../../schemas/content.schema.json",
   "version": "2.0.0",
   "type": "global_standard",
-  "title": "Commit Standards - Cirrus Inc.",
+  "title": "Commit Standards - TinyDarkForge",
   "applies_to": "all_repos",
   "last_updated": "2025-11-30",
   "format": {
