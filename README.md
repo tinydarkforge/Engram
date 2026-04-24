@@ -138,8 +138,14 @@ npm run setup
 
 ### Connect Claude Code
 
+**npm install (global):**
 ```bash
-claude mcp add codicil -s user -- node /absolute/path/to/Codicil/scripts/mcp-server.mjs
+claude mcp add codicil -s user -- codicil mcp
+```
+
+**From source:**
+```bash
+claude mcp add codicil -s user -- node "$(pwd)/scripts/mcp-server.mjs"
 ```
 
 Remote HTTP transport with API-key auth: [`docs/remote-setup.md`](docs/remote-setup.md).

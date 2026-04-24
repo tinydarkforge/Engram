@@ -24,17 +24,23 @@ function findCodicilRoot(startDir) {
   return null;
 }
 
+const USER_DATA_DIR = path.join(require('os').homedir(), '.codicil');
+
+function isGlobalInstall(dir) {
+  return dir.includes(`${path.sep}node_modules${path.sep}`);
+}
+
 function resolveCodicilPath(fromDir = __dirname) {
   if (process.env.CODICIL_PATH) {
-    const envPath = path.resolve(process.env.CODICIL_PATH);
-    return envPath;
-  }
-  const defaultPath = path.resolve(fromDir, '..');
-  if (hasIndexFiles(defaultPath)) {
-    return defaultPath;
+    return path.resolve(process.env.CODICIL_PATH);
   }
   const found = findCodicilRoot(fromDir);
-  return found || defaultPath;
+  if (found) return found;
+  // Global npm install: data lives in ~/.codicil, not inside the package dir
+  if (isGlobalInstall(fromDir) || fs.existsSync(USER_DATA_DIR)) {
+    return USER_DATA_DIR;
+  }
+  return path.resolve(fromDir, '..');
 }
 
 function resolveReposRoot(codicilPath) {

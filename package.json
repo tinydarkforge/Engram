@@ -1,6 +1,6 @@
 {
   "name": "@tinydarkforge/codicil",
-  "version": "4.0.2",
+  "version": "4.0.3",
   "description": "Local-first memory and assertion ledger for AI coding agents. Confidence-weighted, contradiction-aware, token-budgeted context over MCP.",
   "main": "scripts/codicil-loader.js",
   "bin": {

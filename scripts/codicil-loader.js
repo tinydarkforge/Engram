@@ -752,7 +752,7 @@ if (require.main === module) {
             console.log('Index not found.');
             console.log('');
             console.log('Next steps:');
-            console.log('  1. Run: npm run setup');
+            console.log('  1. Run: codicil setup');
             console.log(`  2. Ensure CODICIL_PATH points to your Codicil directory (currently: ${CODICIL_PATH})`);
             return;
           }
@@ -767,7 +767,7 @@ if (require.main === module) {
             console.log(`Failed to load index: ${e.message}`);
             console.log('');
             console.log('Next steps:');
-            console.log('  1. Run: npm run setup');
+            console.log('  1. Run: codicil setup');
             console.log(`  2. Verify index files exist under ${CODICIL_PATH}`);
             return;
           }
@@ -781,7 +781,7 @@ if (require.main === module) {
             const { CURRENT_SCHEMA_VERSION, getSchemaVersion } = require('./migrations');
             const schemaVersion = getSchemaVersion(codicil.index);
             if (schemaVersion < CURRENT_SCHEMA_VERSION) {
-              issues.push(`Schema version ${schemaVersion} is behind ${CURRENT_SCHEMA_VERSION}. Run: npm run migrate`);
+              issues.push(`Schema version ${schemaVersion} is behind ${CURRENT_SCHEMA_VERSION}. Run: codicil mcp (then npm run ledger:migrate for source installs)`);
             }
           } catch (e) {
             issues.push(`Schema version check failed: ${e.message}`);
@@ -920,12 +920,27 @@ if (require.main === module) {
         return;
       }
 
+      case 'setup': {
+        const { main: runSetup } = require('./setup');
+        runSetup();
+        break;
+      }
+
+      case 'mcp': {
+        const { spawnSync } = require('child_process');
+        const mcpPath = path.join(__dirname, 'mcp-server.mjs');
+        const result = spawnSync(process.execPath, [mcpPath], { stdio: 'inherit' });
+        process.exit(result.status || 0);
+        break;
+      }
+
       default:
-        console.log('Codicil v4.0.0 - Token-optimized knowledge base');
+        console.log('Codicil v4.0.2 - Local memory and assertion ledger for AI coding agents');
         console.log('');
-        console.log('Usage: codicil-loader.js [command] [args]');
+        console.log('Usage: codicil [command] [args]');
         console.log('');
         console.log('Commands:');
+        console.log('  setup              - Initialize data directory (~/.codicil)');
         console.log('  startup            - Load and display startup info');
         console.log('  search <query>     - Search across all projects (keyword)');
         console.log('  semantic <query>   - Semantic search by meaning (AI-powered)');
@@ -934,6 +949,7 @@ if (require.main === module) {
         console.log('  content <file>     - Load specific content file');
         console.log('  expand [context]   - Show legend for abbreviated keys');
         console.log('  status             - Health check and diagnostics');
+        console.log('  mcp                - Start MCP server (stdio)');
     }
   } catch (error) {
     console.error('Error:', error.message);
