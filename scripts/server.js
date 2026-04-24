@@ -25,7 +25,7 @@ const express = require('express');
 const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
-const msgpack = require('msgpack-lite');
+const { decode: msgpackDecode } = require('@msgpack/msgpack');
 const Codicil = require('./codicil-loader');
 const EventConsumer = require('./event-consumer');
 const { resolveCodicilPath } = require('./paths');
@@ -243,7 +243,7 @@ app.get('/api/graph', (req, res) => {
       return res.json({ nodes: [], edges: [] });
     }
 
-    const graph = msgpack.decode(fs.readFileSync(graphPath));
+    const graph = msgpackDecode(fs.readFileSync(graphPath));
 
     // Transform to vis.js format
     const nodes = [];

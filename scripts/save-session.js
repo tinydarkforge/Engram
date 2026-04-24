@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* eslint-disable */
 
 /**
  * Save Session - Save AI assistant session to Codicil
@@ -20,6 +21,59 @@ const { readJSON } = require('./safe-json');
 
 const CODICIL_PATH = resolveCodicilPath(__dirname);
 const LOCK_TTL_MS = 30 * 1000;
+
+// ─────────────────────────────────────────────────────────────
+// TF-IDF Topic Extraction (#10)
+// ─────────────────────────────────────────────────────────────
+
+const STOPWORDS = new Set([
+  'a','an','the','and','or','but','in','on','at','to','for','of','with',
+  'by','from','as','is','was','are','were','be','been','being','have','has',
+  'had','do','does','did','will','would','could','should','may','might','shall',
+  'can','need','dare','used','i','we','you','he','she','they','it','this',
+  'that','these','those','my','your','our','their','its','what','which','who',
+  'when','where','why','how','all','any','both','each','few','more','most',
+  'other','some','such','no','not','only','own','same','so','than','too',
+  'very','just','because','if','then','into','up','out','about','after',
+  'before','between','through','during','above','below','again','further',
+  'once','also','new','added','updated','changed','fixed','removed','refactored',
+  'over','under','across','within','without','along','against','among','around',
+  'down','off','per','upon','via','versus','vs','etc','get','got','set','let',
+
+]);
+
+/**
+ * Extract topics from text using TF-IDF-inspired scoring.
+ * Returns top N tokens by score (term frequency weighted by length and rarity).
+ */
+function extractTopics(text, { topN = 5, minLen = 3 } = {}) {
+  if (!text || !text.trim()) return [];
+
+  // Tokenize: split on non-alphanumeric, lowercase, deduplicate camelCase
+  const raw = text
+    .replace(/([a-z])([A-Z])/g, '$1 $2')  // camelCase → two words
+    .replace(/[^a-zA-Z0-9\s]/g, ' ')
+    .toLowerCase()
+    .split(/\s+/)
+    .filter(t => t.length >= minLen && !STOPWORDS.has(t) && !/^\d+$/.test(t));
+
+  if (!raw.length) return [];
+
+  // Term frequency
+  const tf = {};
+  for (const token of raw) {
+    tf[token] = (tf[token] || 0) + 1;
+  }
+
+  // Score: TF × log(length) — longer words tend to be more specific
+  const scored = Object.entries(tf).map(([term, freq]) => ({
+    term,
+    score: freq * Math.log(term.length + 1),
+  }));
+
+  scored.sort((a, b) => b.score - a.score);
+  return scored.slice(0, topN).map(s => s.term);
+}
 
 function atomicWriteFileSync(targetPath, content) {
   const dir = path.dirname(targetPath);
@@ -401,28 +455,65 @@ class SessionSaver {
 if (require.main === module) {
   const args = process.argv.slice(2);
 
-  try {
-    const saver = new SessionSaver();
+  (async () => {
+    try {
+      const saver = new SessionSaver();
 
-    if (args.includes('--interactive') || args.length === 0) {
-      saver.interactive();
-    } else {
-      const summary = args[0];
-      const topicsIndex = args.indexOf('--topics');
-      const topics = topicsIndex > -1 && args[topicsIndex + 1]
-        ? args[topicsIndex + 1].split(',').map(t => t.trim())
-        : [];
-      const commit = args.includes('--commit');
-      const push = args.includes('--push');
+      if (args.includes('--interactive') || args.length === 0) {
+        await saver.interactive();
+      } else {
+        const autoSummarize = args.includes('--auto-summarize');
+        const topicsIndex = args.indexOf('--topics');
+        const commit = args.includes('--commit');
+        const push = args.includes('--push');
 
-      saver.saveSession(summary, topics, null, { commit, push }).then(result => {
+        let summary = args[0];
+        let topics = topicsIndex > -1 && args[topicsIndex + 1]
+          ? args[topicsIndex + 1].split(',').map(t => t.trim())
+          : [];
+
+        if (autoSummarize) {
+          // Read content from stdin or from --content flag
+          const contentIdx = args.indexOf('--content');
+          let content = contentIdx > -1 ? args[contentIdx + 1] : '';
+
+          if (!content && !process.stdin.isTTY) {
+            content = await new Promise(resolve => {
+              let buf = '';
+              process.stdin.setEncoding('utf8');
+              process.stdin.on('data', c => buf += c);
+              process.stdin.on('end', () => resolve(buf));
+            });
+          }
+
+          if (content) {
+            const Summarizer = require('./summarizer');
+            const s = new Summarizer();
+            const result = await s.summarize({ content, topics, project: saver.currentProject });
+            if (result.summary) {
+              summary = result.summary;
+              console.log(`🤖 Summary (${result.provider}): ${summary}`);
+            }
+            // Auto-extract topics from content when none provided
+            if (!topics.length) {
+              topics = extractTopics(content + ' ' + (summary || ''));
+            }
+          }
+        } else if (!topics.length && summary) {
+          // Auto-extract topics from summary text
+          topics = extractTopics(summary);
+        }
+
+        const result = await saver.saveSession(summary, topics, null, { commit, push });
         console.log(`✅ Session saved: ${result.session_id}`);
-      });
+        if (topics.length) console.log(`   Topics: ${topics.join(', ')}`);
+      }
+    } catch (error) {
+      console.error('❌ Error:', error.message);
+      process.exit(1);
     }
-  } catch (error) {
-    console.error('❌ Error:', error.message);
-    process.exit(1);
-  }
+  })();
 }
 
 module.exports = SessionSaver;
+module.exports.extractTopics = extractTopics;

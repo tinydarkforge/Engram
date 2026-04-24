@@ -1,0 +1,56 @@
+{
+  "id": "proj-a-2025-11-10-auth-refactor",
+  "project": "proj-a",
+  "date": "2025-11-10",
+  "summary": "Refactored JWT authentication middleware to support per-tenant token signing keys. Replaced the shared HMAC-SHA256 secret with a key-rotation-aware lookup that reads from the tenant_keys table. All existing tests pass; added 14 new unit tests covering key rotation edge cases.",
+  "topics": [
+    "auth",
+    "jwt",
+    "middleware",
+    "multi-tenant",
+    "security",
+    "refactor"
+  ],
+  "key_decisions": [
+    "Use RSA-256 per-tenant keys instead of shared HMAC to enable independent rotation",
+    "Cache keys in memory for 5 minutes to avoid DB round-trip on every request",
+    "Reject tokens issued before key rotation timestamp to invalidate old sessions"
+  ],
+  "outcomes": {
+    "completed": [
+      "Tenant key lookup service",
+      "JWT verify middleware rewrite",
+      "Key rotation endpoint",
+      "14 unit tests"
+    ],
+    "blocked": [],
+    "next_steps": [
+      "Add key rotation webhook for downstream services",
+      "Performance test under 10k req/s load"
+    ]
+  },
+  "learnings": [
+    "jsonwebtoken decode() does not verify — must use verify() with explicit algorithm list",
+    "RS256 decode is ~3x slower than HS256 under load; caching is mandatory"
+  ],
+  "code_changes": {
+    "files_added": [
+      "src/auth/tenant-key-service.ts",
+      "src/auth/tenant-key-service.test.ts",
+      "src/auth/jwt-middleware.test.ts"
+    ],
+    "files_modified": [
+      "src/auth/jwt-middleware.ts",
+      "src/auth/index.ts",
+      "migrations/0042_tenant_keys.sql"
+    ],
+    "files_deleted": [
+      "src/auth/shared-secret.ts"
+    ],
+    "lines_added": 412,
+    "lines_removed": 87
+  },
+  "_lazy_loaded": false,
+  "_index_size_bytes": 890,
+  "_full_size_bytes": 1820
+}

@@ -19,6 +19,10 @@ slim-context.json
 graph.html
 graph-codicil.html
 
+# Coverage
+coverage/
+.nyc_output/
+
 # Claude Code session locks
 .claude/*.lock
 .claude/settings.local.json
@@ -39,4 +43,4 @@ metadata/projects/*
 # Private templates
 templates/AGENTS-*.md
 
-.memex-manifest.*
+.codicil-manifest.*

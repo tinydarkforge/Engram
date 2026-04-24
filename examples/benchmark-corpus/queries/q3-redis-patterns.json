@@ -1,0 +1,8 @@
+{
+  "id": "q3-redis-patterns",
+  "description": "Developer adding a new Redis-backed feature — needs patterns from prior Redis work",
+  "type": "new-feature",
+  "text": "What Redis patterns and constraints have we established across projects?",
+  "relevant_topics": ["redis", "bullmq", "queue", "rate-limiting"],
+  "relevant_projects": ["proj-b"]
+}

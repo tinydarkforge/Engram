@@ -1,0 +1,56 @@
+{
+  "id": "proj-b-2025-12-01-api-rate-limit",
+  "project": "proj-b",
+  "date": "2025-12-01",
+  "summary": "Implemented sliding-window rate limiting at the API gateway layer using Redis sorted sets. Limits are configurable per plan tier (free: 100/min, pro: 1000/min, enterprise: unlimited). Added rate-limit headers (X-RateLimit-Remaining, X-RateLimit-Reset) to all responses.",
+  "topics": [
+    "api",
+    "rate-limiting",
+    "redis",
+    "gateway",
+    "security",
+    "billing"
+  ],
+  "key_decisions": [
+    "Sliding window (ZADD + ZREMRANGEBYSCORE) over fixed window — avoids burst at window boundary",
+    "Per-tenant key scoping prevents cross-tenant limit sharing",
+    "Lua script for atomic check-and-increment to prevent race conditions"
+  ],
+  "outcomes": {
+    "completed": [
+      "RateLimitGuard NestJS guard",
+      "Redis Lua script for atomic sliding window",
+      "Plan tier configuration in tenant settings",
+      "Rate limit headers on all responses",
+      "Integration tests for all plan tiers"
+    ],
+    "blocked": [],
+    "next_steps": [
+      "Expose rate limit overage events to billing service",
+      "Add IP-based fallback for unauthenticated requests"
+    ]
+  },
+  "learnings": [
+    "Redis EVAL with Lua is the only way to do atomic read-modify-write without transactions",
+    "ZADD NX is not available in Redis 5 — use conditional logic in Lua instead"
+  ],
+  "code_changes": {
+    "files_added": [
+      "src/guards/rate-limit.guard.ts",
+      "src/guards/rate-limit.guard.test.ts",
+      "src/redis/sliding-window.lua",
+      "src/redis/rate-limit-store.ts"
+    ],
+    "files_modified": [
+      "src/app.module.ts",
+      "src/config/tenant-plan.ts",
+      "src/middleware/response-headers.ts"
+    ],
+    "files_deleted": [],
+    "lines_added": 380,
+    "lines_removed": 42
+  },
+  "_lazy_loaded": false,
+  "_index_size_bytes": 870,
+  "_full_size_bytes": 1800
+}

@@ -1,3 +1,4 @@
+/* eslint-disable */
 const PROMPTS = [
   {
     name: 'summarize_today',

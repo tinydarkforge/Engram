@@ -1,0 +1,53 @@
+{
+  "id": "proj-a-2025-11-18-db-migration",
+  "project": "proj-a",
+  "date": "2025-11-18",
+  "summary": "Added partitioned audit_log table for compliance. Migration backfills 6 months of events from the legacy events table and drops 3 deprecated columns from users. Zero-downtime deployment verified against staging with 40M row dataset.",
+  "topics": [
+    "database",
+    "migration",
+    "postgresql",
+    "audit-log",
+    "compliance",
+    "performance"
+  ],
+  "key_decisions": [
+    "Partition audit_log by month (RANGE on created_at) — query patterns are always time-bounded",
+    "Run backfill in 10k-row batches with 50ms sleep to avoid locking production",
+    "Keep legacy events table for 30-day read shadow period before drop"
+  ],
+  "outcomes": {
+    "completed": [
+      "audit_log DDL with monthly partitions",
+      "Backfill script with progress tracking",
+      "Indexes on (tenant_id, created_at, event_type)",
+      "Staging validation at 40M rows"
+    ],
+    "blocked": [],
+    "next_steps": [
+      "Schedule legacy table drop for 2025-12-18",
+      "Add partition maintenance cron"
+    ]
+  },
+  "learnings": [
+    "pg_partman simplifies partition creation but adds a background worker dependency — skipped for now",
+    "BRIN index on created_at is 10x smaller than B-tree and sufficient for range scans"
+  ],
+  "code_changes": {
+    "files_added": [
+      "migrations/0043_audit_log_partitioned.sql",
+      "migrations/0043_backfill_audit_log.sql",
+      "scripts/validate-audit-backfill.js"
+    ],
+    "files_modified": [
+      "src/models/audit-log.ts",
+      "src/repositories/audit-log-repo.ts"
+    ],
+    "files_deleted": [],
+    "lines_added": 534,
+    "lines_removed": 201
+  },
+  "_lazy_loaded": false,
+  "_index_size_bytes": 920,
+  "_full_size_bytes": 1940
+}
