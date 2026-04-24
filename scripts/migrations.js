@@ -94,8 +94,8 @@ function runSqlMigrations(db) {
     );
   `);
 
-  // Read all .sql files from migrations/ directory
-  const migrationsDir = path.join(CODICIL_PATH, 'migrations');
+  // SQL migration files live next to the package code, not in the data dir
+  const migrationsDir = path.join(__dirname, '..', 'migrations');
   if (!fs.existsSync(migrationsDir)) {
     return { applied: [], skipped: [] };
   }

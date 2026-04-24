@@ -52,10 +52,12 @@ describe('paths', () => {
       assert.equal(result, path.resolve('/custom/codicil'));
     });
 
-    it('defaults to parent of fromDir', () => {
+    it('defaults to parent of fromDir (or user data dir when it exists)', () => {
       delete process.env.CODICIL_PATH;
       const result = resolveCodicilPath('/a/b/scripts');
-      assert.equal(result, path.resolve('/a/b'));
+      const userDataDir = path.join(os.homedir(), '.codicil');
+      const expected = fs.existsSync(userDataDir) ? userDataDir : path.resolve('/a/b');
+      assert.equal(result, expected);
     });
 
     it('defaults to parent of __dirname when no arg', () => {
