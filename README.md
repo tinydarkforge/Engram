@@ -1,131 +1,246 @@
-# Codicil
+<!-- markdownlint-disable MD033 MD041 -->
 
-Local-first memory and assertion ledger for AI coding agents. MCP-native.
+```text
+                           █████ █████ ████  █████ █████ █████ █
+    ╔═══════════╗          █     █   █ █   █   █   █       █   █
+    ║ ~~~~~~~~~ ║          █     █   █ █   █   █   █       █   █
+    ║  §CODEX§  ║          █     █   █ █   █   █   █       █   █
+    ║ ═════════ ║          █████ █████ ████  █████ █████ █████ █████
+    ║ I.  auth  ║
+    ║ II. deps  ║          ━━━━━━━━━━ MEMORY LEDGER ━━━━━━━━━━━━━
+    ║ III. db   ║          Sessions · Facts · Confidence · MCP
+    ║  ~~~~~~~  ║          · Local-first — one ledger, one
+    ║   ●──wax  ║            confidence model, one context
+    ╚═══════════╝            budget. MIT · No account · No tel.
+```
 
-![Codicil demo](docs/assets/demo.gif)
-<!-- demo.gif coming soon -->
+<p align="center">
+  <a href="LICENSE"><img alt="license" src="https://img.shields.io/badge/license-MIT-00cc66.svg?style=flat-square&labelColor=0a0a0a"></a>
+  <img alt="node" src="https://img.shields.io/badge/node-%E2%89%A520-00cc66.svg?style=flat-square&labelColor=0a0a0a">
+  <img alt="mcp" src="https://img.shields.io/badge/MCP-native-00cc66.svg?style=flat-square&labelColor=0a0a0a">
+  <img alt="platform" src="https://img.shields.io/badge/platform-macOS%20%7C%20Linux-00cc66.svg?style=flat-square&labelColor=0a0a0a">
+  <a href="SECURITY.md"><img alt="security" src="https://img.shields.io/badge/security-policy-00cc66.svg?style=flat-square&labelColor=0a0a0a"></a>
+  <a href="https://github.com/tinydarkforge/Codicil/actions/workflows/ci.yml"><img alt="ci" src="https://github.com/TinyDarkForge/Codicil/actions/workflows/ci.yml/badge.svg?branch=main"></a>
+</p>
 
-Codicil keeps a persistent, queryable record of your engineering sessions across every repo. It feeds that memory to AI assistants through MCP — so you stop re-explaining the same context every session. The assertion ledger layer goes further: it tracks facts with confidence, detects contradictions, and builds trust through corroboration across sessions.
+> **Codicil** is a local-first memory and assertion ledger for AI coding agents. It persists session notes across every repo, ranks facts by confidence and corroboration, surfaces contradictions, and feeds the whole thing to Claude Code over MCP. No account. No telemetry. Local files only.
+
+> **Status:** Pre-1.0 (`v4.0.0`). Not yet on npm — install from source. MCP server is stable; assertion ledger is active development.
 
 ---
 
-## Why Not mem0 / Letta / Zep?
+## ░▒▓█ TL;DR
 
-| Feature | **Codicil** | mem0 | Letta / Zep |
-|---|---|---|---|
-| Local-first (no cloud required) | Yes | No — cloud hosted | No — cloud hosted |
-| Assertion ledger | Yes — confidence, lineage, quorum | No | No |
-| Contradiction detection | Yes — automatic negation-based | No | No |
-| MCP-native (Claude Code) | Yes — stdio + HTTP transport | No | No |
-| Session memory across coding sessions | Yes — git-hook capture, semantic search | Partial | Partial |
-| Token-efficient retrieval | Yes — bloom filter + lazy index (94-98% reduction) | No | No |
-| Runs fully offline | Yes | No | No |
+```bash
+git clone https://github.com/tinydarkforge/Codicil.git
+cd Codicil && npm install && npm run setup
+claude mcp add codicil -s user -- node "$(pwd)/scripts/mcp-server.mjs"
+```
+
+Codicil is now a tool in every Claude Code session. It remembers what you did, ranks what it knows, and injects a token-budgeted slice of context on demand. Average query: ~1,000 tokens vs ~50,000 without it.
 
 ---
 
-## Quick Start
+## ░▒▓█ What it does today
 
-```bash
-git clone https://github.com/Pamperito74/Codicil.git
-cd Codicil
-npm install && npm run setup
-```
+Codicil captures engineering work and exposes it as structured memory:
 
-Save a session:
+- **Session memory** — Git-hook capture or manual `remember`. Sessions carry notes, topics, diffs, test deltas. Per-project, per-repo, across every codebase on your machine.
+- **Assertion ledger** — SQLite-backed fact store. Every claim has confidence `[0.0–1.0]`, status (`tentative → established → fossilized`), quorum count, lineage, and decay. Contradictions surface as unresolved tensions.
+- **Token-efficient retrieval** — Four-layer stack (bloom filter → index → session detail → ledger). Stops at the earliest layer that answers the query. 94–98% token reduction vs raw session dumps.
+- **MCP-native** — stdio and Streamable HTTP transport. Tools: `neural_search`, `remember`, `ledger_ingest`, `ledger_query`, `ledger_select_context`, `cross_project_search`, `get_bundle`, `recent_sessions`.
+- **Dashboard + HTTP API** — Local web UI at `:3000` for browsing sessions, inspecting ledger state, reviewing tensions.
 
-```bash
-./scripts/remember "Implemented OAuth callback handling" --topics auth,oauth
-```
-
-Query memory:
-
-```bash
-node scripts/codicil-loader.js semantic "authentication work"
-```
-
-Full setup guide: [QUICKSTART.md](QUICKSTART.md)
+Codicil does not call any remote model by default. Semantic search runs a local ONNX embedding model (`@huggingface/transformers`) that loads lazily on the first semantic query. If you never invoke semantic search, no model is ever downloaded.
 
 ---
 
-## Connect Claude Code (MCP)
+## ░▒▓█ How retrieval works
 
-```bash
-claude mcp add codicil -s user -- node /path/to/Codicil/scripts/mcp-server.mjs
-```
+Queries traverse four layers, stopping as early as possible:
 
-That's it. Codicil tools are now available in every Claude Code session: `neural_search`, `remember`, `ledger_ingest`, `ledger_query`, `ledger_select_context`, and more.
+| Layer              | Size      | Latency | Role                                                      |
+|--------------------|-----------|---------|-----------------------------------------------------------|
+| **Bloom filter**   | 243 bytes | 0.1 ms  | Instant *"not known"* — zero tokens consumed              |
+| **Index**          | 4 KB      | ~10 ms  | Compact summaries — answers 80% of queries                |
+| **Session detail** | per-file  | ~5 ms   | Lazy-loaded on demand                                     |
+| **Ledger**         | ~2 KB/fact| 5–15 ms | Ranked facts with confidence, quorum, tension, lineage    |
 
-Remote HTTP transport with API-key auth: [docs/remote-setup.md](docs/remote-setup.md)
+Facts are ranked by `decay × status × quorum × tension × weight` and packed into a caller-specified token budget. Architecture deep dive: [`HOW-IT-WORKS.md`](HOW-IT-WORKS.md).
 
 ---
 
-## Assertion Ledger
+## ░▒▓█ Assertion ledger
 
-![Ledger](docs/assets/ledger-screenshot.png)
-<!-- ledger-screenshot.png coming soon -->
+The ledger is where session notes become structured, queryable knowledge. Every assertion records:
 
-The ledger is a SQLite-backed fact store. Every assertion carries:
-
-- **Confidence** `[0.0–1.0]` — starts uncertain, grows through corroboration
-- **Quorum count** — how many independent sources have confirmed it
+- **Plane** — authority scope (`user:alice`, `project:codicil`, `session:xyz`)
+- **Claim** — terse fact text
+- **Confidence** — `[0.0–1.0]`, starts uncertain, grows with corroboration
+- **Quorum** — independent sources confirming the fact
 - **Status** — `tentative` → `established` → `fossilized`
-- **Staleness model** — `flat`, `exponential`, `episodic`, `state_bound`, or `contextual` decay
-- **Lineage** — which sessions contributed to this fact
-- **Contradiction detection** — automatic negation-based tension seeding; unresolved tensions surface as alerts
+- **Decay model** — `flat`, `exponential`, `episodic`, `state_bound`, `contextual`
+- **Lineage** — which sessions contributed
+- **Tension** — automatic negation-based contradiction detection
 
-Facts are ranked by `decay × status × quorum × tension × weight` and packed into a token budget for context injection.
-
-Full reference: [docs/ASSERTION-API-REFERENCE.md](docs/ASSERTION-API-REFERENCE.md) | [docs/LEDGER-GUIDE.md](docs/LEDGER-GUIDE.md)
+Tensions surface as alerts; unresolved ones downweight their claims in context selection. Full reference: [`docs/ASSERTION-API-REFERENCE.md`](docs/ASSERTION-API-REFERENCE.md) · [`docs/LEDGER-GUIDE.md`](docs/LEDGER-GUIDE.md).
 
 ---
 
-## How Retrieval Works
+## ░▒▓█ Positioning
 
-Queries go through four layers, stopping as early as possible:
+Codicil is **not** a hosted memory SaaS, a vector-DB-as-a-service, or a RAG framework. It is **a local ledger and MCP server** for engineering context.
 
-| Layer | Size | Latency | Role |
-|---|---|---|---|
-| Bloom filter | 243 bytes | 0.1 ms | Instant "not known" — zero tokens consumed |
-| Index | 4 KB | ~10 ms | Compact summaries — answers 80% of queries |
-| Session details | Per-file | ~5 ms | On-demand, loaded only when needed |
-| Assertion ledger | ~2 KB/fact | 5–15 ms | Ranked facts with confidence and lineage |
+| Alternative      | When to pick it instead of Codicil                              |
+|------------------|-----------------------------------------------------------------|
+| **mem0**         | You want hosted memory, team sync, managed upgrades.            |
+| **Letta / Zep**  | You want agent-framework primitives and hosted chat state.      |
+| **Plain RAG**    | You only need retrieval over static docs, no fact lifecycle.    |
+| **Raw SQLite**   | You want a schema you control and don't need MCP or ranking.    |
 
-Average query: ~1,000 tokens vs ~50,000 tokens without Codicil.
+**Codicil's niche:** local-first, confidence-weighted, contradiction-aware, token-budgeted context for AI coding agents. Runs fully offline. If you want dashboards-as-a-service or team-wide sync, pick mem0 or Zep.
 
-Benchmarks: [docs/BENCHMARKS.md](docs/BENCHMARKS.md)
+| Feature                              | **Codicil** | mem0        | Letta / Zep |
+|--------------------------------------|:-----------:|:-----------:|:-----------:|
+| Local-first (no cloud required)      | Yes         | No          | No          |
+| Assertion ledger (confidence/quorum) | Yes         | No          | No          |
+| Contradiction detection              | Yes         | No          | No          |
+| MCP-native (Claude Code)             | Yes         | No          | No          |
+| Git-hook session capture             | Yes         | Partial     | Partial     |
+| Token-efficient retrieval            | Yes (94–98%)| No          | No          |
+| Runs fully offline                   | Yes         | No          | No          |
 
 ---
 
-## Dashboard and API
+## ░▒▓█ Prerequisites
+
+- **Node.js** `>=20`
+- **macOS** or **Linux**. Windows not supported (shell scripts + symlinks).
+- **First semantic query:** downloads a ~100 MB local embedding model (`@huggingface/transformers`). Text search (`npm run search`) and keyword recall work without it.
+
+---
+
+## ░▒▓█ Install
+
+### From source (currently the only install path)
+
+```bash
+git clone https://github.com/tinydarkforge/Codicil.git
+cd Codicil
+npm install
+npm run setup
+node scripts/codicil-loader.js status
+```
+
+npm publish is pending (tracked in issue #28). Once published:
+
+```bash
+npm install -g codicil   # not yet available
+```
+
+### Connect Claude Code
+
+```bash
+claude mcp add codicil -s user -- node /absolute/path/to/Codicil/scripts/mcp-server.mjs
+```
+
+Remote HTTP transport with API-key auth: [`docs/remote-setup.md`](docs/remote-setup.md).
+
+---
+
+## ░▒▓█ Usage
+
+```bash
+# Save a session
+./scripts/remember "Implemented OAuth callback handling" --topics auth,oauth
+
+# Interactive save
+./scripts/remember --interactive
+
+# Git-hook capture (auto-save on commit)
+./scripts/git-hook-capture.sh install
+
+# Semantic search
+node scripts/codicil-loader.js semantic "authentication work"
+
+# Keyword search
+node scripts/codicil-loader.js search "oauth"
+
+# Status
+node scripts/codicil-loader.js status
+
+# Launch dashboard
+npm start   # http://127.0.0.1:3000/
+
+# Ledger CLI
+npm run ledger:stats
+npm run ledger:migrate
+```
+
+Full CLI reference: [`CHEATSHEET.md`](CHEATSHEET.md) · deep dive: [`HOW-IT-WORKS.md`](HOW-IT-WORKS.md).
+
+---
+
+## ░▒▓█ Dashboard + API
 
 ```bash
 node scripts/server.js
 ```
 
 - Dashboard: `http://127.0.0.1:3000/`
-- API: `http://127.0.0.1:3000/api/stats`
-- Health: `http://127.0.0.1:3000/health`
+- API:       `http://127.0.0.1:3000/api/stats`
+- Health:    `http://127.0.0.1:3000/health`
+
+The dashboard is read-only by default. Ledger mutations require the MCP or CLI path.
 
 ---
 
-## Repo Layout
+## ░▒▓█ Security
 
-```
+- **No network calls** unless you opt in. The embedding model downloads lazily on the first semantic query and is then cached locally — if you never invoke semantic search, nothing is fetched.
+- **No telemetry.** Codicil does not phone home. Ever.
+- **Local files only.** All session data lives under the repo in `summaries/` and the ledger DB in `.cache/codicil.db`.
+- **API-key auth** for remote HTTP MCP transport — see [`docs/remote-setup.md`](docs/remote-setup.md).
+- **Vuln disclosure:** [`SECURITY.md`](SECURITY.md).
+
+---
+
+## ░▒▓█ Repo layout
+
+```text
 scripts/     runtime, CLI, servers, MCP tools, ledger
-tests/       194 tests across 16 files (node:test)
-web/         dashboard UI
-docs/        setup and operational docs
-summaries/   session indexes and records
+tests/       358 tests across 27 files (node:test)
+web/         dashboard UI (static)
+docs/        setup, reference, operational docs
+schemas/     JSON schemas for sessions + ledger
+migrations/  SQLite schema migrations
+examples/    curated session records
+summaries/   per-project session indexes + records
 ```
 
 ---
 
-## Related Docs
+## ░▒▓█ Platform support
 
-- [QUICKSTART.md](QUICKSTART.md)
-- [HOW-IT-WORKS.md](HOW-IT-WORKS.md)
-- [CHEATSHEET.md](CHEATSHEET.md)
-- [docs/LEDGER-GUIDE.md](docs/LEDGER-GUIDE.md)
-- [docs/ASSERTION-API-REFERENCE.md](docs/ASSERTION-API-REFERENCE.md)
-- [docs/remote-setup.md](docs/remote-setup.md)
-- [docs/BENCHMARKS.md](docs/BENCHMARKS.md)
+| Platform | Status                                       |
+|----------|----------------------------------------------|
+| macOS    | Supported                                    |
+| Linux    | Supported                                    |
+| Windows  | Not supported (shell scripts, POSIX symlinks)|
+
+---
+
+## ░▒▓█ Related docs
+
+- [`QUICKSTART.md`](QUICKSTART.md) — end-to-end first session
+- [`HOW-IT-WORKS.md`](HOW-IT-WORKS.md) — architecture deep dive
+- [`CHEATSHEET.md`](CHEATSHEET.md) — CLI + MCP reference
+- [`docs/LEDGER-GUIDE.md`](docs/LEDGER-GUIDE.md) — assertion ledger operator guide
+- [`docs/ASSERTION-API-REFERENCE.md`](docs/ASSERTION-API-REFERENCE.md) — ledger API
+- [`docs/remote-setup.md`](docs/remote-setup.md) — remote MCP transport
+- [`docs/WHAT-IS-CODICIL.md`](docs/WHAT-IS-CODICIL.md) — plain-language overview
+- [`CONTRIBUTING.md`](CONTRIBUTING.md) · [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md) · [`SECURITY.md`](SECURITY.md)
+
+---
+
+<p align="center"><em>CodiCil — because every agent deserves a ledger, not a goldfish bowl.</em></p>
