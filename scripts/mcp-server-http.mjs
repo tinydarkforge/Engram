@@ -108,7 +108,7 @@ function createServer() {
         },
         {
           name: 'neural_search',
-          description: 'Semantic search across all Neural Memory sessions. Finds sessions by meaning, not just keywords. Use this to find relevant past work, learnings, and context.',
+          description: 'Semantic search across all Codicil sessions. Finds sessions by meaning, not just keywords. Use this to find relevant past work, learnings, and context.',
           inputSchema: {
             type: 'object',
             properties: {
@@ -187,7 +187,7 @@ function createServer() {
         },
         {
           name: 'list_projects',
-          description: 'List all projects indexed in Neural Memory with session counts.',
+          description: 'List all projects indexed in Codicil with session counts.',
           inputSchema: {
             type: 'object',
             properties: {},
@@ -209,7 +209,7 @@ function createServer() {
         },
         {
           name: 'get_topics',
-          description: 'Get top topics/tags from Neural Memory with session counts.',
+          description: 'Get top topics/tags from Codicil with session counts.',
           inputSchema: {
             type: 'object',
             properties: {
@@ -362,8 +362,8 @@ function createServer() {
       resources: [
         {
           uri: 'codicil://stats',
-          name: 'Neural Memory Stats',
-          description: 'Overview statistics of the Neural Memory system',
+          name: 'Codicil Stats',
+          description: 'Overview statistics of the Codicil memory and ledger',
           mimeType: 'application/json',
         },
         {

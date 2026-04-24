@@ -3,7 +3,7 @@
 /**
  * Codicil MCP Server
  *
- * Exposes Neural Memory as tools for AI assistant via Model Context Protocol.
+ * Exposes Codicil memory and assertion ledger as tools via Model Context Protocol.
  *
  * Tools:
  *   - neural_search: Semantic search across all sessions
@@ -129,7 +129,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       },
       {
         name: 'neural_search',
-        description: 'Semantic search across all Neural Memory sessions. Finds sessions by meaning, not just keywords. Use this to find relevant past work, learnings, and context.',
+        description: 'Semantic search across all Codicil sessions. Finds sessions by meaning, not just keywords. Use this to find relevant past work, learnings, and context.',
         inputSchema: {
           type: 'object',
           properties: {
@@ -208,7 +208,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       },
       {
         name: 'list_projects',
-        description: 'List all projects indexed in Neural Memory with session counts.',
+        description: 'List all projects indexed in Codicil with session counts.',
         inputSchema: {
           type: 'object',
           properties: {}
@@ -230,7 +230,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       },
       {
         name: 'get_topics',
-        description: 'Get top topics/tags from Neural Memory with session counts.',
+        description: 'Get top topics/tags from Codicil with session counts.',
         inputSchema: {
           type: 'object',
           properties: {
@@ -326,7 +326,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           properties: {
             plane: {
               type: 'string',
-              description: 'Plane identifier (e.g., user:daniel, project:Codicil, session:id123)'
+              description: 'Plane identifier (e.g., user:alice, project:Codicil, session:id123)'
             },
             class_: {
               type: 'string',
@@ -371,7 +371,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           properties: {
             plane: {
               type: 'string',
-              description: 'Plane identifier (e.g., user:daniel, project:Codicil)'
+              description: 'Plane identifier (e.g., user:alice, project:Codicil)'
             }
           },
           required: ['plane']
@@ -515,8 +515,8 @@ server.setRequestHandler(ListResourcesRequestSchema, async () => {
     resources: [
       {
         uri: 'codicil://stats',
-        name: 'Neural Memory Stats',
-        description: 'Overview statistics of the Neural Memory system',
+        name: 'Codicil Stats',
+        description: 'Overview statistics of the Codicil memory and ledger',
         mimeType: 'application/json'
       },
       {

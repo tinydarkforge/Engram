@@ -2,7 +2,7 @@
 /* eslint-disable */
 
 /**
- * Git-Native Indexing for Neural Memory
+ * Git-Native Indexing for Codicil
  *
  * Indexes git commits across all known projects for semantic search.
  * This captures institutional knowledge that lives in commit history
@@ -497,7 +497,7 @@ const indexer = new GitIndexer();
         break;
 
       default:
-        console.log('Git-Native Indexing for Neural Memory\n');
+        console.log('Git-Native Indexing for Codicil\n');
         console.log('Usage:');
         console.log('  node index-git.js build              Build index for all projects');
         console.log('  node index-git.js build --project X  Build index for single project');

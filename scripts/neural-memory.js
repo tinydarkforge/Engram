@@ -2,7 +2,7 @@
 /* eslint-disable */
 
 /**
- * Neural Memory - Streamlined
+ * Codicil - Memory System
  *
  * Just git commit search. That's what works.
  * The session-based stuff wasn't being used.
@@ -88,7 +88,7 @@ const command = process.argv[2];
         const statsIndexer = new GitIndexer3();
         const stats = statsIndexer.getStats();
 
-        console.log('📊 Neural Memory Stats\n');
+        console.log('📊 Codicil Stats\n');
         console.log(`Built: ${stats.built}`);
         console.log(`Since: ${stats.since}`);
         console.log(`Commits: ${stats.total_commits}`);
@@ -101,7 +101,7 @@ const command = process.argv[2];
         break;
 
       default:
-        console.log('Neural Memory - Git Search\n');
+        console.log('Codicil - Git Search\n');
         console.log('Usage:');
         console.log('  node neural-memory.js search "query"  # Search git history');
         console.log('  node neural-memory.js build           # Rebuild git index');

@@ -74,7 +74,7 @@ Session Notes (100-500 tokens)
   Extract → Facts (terse, high-value)
   ↓
 Assertion Ledger (SQLite, .cache/codicil.db)
-  • plane: authority (user:daniel, project:Codicil, session:xyz)
+  • plane: authority (user:alice, project:Codicil, session:xyz)
   • claim: fact text (e.g., "React batch updates improve performance")
   • confidence: [0.0-1.0] (starts at 0.5, grows with corroboration)
   • quorum_count: number of independent sources
@@ -96,7 +96,7 @@ Context Selection (budget-aware, ~400-500 facts per 1M tokens)
 
 **Storage:** SQLite (~2KB per assertion), lazy-loaded on first query. Query latency ~5-15ms for ranking 100 facts.
 
-See [PHASE-10-ASSERTION-LEDGER.md](./PHASE-10-ASSERTION-LEDGER.md) and [Ledger Guide](./docs/LEDGER-GUIDE.md) for details.
+See [Ledger Guide](./docs/LEDGER-GUIDE.md) and [Assertion API Reference](./docs/ASSERTION-API-REFERENCE.md) for details.
 
 ---
 
@@ -257,7 +257,7 @@ Agent A                  AgentBridge              Codicil
 
 ## Testing
 
-194 tests across 16 test files using Node.js built-in `node:test`:
+29 test files using Node.js built-in `node:test`:
 
 ```bash
 npm test                    # Run all tests
