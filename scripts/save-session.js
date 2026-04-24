@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * Save Session - Save AI assistant session to Memex
+ * Save Session - Save AI assistant session to Codicil
  *
  * Usage:
  *   save-session "Implemented OAuth2 authentication" --topics auth,oauth,google
@@ -14,11 +14,11 @@ const fs = require('fs');
 const path = require('path');
 const { execFileSync } = require('child_process');
 const readline = require('readline');
-const { resolveMemexPath, resolveProjectDirName, normalizeProjectSlug } = require('./paths');
+const { resolveCodicilPath, resolveProjectDirName, normalizeProjectSlug } = require('./paths');
 const agentbridge = require('./agentbridge-client');
 const { readJSON } = require('./safe-json');
 
-const MEMEX_PATH = resolveMemexPath(__dirname);
+const CODICIL_PATH = resolveCodicilPath(__dirname);
 const LOCK_TTL_MS = 30 * 1000;
 
 function atomicWriteFileSync(targetPath, content) {
@@ -81,8 +81,8 @@ async function withFileLock(targetPath, fn, { retries = 20, delayMs = 25 } = {})
 
 class SessionSaver {
   constructor(options = {}) {
-    this.memex = require('./memex-loader');
-    this.loader = new this.memex();
+    this.codicil = require('./codicil-loader');
+    this.loader = new this.codicil();
     this.loader.loadIndex();
     if (options.project) {
     this.currentProject = options.project;
@@ -193,8 +193,8 @@ class SessionSaver {
     }
 
     // Update sessions index
-    const projectDirName = resolveProjectDirName(MEMEX_PATH, this.currentProject);
-    const indexPath = path.join(MEMEX_PATH, 'summaries/projects', projectDirName, 'sessions-index.json');
+    const projectDirName = resolveProjectDirName(CODICIL_PATH, this.currentProject);
+    const indexPath = path.join(CODICIL_PATH, 'summaries/projects', projectDirName, 'sessions-index.json');
 
     await withFileLock(indexPath, async () => {
       let sessionsIndex = readJSON(indexPath);
@@ -236,7 +236,7 @@ class SessionSaver {
     // Save full content if provided
     if (fullContent) {
       const contentPath = path.join(
-        MEMEX_PATH,
+        CODICIL_PATH,
         'content/projects',
         projectDirName,
         'sessions',
@@ -254,7 +254,7 @@ class SessionSaver {
     // Notify AgentBridge (fire-and-forget, never blocks)
     if (this._bridge) {
       this._bridge
-        .then(bridge => bridge.emit('memex.session.saved', {
+        .then(bridge => bridge.emit('codicil.session.saved', {
           session_id: sessionId,
           project: this.currentProject,
           summary,
@@ -279,18 +279,18 @@ class SessionSaver {
   }
 
   /**
-   * Update main Memex index (v2.0 with abbreviated keys)
+   * Update main Codicil index (v2.0 with abbreviated keys)
    */
   async updateMainIndex() {
-    const indexPath = path.join(MEMEX_PATH, 'index.json');
+    const indexPath = path.join(CODICIL_PATH, 'index.json');
     await withFileLock(indexPath, async () => {
       const index = readJSON(indexPath);
       if (!index) return;
 
       // Update project session count
-    const projectDirName = resolveProjectDirName(MEMEX_PATH, this.currentProject);
+    const projectDirName = resolveProjectDirName(CODICIL_PATH, this.currentProject);
     const sessionsIndexPath = path.join(
-      MEMEX_PATH,
+      CODICIL_PATH,
       'summaries/projects',
       projectDirName,
       'sessions-index.json'
@@ -337,20 +337,20 @@ class SessionSaver {
     try {
       const pathsToAdd = ['index.json'];
       const projectSummariesPath = path.join('summaries', 'projects', this.currentProject);
-      if (fs.existsSync(path.join(MEMEX_PATH, projectSummariesPath))) {
+      if (fs.existsSync(path.join(CODICIL_PATH, projectSummariesPath))) {
         pathsToAdd.push(projectSummariesPath);
       }
       const projectContentPath = path.join('content', 'projects', this.currentProject);
-      if (fs.existsSync(path.join(MEMEX_PATH, projectContentPath))) {
+      if (fs.existsSync(path.join(CODICIL_PATH, projectContentPath))) {
         pathsToAdd.push(projectContentPath);
       }
 
-      execFileSync('git', ['add', ...pathsToAdd], { cwd: MEMEX_PATH });
-      execFileSync('git', ['commit', '-m', `chore(memex): add session ${sessionId}`], { cwd: MEMEX_PATH });
-      console.log('✓ Changes committed to Memex');
+      execFileSync('git', ['add', ...pathsToAdd], { cwd: CODICIL_PATH });
+      execFileSync('git', ['commit', '-m', `chore(codicil): add session ${sessionId}`], { cwd: CODICIL_PATH });
+      console.log('✓ Changes committed to Codicil');
 
       if (push) {
-        execFileSync('git', ['push', 'origin', 'main'], { cwd: MEMEX_PATH, stdio: 'inherit' });
+        execFileSync('git', ['push', 'origin', 'main'], { cwd: CODICIL_PATH, stdio: 'inherit' });
         console.log('✓ Pushed to remote');
       }
     } catch (e) {

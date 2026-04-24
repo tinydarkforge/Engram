@@ -1,4 +1,4 @@
-# Memex v4.0 Roadmap
+# Codicil v4.0 Roadmap
 
 **Status:** Active Development
 **Target:** Q1-Q2 2026
@@ -44,7 +44,7 @@ When a foundational fact changes, automatically propagate updates to dependent a
 
 ## Overview
 
-Memex v4.0 focuses on three key areas:
+Codicil v4.0 focuses on three key areas:
 1. **Performance** - WebAssembly, Worker Threads, Streaming
 2. **Intelligence** - Vector Search, Semantic Understanding
 3. **Scale** - Incremental Updates, CDN, Offline-First
@@ -92,7 +92,7 @@ Memex v4.0 focuses on three key areas:
 **Status:** 📋 Planned (After F1)
 
 **Benefits:**
-- Non-blocking Memex lookups
+- Non-blocking Codicil lookups
 - Parallel session loading (60ms → 15ms)
 - Background indexing
 - Multi-core utilization
@@ -472,7 +472,7 @@ Want to contribute to v4.0?
 
 ## Conclusion
 
-Memex v4.0 represents the next evolution:
+Codicil v4.0 represents the next evolution:
 - **From fast to instant** (5ms startup)
 - **From keyword to semantic** (AI-powered search)
 - **From good to great** (enterprise-scale)

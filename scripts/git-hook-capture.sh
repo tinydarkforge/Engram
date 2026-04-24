@@ -1,15 +1,15 @@
 #!/usr/bin/env bash
 
 ###############################################################################
-# Memex Git Hook Capture (#36)
+# Codicil Git Hook Capture (#36)
 #
 # Auto-captures sessions on git commit for zero-effort knowledge recording
 #
 # Installation:
-#   ln -s ../../Memex/scripts/git-hook-capture.sh .git/hooks/post-commit
+#   ln -s ../../Codicil/scripts/git-hook-capture.sh .git/hooks/post-commit
 #
 # Or use the install command:
-#   Memex/scripts/git-hook-capture.sh install
+#   Codicil/scripts/git-hook-capture.sh install
 #
 # Features:
 # - Extracts session info from commit message
@@ -18,19 +18,19 @@
 # - Zero manual effort - just commit normally
 #
 # Commit Message Format (optional enhancement):
-#   Add [memex: topic1, topic2] to your commit message to tag topics
-#   Example: "feat(auth): add OAuth2 [memex: auth, security]"
+#   Add [codicil: topic1, topic2] to your commit message to tag topics
+#   Example: "feat(auth): add OAuth2 [codicil: auth, security]"
 ###############################################################################
 
 set -e
 
 # Get script directory (works even when called as symlink)
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-# Try to get MEMEX_PATH from: 1) env var, 2) git config, 3) relative to script
-GIT_CONFIG_PATH=$(git config --get memex.path 2>/dev/null || echo "")
+# Try to get CODICIL_PATH from: 1) env var, 2) git config, 3) relative to script
+GIT_CONFIG_PATH=$(git config --get codicil.path 2>/dev/null || echo "")
 DEFAULT_PATH="$(dirname "$SCRIPT_DIR")/.."
-MEMEX_PATH="${MEMEX_PATH:-${GIT_CONFIG_PATH:-$DEFAULT_PATH}}"
-REMEMBER_SCRIPT="$MEMEX_PATH/scripts/remember"
+CODICIL_PATH="${CODICIL_PATH:-${GIT_CONFIG_PATH:-$DEFAULT_PATH}}"
+REMEMBER_SCRIPT="$CODICIL_PATH/scripts/remember"
 
 # Configuration
 MIN_COMMIT_MESSAGE_LENGTH=10
@@ -49,19 +49,19 @@ NC='\033[0m' # No Color
 ###############################################################################
 
 log() {
-  echo -e "${BLUE}[Memex]${NC} $1"
+  echo -e "${BLUE}[Codicil]${NC} $1"
 }
 
 log_success() {
-  echo -e "${GREEN}[Memex]${NC} $1"
+  echo -e "${GREEN}[Codicil]${NC} $1"
 }
 
 log_warn() {
-  echo -e "${YELLOW}[Memex]${NC} $1"
+  echo -e "${YELLOW}[Codicil]${NC} $1"
 }
 
 log_error() {
-  echo -e "${RED}[Memex]${NC} $1"
+  echo -e "${RED}[Codicil]${NC} $1"
 }
 
 ###############################################################################
@@ -76,7 +76,7 @@ install_hook() {
   fi
 
   local hook_path="$repo_root/.git/hooks/post-commit"
-  local this_script="$MEMEX_PATH/scripts/git-hook-capture.sh"
+  local this_script="$CODICIL_PATH/scripts/git-hook-capture.sh"
 
   if [ -f "$hook_path" ]; then
     log_warn "post-commit hook already exists"
@@ -141,8 +141,8 @@ capture_session() {
 
   # Extract topics from commit message
   local topics=""
-  if echo "$commit_message" | grep -q "\[memex:"; then
-    topics=$(echo "$commit_message" | sed -n 's/.*\[memex:\s*\([^]]*\)\].*/\1/p' | tr ',' '\n' | xargs)
+  if echo "$commit_message" | grep -q "\[codicil:"; then
+    topics=$(echo "$commit_message" | sed -n 's/.*\[codicil:\s*\([^]]*\)\].*/\1/p' | tr ',' '\n' | xargs)
   fi
 
   # Auto-detect topics from commit type
@@ -207,13 +207,13 @@ capture_session() {
   # Call remember script with auto-captured data
   # Run in background to not delay commit
   (
-    export MEMEX_AUTO_CAPTURE=1
-    export MEMEX_PROJECT="$project"
-    export MEMEX_SUMMARY="$summary"
-    export MEMEX_TOPICS="$topics"
-    export MEMEX_COMMIT="$commit_hash"
-    export MEMEX_LINES_ADDED="$lines_added"
-    export MEMEX_LINES_REMOVED="$lines_removed"
+    export CODICIL_AUTO_CAPTURE=1
+    export CODICIL_PROJECT="$project"
+    export CODICIL_SUMMARY="$summary"
+    export CODICIL_TOPICS="$topics"
+    export CODICIL_COMMIT="$commit_hash"
+    export CODICIL_LINES_ADDED="$lines_added"
+    export CODICIL_LINES_REMOVED="$lines_removed"
 
     "$REMEMBER_SCRIPT" --auto 2>&1 | while read line; do
       log "$line"

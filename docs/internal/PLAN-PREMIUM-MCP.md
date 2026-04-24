@@ -1,4 +1,4 @@
-# Memex — Premium MCP Tool Plan
+# Codicil — Premium MCP Tool Plan
 
 > Synthesized from white (architecture) + green (engineering) agents.
 > Date: 2026-03-14
@@ -8,7 +8,7 @@
 
 ## Context
 
-Memex is a solid read-optimized knowledge retrieval system. The gap between what it stores and what AI agents actually need is the entire product opportunity. This plan turns it from a searchable archive into an **active memory layer** — one that AI agents write to as naturally as they read from.
+Codicil is a solid read-optimized knowledge retrieval system. The gap between what it stores and what AI agents actually need is the entire product opportunity. This plan turns it from a searchable archive into an **active memory layer** — one that AI agents write to as naturally as they read from.
 
 ---
 
@@ -18,12 +18,12 @@ These are broken *today* — before any new features.
 
 | # | Issue | File | Severity |
 |---|---|---|---|
-| C1 | `.mcp.json` points to `cirrus/DevOps/Memex` — Claude runs a **different codebase** | `.mcp.json` | Critical |
-| C2 | `paths.js` resolves to `TheDarkFactory/Memex` (wrong dir) — 12 tests permanently broken | `scripts/paths.js` | Critical |
+| C1 | `.mcp.json` points to `cirrus/DevOps/Codicil` — Claude runs a **different codebase** | `.mcp.json` | Critical |
+| C2 | `paths.js` resolves to `TheDarkFactory/Codicil` (wrong dir) — 12 tests permanently broken | `scripts/paths.js` | Critical |
 | C3 | `index-git.js` missing — `cross_project_search` throws on every call | `scripts/mcp-tools.js:186` | High |
 | C4 | `VectorSearch` re-initialized per `neural_search` call — 1-5s latency every search | `scripts/mcp-tools.js:55` | High |
 | C5 | Bloom filter never updated after saves — new sessions invisible to keyword search | `scripts/save-session.js` | Medium |
-| C6 | `server.js` calls `memex.loadIndex()` at require-time — untestable without env var | `scripts/server.js:36` | Medium |
+| C6 | `server.js` calls `codicil.loadIndex()` at require-time — untestable without env var | `scripts/server.js:36` | Medium |
 | C7 | MCP server version `1.0.0` mismatches `package.json` `4.0.0` | `scripts/mcp-server.mjs:64` | Low |
 | C8 | `cosineSimilarity()` duplicated in `vector-search.js` and `index-git.js` | both files | Low |
 
@@ -49,7 +49,7 @@ The current server uses stdio transport, so it only works when the client spawns
 - [ ] Fix `.mcp.json` to point to `scripts/mcp-server.mjs` in this repo
 - [ ] Fix `paths.js` path resolution — scan upward for nearest `index.json` if resolved dir is invalid
 - [ ] Refactor `server.js` to not call `loadIndex()` at module load time (factory pattern)
-- [ ] Fix `server.test.js` and `integration.test.js` — set `MEMEX_PATH` to test fixture in `before()` hook
+- [ ] Fix `server.test.js` and `integration.test.js` — set `CODICIL_PATH` to test fixture in `before()` hook
 - [ ] Fix `npm test` to pass without pre-set env var (`cross-env` or test config)
 - [ ] Fix MCP server version to match `package.json`
 
@@ -75,7 +75,7 @@ This PR ships only the core session save. Embedding generation, Bloom filter upd
 ```json
 {
   "name": "remember",
-  "description": "Save a memory or session to Memex. Call at end of session, after completing a feature, or when recording a decision.",
+  "description": "Save a memory or session to Codicil. Call at end of session, after completing a feature, or when recording a decision.",
   "inputSchema": {
     "type": "object",
     "properties": {
@@ -178,12 +178,12 @@ This PR ships only the core session save. Embedding generation, Bloom filter upd
 **New MCP Tool: `get_session`**
 
 - [ ] Accepts `{ project: string, session_id: string }`
-- [ ] Delegates to existing `loadSessionDetails()` in `memex-loader.js` (already implemented, not wired)
+- [ ] Delegates to existing `loadSessionDetails()` in `codicil-loader.js` (already implemented, not wired)
 - [ ] Returns full session: `{ id, date, summary, topics, key_decisions, learnings, outcomes, code_changes }`
 
 **New MCP Tool: `search_sessions`**
 
-- [ ] Fast synchronous keyword search via `memex.search()`
+- [ ] Fast synchronous keyword search via `codicil.search()`
 - [ ] No model loading — instant results for simple queries
 - [ ] Accepts `{ query: string, project?: string, limit?: number }`
 
@@ -221,33 +221,33 @@ This PR ships only the core session save. Embedding generation, Bloom filter upd
 **Goal:** Zero-friction setup. No hidden env vars. No missing scripts.
 
 - [ ] `npm run setup` script:
-  - Checks `MEMEX_PATH`
+  - Checks `CODICIL_PATH`
   - Creates directory structure if missing
   - Generates minimal `index.json` from template
   - Runs manifest generation and Bloom filter build
   - Idempotent — safe to run multiple times
-- [ ] `memex status` — friendly, non-throwing, actionable:
+- [ ] `codicil status` — friendly, non-throwing, actionable:
   - Shows what's missing and exact commands to fix
-  - No raw `Error: Memex index not found at...`
+  - No raw `Error: Codicil index not found at...`
 - [ ] Create `scripts/git-hook-capture.sh` with `install` command:
   - Copies post-commit hook template to `.git/hooks/post-commit` of current repo
   - Referenced in QUICKSTART but doesn't exist
-- [ ] Update `.mcp.json` template to use relative path or `MEMEX_PATH` env interpolation
+- [ ] Update `.mcp.json` template to use relative path or `CODICIL_PATH` env interpolation
 - [ ] Tests: setup script idempotency test
 
 **Acceptance criteria:**
 - `npm run setup` on a fresh clone with no env vars produces a working MCP server in < 5 minutes
-- `memex status` output includes exact command to fix each missing component — no "see docs" deflections
+- `codicil status` output includes exact command to fix each missing component — no "see docs" deflections
 - `git-hook-capture.sh install` works on macOS and Linux; script is idempotent
 
 **Guardrails:**
 - `npm run setup` never deletes user data
-- `memex status` exits 0 and never throws
+- `codicil status` exits 0 and never throws
 
 ---
 
 ### PR 6 — Remote MCP Transport (Streamable HTTP)
-**Goal:** Allow agents on other machines to connect to Memex over the network.
+**Goal:** Allow agents on other machines to connect to Codicil over the network.
 
 **Recommendation:** Implement **Streamable HTTP** transport. The legacy SSE-only transport is deprecated and should not be used for new work. Plain HTTP without streaming is not sufficient for MCP.
 
@@ -270,7 +270,7 @@ This PR ships only the core session save. Embedding generation, Bloom filter upd
 - Rate limiting applies to the `/mcp` request endpoint only — the streaming response must not be buffered or throttled by the server or proxy
 - All connections are cleaned up on close/error to avoid leaks
 
-> **Note:** Client config examples and operational runbook belong in `docs/remote-setup.md` when PR 6 ships. Claude Desktop uses `{ "url": "https://memex.yourdomain.com/mcp" }` — no custom transport field.
+> **Note:** Client config examples and operational runbook belong in `docs/remote-setup.md` when PR 6 ships. Claude Desktop uses `{ "url": "https://codicil.yourdomain.com/mcp" }` — no custom transport field.
 
 ---
 
@@ -283,7 +283,7 @@ These are defaults for a premium, agent-agnostic deployment. IP allowlist is opt
 - **Rate limiting:** 60 req/min per API key — enforce at nginx (`limit_req`) or Node sliding window; prevents agent runaway loops hammering `neural_search`/`remember`
 - **Optional IP allowlist:** allow on private ranges or specific CIDRs; keep disabled by default
 - **LAN-only mode:** bind to a private interface and block public ingress at the firewall
-- **Audit logs:** log `tool` calls with `project`, `session_id`, and `duration_ms` to a separate `memex-audit.log` file (not stderr) — no session payloads logged
+- **Audit logs:** log `tool` calls with `project`, `session_id`, and `duration_ms` to a separate `codicil-audit.log` file (not stderr) — no session payloads logged
 
 ---
 
@@ -307,7 +307,7 @@ All `remember` and write-path tools return errors in this shape:
 ```json
 {
   "error": true,
-  "code": "MEMEX_ERR_<CODE>",
+  "code": "CODICIL_ERR_<CODE>",
   "message": "<human readable>",
   "field": "<which input field>",
   "value": "<the invalid value, truncated to 100 chars>"
@@ -316,18 +316,18 @@ All `remember` and write-path tools return errors in this shape:
 
 | Code | Trigger | Message |
 |---|---|---|
-| `MEMEX_ERR_PROJECT_REQUIRED` | `project` missing or empty string | `"project is required when calling remember via MCP"` |
-| `MEMEX_ERR_PROJECT_INVALID_CHARS` | `project` contains disallowed characters | `"project name may only contain letters, numbers, dots, underscores, and hyphens"` |
-| `MEMEX_ERR_PROJECT_TOO_LONG` | `project` > 100 chars | `"project name must be 100 characters or fewer"` |
-| `MEMEX_ERR_PROJECT_RESERVED` | `project` is a reserved name | `"project name '__global__' is reserved"` |
-| `MEMEX_ERR_SUMMARY_REQUIRED` | `summary` missing or empty | `"summary is required"` |
-| `MEMEX_ERR_SUMMARY_TOO_LONG` | `summary` > 1000 chars | `"summary must be 1000 characters or fewer (got N)"` |
-| `MEMEX_ERR_TOPICS_REQUIRED` | `topics` missing or empty array | `"topics must be a non-empty array"` |
-| `MEMEX_ERR_TOPICS_TOO_MANY` | `topics` length > 20 | `"topics must contain 20 or fewer items"` |
-| `MEMEX_ERR_TOPIC_TOO_LONG` | any single topic > 50 chars | `"each topic must be 50 characters or fewer (got 'X...' at index N)"` |
-| `MEMEX_ERR_SESSION_NOT_FOUND` | `get_session` called with unknown ID | `"session 'X' not found in project 'Y'"` |
-| `MEMEX_ERR_INDEX_NOT_FOUND` | Memex index missing at startup | `"Memex index not found — run 'npm run setup' to initialize"` |
-| `MEMEX_ERR_WRITE_FAILED` | Disk write failure | `"failed to save session: <os error message>"` |
+| `CODICIL_ERR_PROJECT_REQUIRED` | `project` missing or empty string | `"project is required when calling remember via MCP"` |
+| `CODICIL_ERR_PROJECT_INVALID_CHARS` | `project` contains disallowed characters | `"project name may only contain letters, numbers, dots, underscores, and hyphens"` |
+| `CODICIL_ERR_PROJECT_TOO_LONG` | `project` > 100 chars | `"project name must be 100 characters or fewer"` |
+| `CODICIL_ERR_PROJECT_RESERVED` | `project` is a reserved name | `"project name '__global__' is reserved"` |
+| `CODICIL_ERR_SUMMARY_REQUIRED` | `summary` missing or empty | `"summary is required"` |
+| `CODICIL_ERR_SUMMARY_TOO_LONG` | `summary` > 1000 chars | `"summary must be 1000 characters or fewer (got N)"` |
+| `CODICIL_ERR_TOPICS_REQUIRED` | `topics` missing or empty array | `"topics must be a non-empty array"` |
+| `CODICIL_ERR_TOPICS_TOO_MANY` | `topics` length > 20 | `"topics must contain 20 or fewer items"` |
+| `CODICIL_ERR_TOPIC_TOO_LONG` | any single topic > 50 chars | `"each topic must be 50 characters or fewer (got 'X...' at index N)"` |
+| `CODICIL_ERR_SESSION_NOT_FOUND` | `get_session` called with unknown ID | `"session 'X' not found in project 'Y'"` |
+| `CODICIL_ERR_INDEX_NOT_FOUND` | Codicil index missing at startup | `"Codicil index not found — run 'npm run setup' to initialize"` |
+| `CODICIL_ERR_WRITE_FAILED` | Disk write failure | `"failed to save session: <os error message>"` |
 
 ---
 
@@ -382,7 +382,7 @@ All write-path operations and search calls must emit structured log events. Use 
 }
 ```
 
-Written to `stderr` so MCP stdio transport is not contaminated. Can be redirected independently: `node mcp-server.mjs 2>> memex.log`.
+Written to `stderr` so MCP stdio transport is not contaminated. Can be redirected independently: `node mcp-server.mjs 2>> codicil.log`.
 
 ### Events to Emit
 
@@ -396,7 +396,7 @@ Written to `stderr` so MCP stdio transport is not contaminated. Can be redirecte
 | `neural_search.no_results` | info | Search returns empty | `query_len`, `bloom_filter_hit`, `duration_ms` |
 | `session_save.concurrent_detected` | warn | Two saves overlap on same project | `project`, `session_id_1`, `session_id_2` |
 
-### Counters (for `memex status` and future dashboards)
+### Counters (for `codicil status` and future dashboards)
 
 Persist lightweight counters to `.cache/metrics.json`:
 
@@ -411,7 +411,7 @@ Persist lightweight counters to `.cache/metrics.json`:
 }
 ```
 
-Updated on every relevant event. Read by `memex status` to show usage summary. No external metrics dependency in PRs 1–5.
+Updated on every relevant event. Read by `codicil status` to show usage summary. No external metrics dependency in PRs 1–5.
 
 ---
 
@@ -493,7 +493,7 @@ New sessions immediately searchable. No stale index.
 
 **Current:** Single JSON blob (`embeddings.json`) — full file loaded into memory per search. O(n) linear scan.
 
-**Target:** SQLite table in existing `memex.db`:
+**Target:** SQLite table in existing `codicil.db`:
 ```sql
 CREATE TABLE embeddings (
   session_id TEXT PRIMARY KEY,
@@ -539,11 +539,11 @@ Before the developer types anything in a new conversation, the AI calls:
 suggest_context({ file_paths: ["auth/middleware.ts", "api/routes.ts"], project: "myapp" })
 ```
 
-Memex responds:
+Codicil responds:
 > "You worked on auth middleware 3 days ago. Key decision: switched from session tokens to JWT. Warning: known race condition in rate limiter under concurrent requests (session `ct-2026-03-11-ratelimit`). Related: OAuth PKCE work from 2 weeks ago may be affected."
 
 **Why it's the killer feature:**
-- Transforms Memex from "search tool I sometimes use" to "persistent memory that makes every conversation smarter"
+- Transforms Codicil from "search tool I sometimes use" to "persistent memory that makes every conversation smarter"
 - Creates lock-in: after 6 months of project memory surfacing automatically, you never go back to stateless conversations
 - No user action required — the AI agent calls it as a startup routine
 
@@ -557,7 +557,7 @@ Memex responds:
 
 ## MCP Prompts (Missing Entirely)
 
-The MCP spec supports `prompts` — pre-built prompt templates. Memex registers none. Add:
+The MCP spec supports `prompts` — pre-built prompt templates. Codicil registers none. Add:
 
 | Prompt | Description |
 |---|---|
@@ -586,9 +586,9 @@ The MCP spec supports `prompts` — pre-built prompt templates. Memex registers 
 ```json
 {
   "mcpServers": {
-    "memex": {
+    "codicil": {
       "command": "node",
-      "args": ["${MEMEX_PATH}/scripts/mcp-server.mjs"]
+      "args": ["${CODICIL_PATH}/scripts/mcp-server.mjs"]
     },
     "agentbridge": {
       "command": "node",
@@ -603,8 +603,8 @@ The MCP spec supports `prompts` — pre-built prompt templates. Memex registers 
 ```json
 {
   "mcpServers": {
-    "memex": {
-      "url": "https://memex.yourdomain.com/mcp"
+    "codicil": {
+      "url": "https://codicil.yourdomain.com/mcp"
     }
   }
 }

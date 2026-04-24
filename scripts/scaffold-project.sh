@@ -7,7 +7,7 @@
 # - SPEC.md template
 # - .claude/CLAUDE.md template
 # - .github/workflows/ci.yml
-# - .mcp.json (Memex integration)
+# - .mcp.json (Codicil integration)
 # - README.md template
 # - Standard .gitignore
 # - GitHub labels
@@ -109,7 +109,7 @@ TheDarkFactory standard structure with:
 - SPEC template (12 questions)
 - CLAUDE.md for AI assistant context
 - CI pipeline (GitHub Actions)
-- Memex MCP integration
+- Codicil MCP integration
 - Standard README, .gitignore, .env.example
 
 Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>"

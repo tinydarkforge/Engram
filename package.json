@@ -1,19 +1,19 @@
 {
-  "name": "memex",
+  "name": "codicil",
   "version": "4.0.0",
   "description": "Persistent memory for AI coding assistants - 94-98% token savings",
-  "main": "scripts/memex-loader.js",
+  "main": "scripts/codicil-loader.js",
   "scripts": {
     "start": "node scripts/server.js",
-    "startup": "node scripts/memex-loader.js startup",
+    "startup": "node scripts/codicil-loader.js startup",
     "test": "node --test tests/*.test.js",
-    "status": "node scripts/memex-loader.js status",
+    "status": "node scripts/codicil-loader.js status",
     "setup": "node scripts/setup.js",
     "migrate": "node scripts/migrate.js",
     "metrics:backfill": "node scripts/metrics-backfill.js",
     "mcp:http": "node scripts/mcp-server-http.mjs",
-    "search": "node scripts/memex-loader.js search",
-    "semantic": "node scripts/memex-loader.js semantic",
+    "search": "node scripts/codicil-loader.js search",
+    "semantic": "node scripts/codicil-loader.js semantic",
     "manifest": "node scripts/manifest-manager.js generate",
     "bloom:build": "node scripts/bloom-filter.js build",
     "bloom:stats": "node scripts/bloom-filter.js stats",
@@ -26,7 +26,7 @@
     "ledger:stats": "node -e \"const l = require('./scripts/ledger'); if (l.stats) console.log(JSON.stringify(l.stats(), null, 2)); else console.log('ledger not yet implemented');\""
   },
   "keywords": [
-    "memex",
+    "codicil",
     "memory",
     "knowledge-base",
     "mcp",
@@ -39,7 +39,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Pamperito74/Memex.git"
+    "url": "https://github.com/Pamperito74/Codicil.git"
   },
   "dependencies": {
     "@huggingface/transformers": "^3.8.1",

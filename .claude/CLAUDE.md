@@ -1,4 +1,4 @@
-# Memex Context
+# Codicil Context
 
 ## Standards
 - **Commit:** `<type>(<scope>): <description>` (feat|fix|docs|style|refactor|test|chore)

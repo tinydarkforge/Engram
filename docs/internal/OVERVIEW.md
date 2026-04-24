@@ -1,10 +1,10 @@
-# Memex Overview
+# Codicil Overview
 
-**One-page guide to understanding Memex**
+**One-page guide to understanding Codicil**
 
 ---
 
-## What is Memex?
+## What is Codicil?
 
 **Extended Memory for AI assistant** - A knowledge system that saves 94-98% on AI assistant API tokens by loading tiny indexes instead of full documentation.
 
@@ -43,14 +43,14 @@ Instead of loading all your docs every time (500KB = 50,000 tokens):
 
 ```bash
 # 1. Test it works
-cd ~/code/Memex
-node scripts/memex-loader.js startup
+cd ~/code/Codicil
+node scripts/codicil-loader.js startup
 
 # 2. Save your first session
 ./scripts/remember "Implemented feature X" --topics feature,x
 
 # 3. Query anytime
-node scripts/memex-loader.js quick "commit format"
+node scripts/codicil-loader.js quick "commit format"
 ```
 
 **That's it!** See [QUICKSTART.md](QUICKSTART.md) for more details.
@@ -59,10 +59,10 @@ node scripts/memex-loader.js quick "commit format"
 
 ## Documentation Guide
 
-**New to Memex?** Start here:
+**New to Codicil?** Start here:
 1. **[README.md](README.md)** - Overview and common usage
 2. **[QUICKSTART.md](QUICKSTART.md)** - 5-minute setup guide
-3. **[HOW-MEMEX-SAVES-TOKENS.md](HOW-MEMEX-SAVES-TOKENS.md)** - Why it's so efficient
+3. **[HOW-CODICIL-SAVES-TOKENS.md](HOW-CODICIL-SAVES-TOKENS.md)** - Why it's so efficient
 
 **Want specifics?**
 - **[PHASE-10-ASSERTION-LEDGER.md](PHASE-10-ASSERTION-LEDGER.md)** - Facts with confidence & lineage (new!)
@@ -104,10 +104,10 @@ node scripts/memex-loader.js quick "commit format"
 ./scripts/remember --interactive
 
 # Query
-node scripts/memex-loader.js startup
-node scripts/memex-loader.js quick "commit format"
-node scripts/memex-loader.js search docker
-node scripts/memex-loader.js semantic "auth work"  # AI-powered
+node scripts/codicil-loader.js startup
+node scripts/codicil-loader.js quick "commit format"
+node scripts/codicil-loader.js search docker
+node scripts/codicil-loader.js semantic "auth work"  # AI-powered
 
 # Phase 1 tools
 node scripts/lazy-loader.js convert     # Enable lazy loading
@@ -119,7 +119,7 @@ scripts/git-hook-capture.sh install     # Auto-capture on commits
 
 ## Performance at a Glance
 
-| Metric | Without Memex | With Memex |
+| Metric | Without Codicil | With Codicil |
 |--------|---------------|------------|
 | Tokens/query | 50,000 | 1,000 |
 | Startup time | 1000ms | 46ms |
@@ -131,7 +131,7 @@ scripts/git-hook-capture.sh install     # Auto-capture on commits
 
 ## The Bottom Line
 
-**Memex = Smart librarian:**
+**Codicil = Smart librarian:**
 - 🚪 **Bloom filter:** "Don't even look, it's not here"
 - 📋 **Index:** "Here's a summary from the catalog"
 - 📚 **Full details:** "Let me get that specific book"
@@ -145,7 +145,7 @@ Instead of bringing you 1000 books every time you ask a question! 📦→📋
 1. ✅ Read [QUICKSTART.md](QUICKSTART.md) - Get started
 2. ✅ Install git hooks - Auto-capture sessions
 3. ✅ Start saving sessions - Build your knowledge base
-4. ✅ Read [HOW-MEMEX-SAVES-TOKENS.md](HOW-MEMEX-SAVES-TOKENS.md) - Understand the magic
+4. ✅ Read [HOW-CODICIL-SAVES-TOKENS.md](HOW-CODICIL-SAVES-TOKENS.md) - Understand the magic
 
 ---
 

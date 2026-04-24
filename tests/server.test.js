@@ -67,7 +67,7 @@ describe('server API', () => {
   let tmpDir;
 
   before((_, done) => {
-    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'memex-server-'));
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'codicil-server-'));
 
     const index = {
       v: 'test',
@@ -92,12 +92,12 @@ describe('server API', () => {
       topics_index: { test: ['session-001'] }
     }, null, 2));
 
-    process.env.MEMEX_PATH = tmpDir;
+    process.env.CODICIL_PATH = tmpDir;
     process.env.HOST = '127.0.0.1';
 
-    // Clear module cache so Memex re-initializes
+    // Clear module cache so Codicil re-initializes
     const keysToDelete = Object.keys(require.cache).filter(k =>
-      k.includes('memex-loader') || k.includes('server.js') ||
+      k.includes('codicil-loader') || k.includes('server.js') ||
       k.includes('persistent-cache') || k.includes('safe-json') ||
       k.includes('agentbridge-client')
     );
@@ -112,7 +112,7 @@ describe('server API', () => {
   });
 
   after((_, done) => {
-    delete process.env.MEMEX_PATH;
+    delete process.env.CODICIL_PATH;
     delete process.env.HOST;
     if (tmpDir) {
       fs.rmSync(tmpDir, { recursive: true, force: true });
@@ -136,7 +136,7 @@ describe('server API', () => {
   });
 
   it('GET /health returns healthy on a fresh lazy-loaded server', async () => {
-    const freshDir = fs.mkdtempSync(path.join(os.tmpdir(), 'memex-server-fresh-'));
+    const freshDir = fs.mkdtempSync(path.join(os.tmpdir(), 'codicil-server-fresh-'));
     fs.writeFileSync(path.join(freshDir, 'index.json'), JSON.stringify({
       v: 'fresh-test',
       u: '2026-01-01',
@@ -146,11 +146,11 @@ describe('server API', () => {
       g: {}
     }, null, 2));
 
-    const originalMemexPath = process.env.MEMEX_PATH;
-    process.env.MEMEX_PATH = freshDir;
+    const originalCodicilPath = process.env.CODICIL_PATH;
+    process.env.CODICIL_PATH = freshDir;
 
     const keysToDelete = Object.keys(require.cache).filter(k =>
-      k.includes('memex-loader') || k.includes('server.js') ||
+      k.includes('codicil-loader') || k.includes('server.js') ||
       k.includes('persistent-cache') || k.includes('safe-json') ||
       k.includes('agentbridge-client')
     );
@@ -171,8 +171,8 @@ describe('server API', () => {
       freshServer.closeAllConnections();
       freshServer.unref();
       await new Promise(resolve => freshServer.close(resolve));
-      if (originalMemexPath === undefined) delete process.env.MEMEX_PATH;
-      else process.env.MEMEX_PATH = originalMemexPath;
+      if (originalCodicilPath === undefined) delete process.env.CODICIL_PATH;
+      else process.env.CODICIL_PATH = originalCodicilPath;
       fs.rmSync(freshDir, { recursive: true, force: true });
     }
   });

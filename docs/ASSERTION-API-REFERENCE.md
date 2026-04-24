@@ -13,7 +13,7 @@ Create a new assertion (fact) in the ledger.
 **Parameters:**
 ```javascript
 {
-  plane: string,                    // Required. Authority plane (e.g., 'project:Memex')
+  plane: string,                    // Required. Authority plane (e.g., 'project:Codicil')
   class_: string,                   // Required. Type: 'monotonic'|'episodic'|'state_bound'|'contextual'
   claim: string,                    // Required. The claim/fact (max 500 chars)
   body?: string,                    // Optional. Detailed explanation
@@ -32,7 +32,7 @@ Create a new assertion (fact) in the ledger.
 const ledger = require('./scripts/ledger');
 
 const id = ledger.createAssertion({
-  plane: 'project:Memex',
+  plane: 'project:Codicil',
   class_: 'monotonic',
   claim: 'SQLite supports PRAGMA foreign_keys',
   confidence: 0.95,
@@ -273,7 +273,7 @@ Get all active (non-fossilized, non-quarantined) assertions from a plane.
 **Parameters:**
 ```javascript
 {
-  plane: string,                    // Required. Plane to query (e.g., 'project:Memex')
+  plane: string,                    // Required. Plane to query (e.g., 'project:Codicil')
   classes?: string[],               // Optional. Filter by class
   limit?: number,                   // Optional. Max results, default 100
   since?: string                    // Optional. ISO8601 timestamp filter
@@ -285,16 +285,16 @@ Get all active (non-fossilized, non-quarantined) assertions from a plane.
 **Example:**
 ```javascript
 // All facts in project
-const all = ledger.queryActiveByPlane('project:Memex');
+const all = ledger.queryActiveByPlane('project:Codicil');
 
 // Only state_bound facts (need periodic verification)
-const statebound = ledger.queryActiveByPlane('project:Memex', {
+const statebound = ledger.queryActiveByPlane('project:Codicil', {
   classes: ['state_bound'],
   limit: 50
 });
 
 // Facts created after a date
-const recent = ledger.queryActiveByPlane('project:Memex', {
+const recent = ledger.queryActiveByPlane('project:Codicil', {
   since: '2026-04-01T00:00:00Z'
 });
 ```
@@ -415,7 +415,7 @@ Array<Assertion & {
 
 **Example:**
 ```javascript
-const ranked = ledger.rankActive('project:Memex');
+const ranked = ledger.rankActive('project:Codicil');
 console.log('Top 5 facts by importance:');
 ranked.slice(0, 5).forEach(r => {
   console.log(`[${(r.score * 100).toFixed(0)}%] ${r.claim}`);
@@ -446,7 +446,7 @@ Select top assertions that fit within a token budget. Greedy packing with cache_
 **Example:**
 ```javascript
 // Get high-value facts that fit in 2000 tokens
-const context = ledger.selectForContext('project:Memex', 2000);
+const context = ledger.selectForContext('project:Codicil', 2000);
 console.log(`Selected ${context.length} facts for prompt`);
 console.log('Facts:', context.map(c => c.claim));
 ```
@@ -550,7 +550,7 @@ Wrap of `ingest()`. Parameters use snake_case.
 
 ```javascript
 await ledgerIngest({
-  plane: 'project:Memex',
+  plane: 'project:Codicil',
   class_: 'monotonic',
   claim: 'Fact here',
   confidence: 0.8,
@@ -563,7 +563,7 @@ await ledgerIngest({
 Wrap of `queryActiveByPlane()`.
 
 ```javascript
-const result = await ledgerQuery('project:Memex', { limit: 50 });
+const result = await ledgerQuery('project:Codicil', { limit: 50 });
 // Returns: { ok: true, plane, total, assertions }
 ```
 
@@ -572,7 +572,7 @@ const result = await ledgerQuery('project:Memex', { limit: 50 });
 Wrap of `selectForContext()` with rendering.
 
 ```javascript
-const result = await ledgerSelectContext('project:Memex', 2000);
+const result = await ledgerSelectContext('project:Codicil', 2000);
 // Returns: { ok: true, plane, budget, selected, used, rendered }
 // rendered: markdown string ready for prompt injection
 ```
@@ -591,7 +591,7 @@ const result = await ledgerStats();
 Wrap of `contradiction-sentinel.scanPlane()`.
 
 ```javascript
-const result = await ledgerScanSentinel('project:Memex', { sampleSize: 50 });
+const result = await ledgerScanSentinel('project:Codicil', { sampleSize: 50 });
 // Returns: { ok: true, plane, tensions_found }
 ```
 
@@ -600,7 +600,7 @@ const result = await ledgerScanSentinel('project:Memex', { sampleSize: 50 });
 Wrap of `verification-hooks.runPending()`.
 
 ```javascript
-const result = await ledgerRunVerifications('project:Memex', { staleDays: 14 });
+const result = await ledgerRunVerifications('project:Codicil', { staleDays: 14 });
 // Returns: { ok: true, plane, results }
 ```
 
@@ -618,7 +618,7 @@ const result = await ledgerWeight('a_xxx', 0.5);
 Wrap of `transform.transformPlane()` (Phase 9).
 
 ```javascript
-const result = await ledgerTransform('project:Memex', {
+const result = await ledgerTransform('project:Codicil', {
   dry_run: false,
   action: 'promote',
   confidence_threshold: 0.7

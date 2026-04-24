@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
 /**
- * Persistent Cache for Memex
+ * Persistent Cache for Codicil
  *
- * Uses SQLite to cache Memex index and data for instant cold starts.
+ * Uses SQLite to cache Codicil index and data for instant cold starts.
  * - 30ms → 5ms load time (6x faster)
  * - Cache survives restarts
  * - TTL-based invalidation (default: 60 minutes)
@@ -14,10 +14,10 @@ const Database = require('better-sqlite3');
 const path = require('path');
 const fs = require('fs');
 const msgpack = require('msgpack-lite');
-const { resolveMemexPath } = require('./paths');
+const { resolveCodicilPath } = require('./paths');
 
-const MEMEX_PATH = resolveMemexPath(__dirname);
-const CACHE_DB_PATH = path.join(MEMEX_PATH, '.cache', 'memex.db');
+const CODICIL_PATH = resolveCodicilPath(__dirname);
+const CACHE_DB_PATH = path.join(CODICIL_PATH, '.cache', 'codicil.db');
 const DEFAULT_TTL = 60 * 60 * 1000; // 60 minutes in milliseconds
 const DEFAULT_MAX_ENTRIES = 1000; // Maximum number of cache entries (LRU eviction)
 

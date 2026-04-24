@@ -1,9 +1,9 @@
 # Save Session
 
-Save what was accomplished in this coding session to Memex.
+Save what was accomplished in this coding session to Codicil.
 
 ## Usage
-`/save-session` -- saves current session summary to Memex
+`/save-session` -- saves current session summary to Codicil
 
 ## Steps
 
@@ -14,9 +14,9 @@ git log --oneline -10
 
 2. Identify topics from the changes (e.g., auth, database, ui, testing).
 
-3. Save to Memex:
+3. Save to Codicil:
 ```bash
-~/code/TheDarkFactory/Memex/scripts/remember "<summary of what was done>" --topics <topic1>,<topic2>
+~/code/TheDarkFactory/Codicil/scripts/remember "<summary of what was done>" --topics <topic1>,<topic2>
 ```
 
 4. Report what was saved.

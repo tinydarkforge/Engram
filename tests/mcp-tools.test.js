@@ -9,7 +9,7 @@
  *   - getBundle, queryConcept, getGraphSummary
  *   - neuralSearch (error path), crossProjectSearch (error path)
  *
- * Uses temp directories with mock data to avoid touching real Memex data.
+ * Uses temp directories with mock data to avoid touching real Codicil data.
  */
 
 const { describe, it, before, after } = require('node:test');
@@ -24,8 +24,8 @@ let tools;
 
 describe('MCP Tools', () => {
   before(() => {
-    // Create temp Memex structure
-    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'memex-mcp-test-'));
+    // Create temp Codicil structure
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'codicil-mcp-test-'));
 
     // Create index.json
     const index = {
@@ -110,10 +110,10 @@ describe('MCP Tools', () => {
     };
     fs.writeFileSync(path.join(bundlesDir, 'TestProject.msgpack'), msgpack.encode(bundle));
 
-    // Override MEMEX_PATH by setting env var before requiring the module
-    process.env.MEMEX_PATH = tmpDir;
+    // Override CODICIL_PATH by setting env var before requiring the module
+    process.env.CODICIL_PATH = tmpDir;
 
-    // Clear module cache to pick up new MEMEX_PATH
+    // Clear module cache to pick up new CODICIL_PATH
     Object.keys(require.cache)
       .filter(k => k.includes('mcp-tools') || k.includes('paths'))
       .forEach(k => delete require.cache[k]);
@@ -124,7 +124,7 @@ describe('MCP Tools', () => {
   after(() => {
     // Cleanup
     fs.rmSync(tmpDir, { recursive: true, force: true });
-    delete process.env.MEMEX_PATH;
+    delete process.env.CODICIL_PATH;
   });
 
   describe('loadIndex()', () => {
@@ -315,7 +315,7 @@ describe('MCP Tools', () => {
     it('returns structured error when session is missing', () => {
       const result = tools.getSession('TestProject', 'tp-999');
       assert.equal(result.error, true);
-      assert.equal(result.code, 'MEMEX_ERR_SESSION_NOT_FOUND');
+      assert.equal(result.code, 'CODICIL_ERR_SESSION_NOT_FOUND');
     });
   });
 

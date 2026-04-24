@@ -1,8 +1,8 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://example.com/schemas/memex-session.json",
-  "title": "Memex Session",
-  "description": "Schema for Claude session records in Memex v2.0 - Optimized with progressive disclosure",
+  "$id": "https://example.com/schemas/codicil-session.json",
+  "title": "Codicil Session",
+  "description": "Schema for Claude session records in Codicil v2.0 - Optimized with progressive disclosure",
   "type": "object",
   "required": ["id", "project", "date", "summary"],
   "properties": {
@@ -15,7 +15,7 @@
     "project": {
       "type": "string",
       "description": "Project name",
-      "examples": ["Memex", "ProjectA", "ProjectB"]
+      "examples": ["Codicil", "ProjectA", "ProjectB"]
     },
     "date": {
       "type": "string",

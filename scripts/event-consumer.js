@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 
 /**
- * AgentBridge Event Consumer for Memex
+ * AgentBridge Event Consumer for Codicil
  *
  * Polls AgentBridge for incoming events and processes them.
- * Completes the bidirectional integration: Memex can now both
+ * Completes the bidirectional integration: Codicil can now both
  * emit events (via agentbridge-client) and consume them.
  *
  * Handles:
- *   memex.query.requested → runs search, emits memex.query.result
+ *   codicil.query.requested → runs search, emits codicil.query.result
  *
  * Opt-in via AGENTBRIDGE_URL env var. When unset, does nothing.
  */
@@ -22,7 +22,7 @@ class EventConsumer {
     this.baseUrl = options.url || process.env.AGENTBRIDGE_URL;
     this.token = options.token || process.env.AGENTBRIDGE_TOKEN;
     this.pollInterval = options.pollInterval || DEFAULT_POLL_INTERVAL;
-    this.memex = options.memex || null;
+    this.codicil = options.codicil || null;
     this.bridge = options.bridge || null;
 
     this._timer = null;
@@ -71,7 +71,7 @@ class EventConsumer {
    */
   async _poll() {
     try {
-      const url = `${this.baseUrl}/bus/events?agent_id=${AGENT_ID}&event_type=memex.query.requested&since=${encodeURIComponent(this._since)}`;
+      const url = `${this.baseUrl}/bus/events?agent_id=${AGENT_ID}&event_type=codicil.query.requested&since=${encodeURIComponent(this._since)}`;
       const res = await request(url, 'GET', null, this.token);
 
       this._lastPoll = new Date().toISOString();
@@ -114,7 +114,7 @@ class EventConsumer {
     const requester = meta.requester || 'unknown';
     const mode = meta.mode || 'keyword';
 
-    if (!query || !this.memex) {
+    if (!query || !this.codicil) {
       this.stats.errors++;
       return;
     }
@@ -124,9 +124,9 @@ class EventConsumer {
       let results;
 
       if (mode === 'semantic') {
-        results = await this.memex.semanticSearch(query, { limit: 10 });
+        results = await this.codicil.semanticSearch(query, { limit: 10 });
       } else {
-        results = this.memex.search(query);
+        results = this.codicil.search(query);
       }
 
       const latencyMs = Date.now() - startTime;
@@ -137,7 +137,7 @@ class EventConsumer {
           ? await this.bridge
           : this.bridge;
 
-        bridge.emit('memex.query.result', {
+        bridge.emit('codicil.query.result', {
           query,
           source: mode,
           requester,

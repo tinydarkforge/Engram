@@ -2,12 +2,12 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-MEMEX_PATH_DEFAULT="$(cd "$SCRIPT_DIR/.." && pwd)"
+CODICIL_PATH_DEFAULT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 usage() {
-  echo "Usage: install-memex-service.sh [--memex-path PATH] [--user USER] [--port PORT] [--bind ADDR]"
-  echo "  --memex-path PATH   Memex install path (default: $MEMEX_PATH_DEFAULT)"
-  echo "  --user USER         Service user (default: memex)"
+  echo "Usage: install-codicil-service.sh [--codicil-path PATH] [--user USER] [--port PORT] [--bind ADDR]"
+  echo "  --codicil-path PATH   Codicil install path (default: $CODICIL_PATH_DEFAULT)"
+  echo "  --user USER         Service user (default: codicil)"
   echo "  --port PORT         MCP port (default: 3000)"
   echo "  --bind ADDR         Bind address (default: 0.0.0.0)"
   echo "  --api-key KEY       MCP API key (required)"
@@ -21,8 +21,8 @@ usage() {
   echo "  --all               Run setup-ufw + setup-nginx + setup-certbot"
 }
 
-MEMEX_PATH="$MEMEX_PATH_DEFAULT"
-SERVICE_USER="memex"
+CODICIL_PATH="$CODICIL_PATH_DEFAULT"
+SERVICE_USER="codicil"
 MCP_PORT="3000"
 MCP_BIND_ADDR="0.0.0.0"
 MCP_API_KEY=""
@@ -36,8 +36,8 @@ CERTBOT_EMAIL=""
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --memex-path)
-      MEMEX_PATH="$2"
+    --codicil-path)
+      CODICIL_PATH="$2"
       shift 2
       ;;
     --user)
@@ -131,29 +131,29 @@ if ! id -u "$SERVICE_USER" >/dev/null 2>&1; then
   useradd -r -s /bin/false "$SERVICE_USER"
 fi
 
-mkdir -p /etc/memex
-cat > /etc/memex/memex.env <<EOF
+mkdir -p /etc/codicil
+cat > /etc/codicil/codicil.env <<EOF
 NODE_ENV=production
-MEMEX_PATH=$MEMEX_PATH
+CODICIL_PATH=$CODICIL_PATH
 MCP_API_KEY=$MCP_API_KEY
 MCP_BIND_ADDR=$MCP_BIND_ADDR
 MCP_PORT=$MCP_PORT
 EOF
 
-install -d -o "$SERVICE_USER" -g "$SERVICE_USER" "$MEMEX_PATH"
-chown -R "$SERVICE_USER:$SERVICE_USER" "$MEMEX_PATH"
+install -d -o "$SERVICE_USER" -g "$SERVICE_USER" "$CODICIL_PATH"
+chown -R "$SERVICE_USER:$SERVICE_USER" "$CODICIL_PATH"
 
-cp "$SCRIPT_DIR/memex-mcp.service.template" /etc/systemd/system/memex-mcp.service
-sed -i "s|/opt/memex|$MEMEX_PATH|g" /etc/systemd/system/memex-mcp.service
-sed -i "s|User=memex|User=$SERVICE_USER|g" /etc/systemd/system/memex-mcp.service
-sed -i "s|Group=memex|Group=$SERVICE_USER|g" /etc/systemd/system/memex-mcp.service
+cp "$SCRIPT_DIR/codicil-mcp.service.template" /etc/systemd/system/codicil-mcp.service
+sed -i "s|/opt/codicil|$CODICIL_PATH|g" /etc/systemd/system/codicil-mcp.service
+sed -i "s|User=codicil|User=$SERVICE_USER|g" /etc/systemd/system/codicil-mcp.service
+sed -i "s|Group=codicil|Group=$SERVICE_USER|g" /etc/systemd/system/codicil-mcp.service
 
 systemctl daemon-reload
-systemctl enable memex-mcp
-systemctl restart memex-mcp
+systemctl enable codicil-mcp
+systemctl restart codicil-mcp
 
-echo "Memex MCP service installed and started."
-systemctl status memex-mcp --no-pager
+echo "Codicil MCP service installed and started."
+systemctl status codicil-mcp --no-pager
 
 if [[ "$SETUP_UFW" == "true" ]]; then
   if command -v ufw >/dev/null 2>&1; then
@@ -180,7 +180,7 @@ if [[ "$SETUP_NGINX" == "true" ]]; then
     exit 1
   fi
 
-  NGINX_SITE_PATH="/etc/nginx/sites-available/memex-mcp"
+  NGINX_SITE_PATH="/etc/nginx/sites-available/codicil-mcp"
   cat > "$NGINX_SITE_PATH" <<EOF
 server {
   listen 443 ssl;
@@ -201,7 +201,7 @@ server {
 EOF
 
   if [[ -d /etc/nginx/sites-enabled ]]; then
-    ln -sf "$NGINX_SITE_PATH" /etc/nginx/sites-enabled/memex-mcp
+    ln -sf "$NGINX_SITE_PATH" /etc/nginx/sites-enabled/codicil-mcp
   fi
 
   nginx -t

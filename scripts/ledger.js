@@ -8,13 +8,13 @@ const Database = require('better-sqlite3');
 const crypto = require('crypto');
 const path = require('path');
 const fs = require('fs');
-const { resolveMemexPath } = require('./paths');
+const { resolveCodicilPath } = require('./paths');
 const { findNearDuplicate, findNegations } = require('./dedup');
 const { rankAssertions, selectForContext: _selectForContext } = require('./rank');
 const { computeOutcomePriors } = require('./feedback/outcome-prior');
 
-const MEMEX_PATH = resolveMemexPath(__dirname);
-const DB_PATH = path.join(MEMEX_PATH, '.cache', 'memex.db');
+const CODICIL_PATH = resolveCodicilPath(__dirname);
+const DB_PATH = path.join(CODICIL_PATH, '.cache', 'codicil.db');
 
 let _db = null;
 

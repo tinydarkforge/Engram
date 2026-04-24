@@ -115,7 +115,7 @@ describe('GitIndexer', () => {
     let tmpRepo;
 
     before(() => {
-      tmpRepo = fs.mkdtempSync(path.join(os.tmpdir(), 'memex-git-test-'));
+      tmpRepo = fs.mkdtempSync(path.join(os.tmpdir(), 'codicil-git-test-'));
       // Initialize a git repo with a commit
       execSync('git init', { cwd: tmpRepo });
       execSync('git config user.email "test@test.com"', { cwd: tmpRepo });

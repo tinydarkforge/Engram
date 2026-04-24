@@ -15,14 +15,14 @@
 
 const fs = require('fs');
 const path = require('path');
-const { resolveMemexPath, resolveReposRoot } = require('./paths');
+const { resolveCodicilPath, resolveReposRoot } = require('./paths');
 const { readJSON } = require('./safe-json');
 
-const MEMEX_PATH = resolveMemexPath(__dirname);
-const REPOS_ROOT = resolveReposRoot(MEMEX_PATH);
+const CODICIL_PATH = resolveCodicilPath(__dirname);
+const REPOS_ROOT = resolveReposRoot(CODICIL_PATH);
 
 function discoverRepos() {
-  const indexPath = path.join(MEMEX_PATH, 'index.json');
+  const indexPath = path.join(CODICIL_PATH, 'index.json');
   const index = readJSON(indexPath);
   if (!index) return {};
   const repos = {};
@@ -62,10 +62,10 @@ function generateAgentsMd(projectName) {
 ## Commands
 \`\`\`bash
 # Search git history (semantic)
-node ${MEMEX_PATH}/scripts/neural-memory.js search "your question"
+node ${CODICIL_PATH}/scripts/neural-memory.js search "your question"
 
 # Save session note
-${MEMEX_PATH}/scripts/remember "what you did" --topics tag1,tag2
+${CODICIL_PATH}/scripts/remember "what you did" --topics tag1,tag2
 \`\`\`
 
 ---

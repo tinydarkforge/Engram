@@ -1,4 +1,4 @@
-# Memex Phase 1 Optimizations
+# Codicil Phase 1 Optimizations
 
 **Status:** ✅ Complete | **Version:** 3.3.0 | **Date:** Dec 2025
 
@@ -49,10 +49,10 @@ node scripts/lazy-loader.js revert
 
 ```javascript
 // List sessions (lightweight, instant)
-const sessions = memex.listSessions('<project>');
+const sessions = codicil.listSessions('<project>');
 
 // Load full details (on-demand)
-const details = memex.loadSessionDetails('<project>', 'session-id');
+const details = codicil.loadSessionDetails('<project>', 'session-id');
 ```
 
 ---
@@ -90,7 +90,7 @@ node scripts/bloom-filter.js stats
 
 ### Integration
 
-Automatically integrated into `memex.search()`:
+Automatically integrated into `codicil.search()`:
 - Bloom filter says "NO" → Skip file loading, return immediately
 - Bloom filter says "MAYBE" → Proceed with normal search
 
@@ -113,10 +113,10 @@ Automatically integrated into `memex.search()`:
 ```bash
 # Install in your repo
 cd /path/to/your/repo
-/path/to/Memex/scripts/git-hook-capture.sh install
+/path/to/Codicil/scripts/git-hook-capture.sh install
 
 # Uninstall
-/path/to/Memex/scripts/git-hook-capture.sh uninstall
+/path/to/Codicil/scripts/git-hook-capture.sh uninstall
 ```
 
 ### How It Works
@@ -135,7 +135,7 @@ git commit -m "feat(auth): add OAuth2 login"
 ### Optional: Explicit Topics
 
 ```bash
-git commit -m "fix: security fix [memex: security, hotfix]"
+git commit -m "fix: security fix [codicil: security, hotfix]"
 # Topics: fix, security, hotfix
 ```
 
@@ -163,16 +163,16 @@ node scripts/bloom-filter.js build
 
 # 3. Install git hooks (optional)
 cd /path/to/your/repo
-/path/to/Memex/scripts/git-hook-capture.sh install
+/path/to/Codicil/scripts/git-hook-capture.sh install
 
 # 4. Verify
-node scripts/memex-loader.js startup
+node scripts/codicil-loader.js startup
 ```
 
 **Rollback if needed:**
 ```bash
 node scripts/lazy-loader.js revert
-/path/to/Memex/scripts/git-hook-capture.sh uninstall
+/path/to/Codicil/scripts/git-hook-capture.sh uninstall
 ```
 
 ---
@@ -201,6 +201,6 @@ See [ROADMAP-V4.md](ROADMAP-V4.md) for details.
 
 ## Learn More
 
-- [HOW-MEMEX-SAVES-TOKENS.md](HOW-MEMEX-SAVES-TOKENS.md) - Simple token savings guide
+- [HOW-CODICIL-SAVES-TOKENS.md](HOW-CODICIL-SAVES-TOKENS.md) - Simple token savings guide
 - [ROADMAP-V4.md](ROADMAP-V4.md) - Future optimizations
 - [README.md](README.md) - Complete documentation

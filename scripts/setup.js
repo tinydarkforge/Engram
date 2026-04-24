@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * Memex Setup
+ * Codicil Setup
  *
  * Idempotent initializer that prepares directory structure and a minimal index.
  */
@@ -9,11 +9,11 @@
 const fs = require('fs');
 const path = require('path');
 const { execFileSync } = require('child_process');
-const { resolveMemexPath } = require('./paths');
+const { resolveCodicilPath } = require('./paths');
 const { runMigrations } = require('./migrations');
 const { readJSON } = require('./safe-json');
 
-const MEMEX_PATH = resolveMemexPath(__dirname);
+const CODICIL_PATH = resolveCodicilPath(__dirname);
 const pkg = require('../package.json');
 
 function hasIndexFiles(dir) {
@@ -29,7 +29,7 @@ function ensureDir(dirPath) {
 }
 
 function writeIndexIfMissing() {
-  if (hasIndexFiles(MEMEX_PATH)) {
+  if (hasIndexFiles(CODICIL_PATH)) {
     return false;
   }
 
@@ -50,35 +50,35 @@ function writeIndexIfMissing() {
     _legend: {}
   };
 
-  ensureDir(MEMEX_PATH);
-  fs.writeFileSync(path.join(MEMEX_PATH, 'index.json'), JSON.stringify(index, null, 2));
+  ensureDir(CODICIL_PATH);
+  fs.writeFileSync(path.join(CODICIL_PATH, 'index.json'), JSON.stringify(index, null, 2));
   return true;
 }
 
 function runNodeScript(scriptPath, args = []) {
   execFileSync(process.execPath, [scriptPath, ...args], {
-    cwd: MEMEX_PATH,
+    cwd: CODICIL_PATH,
     stdio: 'inherit'
   });
 }
 
 function main() {
-  ensureDir(MEMEX_PATH);
-  ensureDir(path.join(MEMEX_PATH, '.cache'));
-  ensureDir(path.join(MEMEX_PATH, '.neural'));
-  ensureDir(path.join(MEMEX_PATH, '.neural', 'bundles'));
-  ensureDir(path.join(MEMEX_PATH, 'summaries', 'projects'));
-  ensureDir(path.join(MEMEX_PATH, 'content', 'projects'));
-  ensureDir(path.join(MEMEX_PATH, 'metadata', 'projects'));
+  ensureDir(CODICIL_PATH);
+  ensureDir(path.join(CODICIL_PATH, '.cache'));
+  ensureDir(path.join(CODICIL_PATH, '.neural'));
+  ensureDir(path.join(CODICIL_PATH, '.neural', 'bundles'));
+  ensureDir(path.join(CODICIL_PATH, 'summaries', 'projects'));
+  ensureDir(path.join(CODICIL_PATH, 'content', 'projects'));
+  ensureDir(path.join(CODICIL_PATH, 'metadata', 'projects'));
 
   const createdIndex = writeIndexIfMissing();
   runMigrations();
 
   // Ensure metadata files exist for known projects
-  const index = readJSON(path.join(MEMEX_PATH, 'index.json'));
+  const index = readJSON(path.join(CODICIL_PATH, 'index.json'));
   if (index && index.p) {
     for (const projectName of Object.keys(index.p)) {
-      const metadataPath = path.join(MEMEX_PATH, 'metadata', 'projects', `${projectName}.json`);
+      const metadataPath = path.join(CODICIL_PATH, 'metadata', 'projects', `${projectName}.json`);
       if (!fs.existsSync(metadataPath)) {
         const minimal = { ts: [], d: '' };
         fs.writeFileSync(metadataPath, JSON.stringify(minimal, null, 2));
@@ -98,7 +98,7 @@ function main() {
     console.warn(`Warning: bloom filter build failed: ${e.message}`);
   }
 
-  console.log(`Memex setup complete at ${MEMEX_PATH}`);
+  console.log(`Codicil setup complete at ${CODICIL_PATH}`);
   if (createdIndex) {
     console.log('Created new index.json');
   } else {

@@ -2,7 +2,7 @@
 
 ## Overview
 
-Memex v4.0 introduces **MessagePack binary serialization** for 44% smaller files and improved I/O performance. This guide covers migration, troubleshooting, and rollback procedures.
+Codicil v4.0 introduces **MessagePack binary serialization** for 44% smaller files and improved I/O performance. This guide covers migration, troubleshooting, and rollback procedures.
 
 ## Benefits
 
@@ -25,14 +25,14 @@ npm list msgpack-lite
 ### Step 2: Backup (Optional but Recommended)
 
 ```bash
-# Backup your Memex directory
-cp -r ~/code/Memex ~/code/Memex.backup
+# Backup your Codicil directory
+cp -r ~/code/Codicil ~/code/Codicil.backup
 ```
 
 ### Step 3: Preview Migration (Dry Run)
 
 ```bash
-cd ~/code/Memex
+cd ~/code/Codicil
 node scripts/migrate-to-msgpack.js migrate --dry-run
 ```
 
@@ -59,10 +59,10 @@ node scripts/migrate-to-msgpack.js verify
 
 This validates data integrity across all converted files.
 
-### Step 6: Test Memex Loader
+### Step 6: Test Codicil Loader
 
 ```bash
-node scripts/memex-loader.js startup
+node scripts/codicil-loader.js startup
 ```
 
 Should show: `Format: MSGPACK` or `Format: CACHE`
@@ -89,7 +89,7 @@ For small files (<50KB), JSON parsing may be faster due to V8 optimization:
 - Network transfer (if applicable)
 - Memory caching (smaller footprint)
 
-The absolute parsing difference (0.11ms) is negligible for Memex's use case.
+The absolute parsing difference (0.11ms) is negligible for Codicil's use case.
 
 ## Troubleshooting
 
@@ -98,20 +98,20 @@ The absolute parsing difference (0.11ms) is negligible for Memex's use case.
 **Solution**: Install dependencies
 
 ```bash
-cd ~/code/Memex
+cd ~/code/Codicil
 npm install
 ```
 
 ### Issue: Loader still using JSON format
 
-**Symptoms**: Memex loader shows `Format: JSON`
+**Symptoms**: Codicil loader shows `Format: JSON`
 
 **Solutions**:
 
 1. **Clear persistent cache**:
    ```bash
-   rm -rf ~/.memex-cache
-   node scripts/memex-loader.js startup
+   rm -rf ~/.codicil-cache
+   node scripts/codicil-loader.js startup
    ```
 
 2. **Verify .msgpack files exist**:
@@ -175,19 +175,19 @@ node scripts/migrate-to-msgpack.js rollback --dry-run
 # 2. Execute rollback
 node scripts/migrate-to-msgpack.js rollback
 
-# 3. Verify Memex works
-node scripts/memex-loader.js startup
+# 3. Verify Codicil works
+node scripts/codicil-loader.js startup
 ```
 
 **What happens**:
 - All `.msgpack` files are removed
 - `.json` files remain intact
-- Memex automatically falls back to JSON
+- Codicil automatically falls back to JSON
 - No data is lost
 
 ## Format Detection Logic
 
-Memex loader tries formats in this order:
+Codicil loader tries formats in this order:
 
 1. **Persistent cache** (fastest, instant)
 2. **MessagePack** (.msgpack files)
@@ -205,7 +205,7 @@ This ensures:
 
 - Keep both JSON and MessagePack versions
 - Use JSON for editing/debugging
-- Let Memex load MessagePack for performance
+- Let Codicil load MessagePack for performance
 
 ### Production
 
@@ -240,7 +240,7 @@ Comprehensive validation suite:
 - Tests index integrity
 - Tests session indexes
 - Tests session details
-- Tests Memex loader
+- Tests Codicil loader
 - Tests lazy loader
 - Calculates size savings
 
@@ -265,7 +265,7 @@ node scripts/benchmark-msgpack.js
 
 ### Q: Do I need to convert to MessagePack?
 
-**A**: No, it's optional. Memex works fine with JSON. MessagePack provides:
+**A**: No, it's optional. Codicil works fine with JSON. MessagePack provides:
 - 44% smaller files
 - Better disk I/O
 - Smaller cache footprint
@@ -274,14 +274,14 @@ Choose MessagePack if you care about file size and I/O performance.
 
 ### Q: Can I mix JSON and MessagePack?
 
-**A**: Yes! Memex supports mixed formats:
+**A**: Yes! Codicil supports mixed formats:
 - Some files as MessagePack
 - Others as JSON
 - Automatic format detection per file
 
 ### Q: What if MessagePack parsing fails?
 
-**A**: Memex automatically falls back to JSON. No manual intervention needed.
+**A**: Codicil automatically falls back to JSON. No manual intervention needed.
 
 ### Q: Is data lost during migration?
 
@@ -298,7 +298,7 @@ ls -la index.msgpack
 node scripts/migrate-to-msgpack.js verify
 
 # 3. Test loader
-node scripts/memex-loader.js startup
+node scripts/codicil-loader.js startup
 ```
 
 All should succeed without errors.
@@ -306,16 +306,16 @@ All should succeed without errors.
 ### Q: What's the recommended workflow?
 
 **A**:
-1. Backup Memex directory (optional)
+1. Backup Codicil directory (optional)
 2. Run dry-run: `migrate --dry-run`
 3. Run migration: `migrate`
 4. Verify: `verify`
-5. Test: `memex-loader.js startup`
+5. Test: `codicil-loader.js startup`
 6. If issues: `rollback`
 
 ### Q: Do I need to update my code?
 
-**A**: No. Memex loader handles MessagePack automatically. Your existing code works unchanged.
+**A**: No. Codicil loader handles MessagePack automatically. Your existing code works unchanged.
 
 ## Support
 
@@ -335,8 +335,8 @@ If you encounter issues:
 
 ## Related Documentation
 
-- [QUICKSTART.md](QUICKSTART.md) - Getting started with Memex
-- [README.md](README.md) - Memex overview
+- [QUICKSTART.md](QUICKSTART.md) - Getting started with Codicil
+- [README.md](README.md) - Codicil overview
 - [ROADMAP-V4.md](ROADMAP-V4.md) - v4.0 optimization roadmap
 - [CHANGELOG.md](CHANGELOG.md) - Version history
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * Vector Search for Memex
+ * Vector Search for Codicil
  *
  * Semantic search using sentence embeddings (all-MiniLM-L6-v2)
  * - 384-dimensional embeddings
@@ -11,11 +11,11 @@
 
 const fs = require('fs');
 const path = require('path');
-const { resolveMemexPath } = require('./paths');
+const { resolveCodicilPath } = require('./paths');
 const { readJSON } = require('./safe-json');
 
-const MEMEX_PATH = resolveMemexPath(__dirname);
-const EMBEDDINGS_PATH = path.join(MEMEX_PATH, '.cache', 'embeddings.json');
+const CODICIL_PATH = resolveCodicilPath(__dirname);
+const EMBEDDINGS_PATH = path.join(CODICIL_PATH, '.cache', 'embeddings.json');
 const DEFAULT_DUPLICATE_THRESHOLD = 0.85;
 const DEFAULT_DUPLICATE_LIMIT = 20;
 
@@ -449,7 +449,7 @@ class VectorSearch {
   }
 
   /**
-   * Generate embeddings for all sessions in Memex
+   * Generate embeddings for all sessions in Codicil
    * Uses parallel processing for 10x speed improvement
    */
   async generateAllEmbeddings() {
@@ -457,7 +457,7 @@ class VectorSearch {
 
     const { glob } = require('glob');
     const sessionFiles = await glob('summaries/projects/*/sessions-index.json', {
-      cwd: MEMEX_PATH
+      cwd: CODICIL_PATH
     });
 
     // Collect all sessions that need embedding
@@ -465,7 +465,7 @@ class VectorSearch {
     let totalSessions = 0;
 
     for (const file of sessionFiles) {
-      const fullPath = path.join(MEMEX_PATH, file);
+      const fullPath = path.join(CODICIL_PATH, file);
       const sessionsIndex = readJSON(fullPath);
 
       if (!sessionsIndex || !sessionsIndex.sessions) continue;
@@ -798,7 +798,7 @@ if (require.main === module) {
         }
 
         default:
-          console.log('Vector Search - Semantic search for Memex');
+          console.log('Vector Search - Semantic search for Codicil');
           console.log('');
           console.log('Usage: vector-search.js [command]');
           console.log('');

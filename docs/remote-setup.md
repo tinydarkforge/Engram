@@ -1,6 +1,6 @@
 # Remote MCP Setup (Streamable HTTP)
 
-Memex supports remote MCP access via Streamable HTTP. This is the recommended transport for networked agents. SSE-only is deprecated.
+Codicil supports remote MCP access via Streamable HTTP. This is the recommended transport for networked agents. SSE-only is deprecated.
 
 ## 1. Start the server
 
@@ -17,7 +17,7 @@ MCP_API_KEY="replace-me" MCP_BIND_ADDR=0.0.0.0 MCP_PORT=3000 node scripts/mcp-se
 
 Optional host allowlist:
 ```bash
-MCP_ALLOWED_HOSTS="memex.yourdomain.com,172.31.141.155"
+MCP_ALLOWED_HOSTS="codicil.yourdomain.com,172.31.141.155"
 ```
 
 ## 2. Connect a client
@@ -27,8 +27,8 @@ Claude Desktop or any MCP client can connect with a simple URL:
 ```json
 {
   "mcpServers": {
-    "memex": {
-      "url": "https://memex.yourdomain.com/mcp"
+    "codicil": {
+      "url": "https://codicil.yourdomain.com/mcp"
     }
   }
 }
@@ -76,7 +76,7 @@ Example nginx config:
 ```nginx
 server {
   listen 443 ssl;
-  server_name memex.yourdomain.com;
+  server_name codicil.yourdomain.com;
 
   ssl_certificate     /etc/ssl/certs/fullchain.pem;
   ssl_certificate_key /etc/ssl/private/privkey.pem;
@@ -104,39 +104,39 @@ If you only want access inside your local network:
 
 Create a dedicated user:
 ```bash
-sudo useradd -r -s /bin/false memex
+sudo useradd -r -s /bin/false codicil
 ```
 
-Install Memex to `/opt/memex` (or your preferred path) and set ownership:
+Install Codicil to `/opt/codicil` (or your preferred path) and set ownership:
 ```bash
-sudo mkdir -p /opt/memex
-sudo chown -R memex:memex /opt/memex
+sudo mkdir -p /opt/codicil
+sudo chown -R codicil:codicil /opt/codicil
 ```
 
-Create `/etc/systemd/system/memex-mcp.service`:
+Create `/etc/systemd/system/codicil-mcp.service`:
 ```ini
 [Unit]
-Description=Memex MCP HTTP Server
+Description=Codicil MCP HTTP Server
 After=network.target
 
 [Service]
 Type=simple
-User=memex
-Group=memex
-WorkingDirectory=/opt/memex
+User=codicil
+Group=codicil
+WorkingDirectory=/opt/codicil
 Environment=NODE_ENV=production
-Environment=MEMEX_PATH=/opt/memex
+Environment=CODICIL_PATH=/opt/codicil
 Environment=MCP_API_KEY=replace-me
 Environment=MCP_BIND_ADDR=0.0.0.0
 Environment=MCP_PORT=3000
-ExecStart=/usr/bin/node /opt/memex/scripts/mcp-server-http.mjs
+ExecStart=/usr/bin/node /opt/codicil/scripts/mcp-server-http.mjs
 Restart=on-failure
 RestartSec=3
 NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=full
 ProtectHome=true
-ReadWritePaths=/opt/memex
+ReadWritePaths=/opt/codicil
 
 [Install]
 WantedBy=multi-user.target
@@ -145,13 +145,13 @@ WantedBy=multi-user.target
 Enable and start:
 ```bash
 sudo systemctl daemon-reload
-sudo systemctl enable memex-mcp
-sudo systemctl start memex-mcp
-sudo systemctl status memex-mcp
+sudo systemctl enable codicil-mcp
+sudo systemctl start codicil-mcp
+sudo systemctl status codicil-mcp
 ```
 
 Template file:
-- `scripts/memex-mcp.service.template` (copy to `/etc/systemd/system/memex-mcp.service`)
+- `scripts/codicil-mcp.service.template` (copy to `/etc/systemd/system/codicil-mcp.service`)
 
 Firewall (example for UFW):
 ```bash
@@ -163,8 +163,8 @@ sudo ufw allow 3000/tcp
 Run the helper script to create the service, env file, and user:
 
 ```bash
-sudo /opt/memex/scripts/install-memex-service.sh \
-  --memex-path /opt/memex \
+sudo /opt/codicil/scripts/install-codicil-service.sh \
+  --codicil-path /opt/codicil \
   --api-key replace-me \
   --port 3000 \
   --bind 0.0.0.0
@@ -172,48 +172,48 @@ sudo /opt/memex/scripts/install-memex-service.sh \
 
 You can change the service user:
 ```bash
-sudo /opt/memex/scripts/install-memex-service.sh \
-  --memex-path /opt/memex \
+sudo /opt/codicil/scripts/install-codicil-service.sh \
+  --codicil-path /opt/codicil \
   --api-key replace-me \
-  --user memex
+  --user codicil
 ```
 
 Optional add-ons:
 ```bash
-sudo /opt/memex/scripts/install-memex-service.sh \
-  --memex-path /opt/memex \
+sudo /opt/codicil/scripts/install-codicil-service.sh \
+  --codicil-path /opt/codicil \
   --api-key replace-me \
   --setup-ufw
 ```
 
 ```bash
-sudo /opt/memex/scripts/install-memex-service.sh \
-  --memex-path /opt/memex \
+sudo /opt/codicil/scripts/install-codicil-service.sh \
+  --codicil-path /opt/codicil \
   --api-key replace-me \
   --setup-nginx \
-  --domain memex.yourdomain.com \
+  --domain codicil.yourdomain.com \
   --ssl-cert /etc/ssl/certs/fullchain.pem \
   --ssl-key /etc/ssl/private/privkey.pem
 ```
 
 All-in-one (service + UFW + nginx + certbot):
 ```bash
-sudo /opt/memex/scripts/install-memex-service.sh \
-  --memex-path /opt/memex \
+sudo /opt/codicil/scripts/install-codicil-service.sh \
+  --codicil-path /opt/codicil \
   --api-key replace-me \
   --all \
-  --domain memex.yourdomain.com \
+  --domain codicil.yourdomain.com \
   --email admin@yourdomain.com
 ```
 
 ## 6. Run as systemd with an env file (Linux)
 
-Create `/etc/memex/memex.env`:
+Create `/etc/codicil/codicil.env`:
 ```bash
-sudo mkdir -p /etc/memex
-sudo tee /etc/memex/memex.env >/dev/null <<'EOF'
+sudo mkdir -p /etc/codicil
+sudo tee /etc/codicil/codicil.env >/dev/null <<'EOF'
 NODE_ENV=production
-MEMEX_PATH=/opt/memex
+CODICIL_PATH=/opt/codicil
 MCP_API_KEY=replace-me
 MCP_BIND_ADDR=0.0.0.0
 MCP_PORT=3000
@@ -223,13 +223,13 @@ EOF
 Update the service file to use the env file:
 ```ini
 [Service]
-EnvironmentFile=/etc/memex/memex.env
+EnvironmentFile=/etc/codicil/codicil.env
 ```
 
 Reload and restart:
 ```bash
 sudo systemctl daemon-reload
-sudo systemctl restart memex-mcp
+sudo systemctl restart codicil-mcp
 ```
 
 ## 7. Nginx TLS + auth (recommended)
@@ -239,7 +239,7 @@ Example nginx config with proxy buffering disabled:
 ```nginx
 server {
   listen 443 ssl;
-  server_name memex.yourdomain.com;
+  server_name codicil.yourdomain.com;
 
   ssl_certificate     /etc/ssl/certs/fullchain.pem;
   ssl_certificate_key /etc/ssl/private/privkey.pem;

@@ -1,10 +1,10 @@
 const fs = require('fs');
 const path = require('path');
-const { resolveMemexPath } = require('./paths');
+const { resolveCodicilPath } = require('./paths');
 const { readJSON } = require('./safe-json');
 
-const MEMEX_PATH = resolveMemexPath(__dirname);
-const INDEX_PATH = path.join(MEMEX_PATH, 'index.json');
+const CODICIL_PATH = resolveCodicilPath(__dirname);
+const INDEX_PATH = path.join(CODICIL_PATH, 'index.json');
 const CURRENT_SCHEMA_VERSION = 1;
 
 function atomicWriteFileSync(targetPath, content) {
@@ -95,7 +95,7 @@ function runSqlMigrations(db) {
   `);
 
   // Read all .sql files from migrations/ directory
-  const migrationsDir = path.join(MEMEX_PATH, 'migrations');
+  const migrationsDir = path.join(CODICIL_PATH, 'migrations');
   if (!fs.existsSync(migrationsDir)) {
     return { applied: [], skipped: [] };
   }
@@ -140,8 +140,8 @@ module.exports = {
 if (require.main === module) {
   const Database = require('better-sqlite3');
   const path = require('path');
-  const MEMEX_PATH = resolveMemexPath(__dirname);
-  const DB_PATH = path.join(MEMEX_PATH, '.cache', 'memex.db');
+  const CODICIL_PATH = resolveCodicilPath(__dirname);
+  const DB_PATH = path.join(CODICIL_PATH, '.cache', 'codicil.db');
   const cacheDir = path.dirname(DB_PATH);
   if (!require('fs').existsSync(cacheDir)) require('fs').mkdirSync(cacheDir, { recursive: true });
   const db = new Database(DB_PATH);

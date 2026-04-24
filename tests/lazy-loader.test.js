@@ -11,10 +11,10 @@ describe('LazyLoader', () => {
   let LazyLoader;
 
   before(() => {
-    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'memex-lazy-'));
-    process.env.MEMEX_SILENT = '1';
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'codicil-lazy-'));
+    process.env.CODICIL_SILENT = '1';
 
-    // Create Memex structure with sessions
+    // Create Codicil structure with sessions
     const projDir = path.join(tmpDir, 'summaries', 'projects', 'TestProject');
     fs.mkdirSync(projDir, { recursive: true });
 
@@ -52,7 +52,7 @@ describe('LazyLoader', () => {
       JSON.stringify(sessionsIndex, null, 2)
     );
 
-    process.env.MEMEX_PATH = tmpDir;
+    process.env.CODICIL_PATH = tmpDir;
 
     // Clear module cache
     Object.keys(require.cache)
@@ -63,8 +63,8 @@ describe('LazyLoader', () => {
   });
 
   after(() => {
-    delete process.env.MEMEX_PATH;
-    delete process.env.MEMEX_SILENT;
+    delete process.env.CODICIL_PATH;
+    delete process.env.CODICIL_SILENT;
     fs.rmSync(tmpDir, { recursive: true, force: true });
   });
 

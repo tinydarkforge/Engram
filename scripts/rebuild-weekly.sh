@@ -15,8 +15,8 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-MEMEX_PATH="${MEMEX_PATH:-$(cd "$SCRIPT_DIR/.." && pwd)}"
-PLIST_PATH="$HOME/Library/LaunchAgents/com.memex.neural-rebuild.plist"
+CODICIL_PATH="${CODICIL_PATH:-$(cd "$SCRIPT_DIR/.." && pwd)}"
+PLIST_PATH="$HOME/Library/LaunchAgents/com.codicil.neural-rebuild.plist"
 LOG_FILE="/tmp/neural-rebuild.log"
 
 # Colors for output
@@ -41,7 +41,7 @@ install_schedule() {
 <plist version="1.0">
 <dict>
     <key>Label</key>
-    <string>com.memex.neural-rebuild</string>
+    <string>com.codicil.neural-rebuild</string>
     <key>ProgramArguments</key>
     <array>
         <string>$SCRIPT_DIR/rebuild-weekly.sh</string>
@@ -63,8 +63,8 @@ install_schedule() {
     <dict>
         <key>PATH</key>
         <string>/usr/local/bin:/usr/bin:/bin</string>
-        <key>MEMEX_PATH</key>
-        <string>$MEMEX_PATH</string>
+        <key>CODICIL_PATH</key>
+        <string>$CODICIL_PATH</string>
     </dict>
 </dict>
 </plist>
@@ -94,7 +94,7 @@ run_rebuild() {
     # Memory limit (prevent runaway)
     ulimit -v 524288 2>/dev/null || true  # 512MB
 
-    cd "$MEMEX_PATH"
+    cd "$CODICIL_PATH"
 
     # Run the build
     log "Building neural structures..."
@@ -104,10 +104,10 @@ run_rebuild() {
 
     # Show stats
     log "Index sizes:"
-    ls -lh "$MEMEX_PATH/.neural/"*.msgpack 2>/dev/null | awk '{print "  " $9 ": " $5}'
+    ls -lh "$CODICIL_PATH/.neural/"*.msgpack 2>/dev/null | awk '{print "  " $9 ": " $5}'
 
-    if [ -f "$MEMEX_PATH/.neural/git-index.msgpack" ]; then
-        log "Git index: $(ls -lh "$MEMEX_PATH/.neural/git-index.msgpack" | awk '{print $5}')"
+    if [ -f "$CODICIL_PATH/.neural/git-index.msgpack" ]; then
+        log "Git index: $(ls -lh "$CODICIL_PATH/.neural/git-index.msgpack" | awk '{print $5}')"
     fi
 }
 

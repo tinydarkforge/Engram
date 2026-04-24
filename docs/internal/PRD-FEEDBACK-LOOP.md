@@ -1,4 +1,4 @@
-# Memex — Outcome Feedback Loop & UI Polish PRD
+# Codicil — Outcome Feedback Loop & UI Polish PRD
 
 > Status: DRAFT — v1
 > Date: 2026-04-19
@@ -54,7 +54,7 @@ Developers and AI agents prefer different things:
 
 ### 3c. Why agent-agnostic, not Claude-only
 
-- Memex's moat is **the memory layer**, not any specific client. Binding feedback to Claude makes it a Claude plugin, not a memory system.
+- Codicil's moat is **the memory layer**, not any specific client. Binding feedback to Claude makes it a Claude plugin, not a memory system.
 - The MCP server is already the abstraction seam. Feedback hooks live there — any MCP client inherits the benefit.
 - Claude-specific features (citations API, extended thinking) become upgrade paths, not prerequisites.
 
@@ -103,7 +103,7 @@ Five touchpoints, all inside `scripts/` — no client changes required.
 
 Two paths, neither agent-specific:
 
-- **MCP hook:** Memex adds an optional `ledger_report_outcome` tool. Agents that know about it call it; a small adapter for each agent framework fills the gap.
+- **MCP hook:** Codicil adds an optional `ledger_report_outcome` tool. Agents that know about it call it; a small adapter for each agent framework fills the gap.
 - **Session watcher:** `scripts/capture.js` already tails Claude session JSON. Extend it to detect reply boundaries and trigger `feedback/post-hoc.js` offline. This is the agent-agnostic fallback — works even when the agent is oblivious.
 
 Prefer the session watcher as the default. The tool is an optional accelerator for well-behaved agents.
@@ -144,16 +144,16 @@ Extends the existing `web/` scaffolding (already has `index.html`, `app.js`, `st
 - Honor `prefers-reduced-motion` — disable sparkline animations.
 - Text contrast ≥ 4.5:1, interactive target size ≥ 44×44px.
 
-### 7b. Graph polish (`graph.html` + `graph-memex.html`)
+### 7b. Graph polish (`graph.html` + `graph-codicil.html`)
 
 **Important correction:** these are *not* duplicates.
 - `graph.html` → cross-project view with a project selector.
-- `graph-memex.html` → single-scope Memex concept map.
+- `graph-codicil.html` → single-scope Codicil concept map.
 Two valid surfaces; keep both.
 
 **First, share the chassis:**
 
-- Rename for intent: `graph.html` → `graph-projects.html`, `graph-memex.html` → `graph-concepts.html`. Current names hide the distinction.
+- Rename for intent: `graph.html` → `graph-projects.html`, `graph-codicil.html` → `graph-concepts.html`. Current names hide the distinction.
 - Extract shared shell into `web/graph-shell.js` + `web/tokens.css`: vis-network config, header, legend, palette, pan/zoom/keyboard handlers. Both pages become thin data-providers on top of the shell.
 - Add a cross-link nav in the header ("Projects ↔ Concepts") so they feel like one app with two modes.
 
@@ -246,7 +246,7 @@ Two valid surfaces; keep both.
 - **Q1.** Do we need a "negative" layer-A signal (reply contradicts assertion) or is low score sufficient? Initial answer: low score is sufficient; revisit after 30 days of data.
 - **Q2.** Should layer C feedback propagate to lineage ancestors of the assertion? Leaning no — would muddy provenance. Confirm with a usage sample.
 - **Q3.** Is session watcher reliable enough to be the default, or should MCP tool be the default with watcher as fallback? Needs a week of real-use data before we decide.
-- **Q4.** Graph surfaces: **resolved.** Keep both (`graph.html` = cross-project, `graph-memex.html` = concept map). Plan is to rename for intent and share the chassis via `web/graph-shell.js` + `web/tokens.css`, not consolidate.
+- **Q4.** Graph surfaces: **resolved.** Keep both (`graph.html` = cross-project, `graph-codicil.html` = concept map). Plan is to rename for intent and share the chassis via `web/graph-shell.js` + `web/tokens.css`, not consolidate.
 
 ---
 
