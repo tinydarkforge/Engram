@@ -39,3 +39,4 @@ metadata/projects/*
 # Private templates
 templates/AGENTS-*.md
 
+.memex-manifest.*
