@@ -28,6 +28,9 @@ schemas/session.schema.msgpack
 # Private project summaries/metadata (only Memex is public)
 summaries/projects/*
 !summaries/projects/Memex/
+
+# Session logs (use examples/sessions/ for curated demos)
+summaries/projects/*/sessions/*.json
 metadata/projects/*
 !metadata/projects/Memex.json
 !metadata/projects/Memex.msgpack
