@@ -66,7 +66,7 @@ Queries traverse four layers, stopping as early as possible:
 | **Session detail** | per-file  | ~5 ms   | Lazy-loaded on demand                                     |
 | **Ledger**         | ~2 KB/fact| 5–15 ms | Ranked facts with confidence, quorum, tension, lineage    |
 
-Facts are ranked by `decay × status × quorum × tension × weight` and packed into a caller-specified token budget. Architecture deep dive: [`HOW-IT-WORKS.md`](HOW-IT-WORKS.md).
+Facts are ranked by `decay × status × quorum × tension × weight` and packed into a caller-specified token budget.
 
 ---
 
@@ -83,7 +83,7 @@ The ledger is where session notes become structured, queryable knowledge. Every 
 - **Lineage** — which sessions contributed
 - **Tension** — automatic negation-based contradiction detection
 
-Tensions surface as alerts; unresolved ones downweight their claims in context selection. Full reference: [`docs/ASSERTION-API-REFERENCE.md`](docs/ASSERTION-API-REFERENCE.md) · [`docs/LEDGER-GUIDE.md`](docs/LEDGER-GUIDE.md).
+Tensions surface as alerts; unresolved ones downweight their claims in context selection.
 
 ---
 
@@ -148,7 +148,6 @@ claude mcp add codicil -s user -- codicil mcp
 claude mcp add codicil -s user -- node "$(pwd)/scripts/mcp-server.mjs"
 ```
 
-Remote HTTP transport with API-key auth: [`docs/remote-setup.md`](docs/remote-setup.md).
 
 ---
 
@@ -181,7 +180,6 @@ codicil status   # includes ledger health
 npm run ledger:stats   # from source clone
 ```
 
-Full CLI reference: [`CHEATSHEET.md`](docs/CHEATSHEET.md) · deep dive: [`HOW-IT-WORKS.md`](HOW-IT-WORKS.md).
 
 ---
 
@@ -204,7 +202,6 @@ The dashboard is read-only by default. Ledger mutations require the MCP or CLI p
 - **No network calls** unless you opt in. The embedding model downloads lazily on the first semantic query and is then cached locally — if you never invoke semantic search, nothing is fetched.
 - **No telemetry.** Codicil does not phone home. Ever.
 - **Local files only.** All session data lives under the repo in `summaries/` and the ledger DB in `.cache/codicil.db`.
-- **API-key auth** for remote HTTP MCP transport — see [`docs/remote-setup.md`](docs/remote-setup.md).
 - **Vuln disclosure:** [`SECURITY.md`](SECURITY.md).
 
 ---
@@ -215,7 +212,6 @@ The dashboard is read-only by default. Ledger mutations require the MCP or CLI p
 scripts/     runtime, CLI, servers, MCP tools, ledger
 tests/       29 test files (node:test)
 web/         dashboard UI (static)
-docs/        setup, reference, operational docs
 schemas/     JSON schemas for sessions + ledger
 migrations/  SQLite schema migrations
 examples/    curated session records
@@ -231,19 +227,6 @@ summaries/   per-project session indexes + records
 | macOS    | Supported                                    |
 | Linux    | Supported                                    |
 | Windows  | Not supported (shell scripts, POSIX symlinks)|
-
----
-
-## ░▒▓█ Related docs
-
-- [`QUICKSTART.md`](QUICKSTART.md) — end-to-end first session
-- [`HOW-IT-WORKS.md`](HOW-IT-WORKS.md) — architecture deep dive
-- [`CHEATSHEET.md`](docs/CHEATSHEET.md) — CLI + MCP reference
-- [`docs/LEDGER-GUIDE.md`](docs/LEDGER-GUIDE.md) — assertion ledger operator guide
-- [`docs/ASSERTION-API-REFERENCE.md`](docs/ASSERTION-API-REFERENCE.md) — ledger API
-- [`docs/remote-setup.md`](docs/remote-setup.md) — remote MCP transport
-- [`docs/WHAT-IS-CODICIL.md`](docs/WHAT-IS-CODICIL.md) — plain-language overview
-- [`CONTRIBUTING.md`](CONTRIBUTING.md) · [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md) · [`SECURITY.md`](SECURITY.md)
 
 ---
 

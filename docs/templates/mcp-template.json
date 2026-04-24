@@ -1,8 +1,0 @@
-{
-  "mcpServers": {
-    "codicil": {
-      "command": "node",
-      "args": ["./scripts/mcp-server.mjs"]
-    }
-  }
-}

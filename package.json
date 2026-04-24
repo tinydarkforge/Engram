@@ -37,9 +37,7 @@
     "migrations/",
     "web/",
     "examples/benchmark-corpus/",
-    "setup-aliases.sh",
-    "QUICKSTART.md",
-    "HOW-IT-WORKS.md"
+    "setup-aliases.sh"
   ],
   "keywords": [
     "codicil",
