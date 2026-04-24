@@ -1,6 +1,6 @@
 {
   "name": "@tinydarkforge/codicil",
-  "version": "4.0.1",
+  "version": "4.0.2",
   "description": "Local-first memory and assertion ledger for AI coding agents. Confidence-weighted, contradiction-aware, token-budgeted context over MCP.",
   "main": "scripts/codicil-loader.js",
   "bin": {
@@ -55,12 +55,15 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/tinydarkforge/codicil.git"
+    "url": "git+https://github.com/tinydarkforge/codicil.git"
   },
   "engines": {
     "node": ">=20.0.0"
   },
-  "os": ["darwin", "linux"],
+  "os": [
+    "darwin",
+    "linux"
+  ],
   "dependencies": {
     "@huggingface/transformers": "^3.8.1",
     "@modelcontextprotocol/sdk": "^1.24.3",
