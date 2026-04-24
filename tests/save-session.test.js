@@ -7,7 +7,7 @@ const path = require('path');
 const os = require('os');
 
 function createTestFixture() {
-  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'memex-save-test-'));
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'codicil-save-test-'));
 
   const index = {
     v: '4.0.0',
@@ -55,7 +55,7 @@ function loadSessionSaverWithFixture(fixturePath) {
   const modulesToClear = Object.keys(require.cache).filter(
     (k) =>
       k.includes('save-session') ||
-      k.includes('memex-loader') ||
+      k.includes('codicil-loader') ||
       k.includes('persistent-cache') ||
       k.includes('manifest-manager') ||
       k.includes('vector-search') ||
@@ -65,11 +65,11 @@ function loadSessionSaverWithFixture(fixturePath) {
   modulesToClear.forEach((k) => delete require.cache[k]);
 
   const pathsModule = require('../scripts/paths');
-  const originalResolve = pathsModule.resolveMemexPath;
-  pathsModule.resolveMemexPath = () => fixturePath;
+  const originalResolve = pathsModule.resolveCodicilPath;
+  pathsModule.resolveCodicilPath = () => fixturePath;
 
   const SessionSaver = require('../scripts/save-session');
-  return { SessionSaver, restore: () => { pathsModule.resolveMemexPath = originalResolve; } };
+  return { SessionSaver, restore: () => { pathsModule.resolveCodicilPath = originalResolve; } };
 }
 
 describe('SessionSaver', () => {
@@ -141,7 +141,7 @@ describe('SessionSaver', () => {
     it('saves session without git commit by default', async () => {
       const saver = Object.create(SessionSaver.prototype);
       saver.currentProject = 'TestSaveProject';
-      saver.memex = require('../scripts/memex-loader');
+      saver.codicil = require('../scripts/codicil-loader');
       saver.loader = { loadIndex: () => {}, detectProject: () => ({ project: 'TestSaveProject' }) };
 
       const result = await saver.saveSession('Test session', ['testing'], null, {});
@@ -215,7 +215,7 @@ describe('SessionSaver', () => {
       await new Promise(resolve => setImmediate(resolve));
 
       assert.equal(emitted.length, 1);
-      assert.equal(emitted[0].eventType, 'memex.session.saved');
+      assert.equal(emitted[0].eventType, 'codicil.session.saved');
       assert.deepEqual(emitted[0].payload.git_stats, {
         files_changed: 2,
         lines_added: 10,

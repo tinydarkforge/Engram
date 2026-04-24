@@ -1,11 +1,11 @@
-# Quick Context (Memex v1.0)
+# Quick Context (Codicil v1.0)
 
 ## Standards
 - **Commit:** `<type>(<scope>): <description>` (feat|fix|docs|style|refactor|test|chore)
 - **PR:** tests + self-review + lint + typecheck + build + 1 approval
 - **Branches:** main(prod) → staging(QA) → develop(dev) → feature/*
 
-## Memex
+## Codicil
 - **About:** Extended memory system for AI assistants - token-optimized knowledge base
 - **Tech:** Node.js, JavaScript
 
@@ -17,8 +17,8 @@
 
 ## Deep Queries
 ```bash
-node ~/code/Memex/scripts/memex-loader.js quick "<query>"
+node ~/code/Codicil/scripts/codicil-loader.js quick "<query>"
 ```
 
 ---
-*Token-optimized. Full Memex: ~/code/Memex*
+*Token-optimized. Full Codicil: ~/code/Codicil*

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * Lazy Loader for Memex (#22)
+ * Lazy Loader for Codicil (#22)
  *
  * Implements lazy loading of session details to reduce index size by 90%
  * - Lightweight index: Only id, date, summary, topics (~100-200 bytes per session)
@@ -16,11 +16,11 @@
 const fs = require('fs');
 const path = require('path');
 const { glob } = require('glob');
-const { resolveMemexPath } = require('./paths');
+const { resolveCodicilPath } = require('./paths');
 const { readJSON } = require('./safe-json');
 
-const MEMEX_PATH = resolveMemexPath(__dirname);
-const SILENT = process.env.MEMEX_SILENT === '1' || process.env.NODE_ENV === 'test';
+const CODICIL_PATH = resolveCodicilPath(__dirname);
+const SILENT = process.env.CODICIL_SILENT === '1' || process.env.NODE_ENV === 'test';
 const log = (...args) => {
   if (!SILENT) {
     console.log(...args);
@@ -39,7 +39,7 @@ class LazyLoader {
     log('🔄 Converting to lazy-loading format...');
 
     const sessionIndexFiles = await glob('summaries/projects/*/sessions-index.json', {
-      cwd: MEMEX_PATH
+      cwd: CODICIL_PATH
     });
 
     let totalSessions = 0;
@@ -47,7 +47,7 @@ class LazyLoader {
     let totalSizeAfter = 0;
 
     for (const indexFile of sessionIndexFiles) {
-      const fullPath = path.join(MEMEX_PATH, indexFile);
+      const fullPath = path.join(CODICIL_PATH, indexFile);
       const fullIndex = readJSON(fullPath);
       if (!fullIndex) continue;
 
@@ -132,7 +132,7 @@ class LazyLoader {
    */
   loadSessionDetails(projectName, sessionId) {
     const detailsPath = path.join(
-      MEMEX_PATH,
+      CODICIL_PATH,
       'summaries/projects',
       projectName,
       'sessions',
@@ -155,10 +155,10 @@ class LazyLoader {
     };
 
     // Calculate from existing detail files
-    const detailFiles = fs.readdirSync(path.join(MEMEX_PATH, 'summaries/projects'))
-      .filter(dir => fs.existsSync(path.join(MEMEX_PATH, 'summaries/projects', dir, 'sessions')))
+    const detailFiles = fs.readdirSync(path.join(CODICIL_PATH, 'summaries/projects'))
+      .filter(dir => fs.existsSync(path.join(CODICIL_PATH, 'summaries/projects', dir, 'sessions')))
       .flatMap(dir => {
-        const sessionsDir = path.join(MEMEX_PATH, 'summaries/projects', dir, 'sessions');
+        const sessionsDir = path.join(CODICIL_PATH, 'summaries/projects', dir, 'sessions');
         return fs.readdirSync(sessionsDir)
           .filter(f => f.endsWith('.json'))
           .map(f => path.join(sessionsDir, f));
@@ -190,11 +190,11 @@ class LazyLoader {
     log('🔄 Reverting to full format...');
 
     const sessionIndexFiles = await glob('summaries/projects/*/sessions-index.json', {
-      cwd: MEMEX_PATH
+      cwd: CODICIL_PATH
     });
 
     for (const indexFile of sessionIndexFiles) {
-      const fullPath = path.join(MEMEX_PATH, indexFile);
+      const fullPath = path.join(CODICIL_PATH, indexFile);
       const lightIndex = readJSON(fullPath);
       if (!lightIndex) continue;
 

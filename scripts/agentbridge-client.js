@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
 /**
- * AgentBridge Client for Memex
+ * AgentBridge Client for Codicil
  *
- * Thin HTTP client that connects Memex to AgentBridge for inter-agent
+ * Thin HTTP client that connects Codicil to AgentBridge for inter-agent
  * communication. Opt-in via AGENTBRIDGE_URL env var — when unset,
  * everything degrades to no-ops.
  *
@@ -13,24 +13,24 @@
 const http = require('http');
 const https = require('https');
 
-const AGENT_ID = 'memex';
-const AGENT_NAME = 'Memex Knowledge Base';
+const AGENT_ID = 'codicil';
+const AGENT_NAME = 'Codicil Knowledge Base';
 const HTTP_TIMEOUT = 3000; // 3s fire-and-forget
 
 const EVENT_SCHEMAS = [
   {
-    event_type: 'memex.session.saved',
-    description: 'A session was saved to Memex',
+    event_type: 'codicil.session.saved',
+    description: 'A session was saved to Codicil',
     required_fields: ['session_id', 'project', 'summary'],
   },
   {
-    event_type: 'memex.query.requested',
-    description: 'A query was made against Memex',
+    event_type: 'codicil.query.requested',
+    description: 'A query was made against Codicil',
     required_fields: ['query', 'requester'],
   },
   {
-    event_type: 'memex.query.result',
-    description: 'A query returned results from Memex',
+    event_type: 'codicil.query.result',
+    description: 'A query returned results from Codicil',
     required_fields: ['query', 'source'],
   },
 ];

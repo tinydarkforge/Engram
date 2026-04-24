@@ -77,7 +77,7 @@ function renderPrompt(name, args = {}) {
 
   switch (name) {
     case 'summarize_today':
-      text = `Summarize everything I worked on today${project ? ` for project \"${project}\"` : ''}. Use Memex tools (recent_sessions, search_sessions, get_session) and produce:\n- Summary\n- Key decisions\n- Open questions\n- Next steps`;
+      text = `Summarize everything I worked on today${project ? ` for project \"${project}\"` : ''}. Use Codicil tools (recent_sessions, search_sessions, get_session) and produce:\n- Summary\n- Key decisions\n- Open questions\n- Next steps`;
       break;
     case 'project_onboarding':
       text = `Give me full context for starting work on project \"${project}\". Use get_bundle, recent_sessions, search_sessions, and get_session. Include:\n- Project summary\n- Tech stack\n- Recent sessions and outcomes\n- Key conventions and decisions\n- Risks or open issues`;

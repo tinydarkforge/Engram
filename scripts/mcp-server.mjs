@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * Memex MCP Server
+ * Codicil MCP Server
  *
  * Exposes Neural Memory as tools for AI assistant via Model Context Protocol.
  *
@@ -17,9 +17,9 @@
  *
  * Configure in AI assistant Code settings:
  *   "mcpServers": {
- *     "memex": {
+ *     "codicil": {
  *       "command": "node",
- *       "args": ["/path/to/Memex/scripts/mcp-server.js"]
+ *       "args": ["/path/to/Codicil/scripts/mcp-server.js"]
  *     }
  *   }
  */
@@ -71,7 +71,7 @@ const { listPrompts, renderPrompt } = require('./mcp-prompts.js');
 
 const server = new Server(
   {
-    name: 'memex',
+    name: 'codicil',
     version: '1.0.0',
   },
   {
@@ -89,7 +89,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
     tools: [
       {
         name: 'remember',
-        description: 'Save a memory or session to Memex. Call at end of session, after completing a feature, or when recording a decision.',
+        description: 'Save a memory or session to Codicil. Call at end of session, after completing a feature, or when recording a decision.',
         inputSchema: {
           type: 'object',
           properties: {
@@ -158,7 +158,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           properties: {
             project: {
               type: 'string',
-              description: 'Project name (e.g., "Memex", "ProjectA", "ProjectB")'
+              description: 'Project name (e.g., "Codicil", "ProjectA", "ProjectB")'
             }
           },
           required: ['project']
@@ -172,7 +172,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           properties: {
             project: {
               type: 'string',
-              description: 'Project name (e.g., "Memex", "ProjectA", "ProjectB")'
+              description: 'Project name (e.g., "Codicil", "ProjectA", "ProjectB")'
             },
             session_id: {
               type: 'string',
@@ -276,7 +276,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       },
       {
         name: 'rebuild_index',
-        description: 'Rebuild Memex indexes (bloom, git, embeddings).',
+        description: 'Rebuild Codicil indexes (bloom, git, embeddings).',
         inputSchema: {
           type: 'object',
           properties: {
@@ -306,7 +306,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           properties: {
             plane: {
               type: 'string',
-              description: 'Plane identifier (e.g., user:daniel, project:Memex, session:id123)'
+              description: 'Plane identifier (e.g., user:daniel, project:Codicil, session:id123)'
             },
             class_: {
               type: 'string',
@@ -351,7 +351,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           properties: {
             plane: {
               type: 'string',
-              description: 'Plane identifier (e.g., user:daniel, project:Memex)'
+              description: 'Plane identifier (e.g., user:daniel, project:Codicil)'
             }
           },
           required: ['plane']
@@ -490,13 +490,13 @@ server.setRequestHandler(ListResourcesRequestSchema, async () => {
   return {
     resources: [
       {
-        uri: 'memex://stats',
+        uri: 'codicil://stats',
         name: 'Neural Memory Stats',
         description: 'Overview statistics of the Neural Memory system',
         mimeType: 'application/json'
       },
       {
-        uri: 'memex://graph',
+        uri: 'codicil://graph',
         name: 'Concept Graph',
         description: 'The full concept relationship graph',
         mimeType: 'application/json'
@@ -509,14 +509,14 @@ server.setRequestHandler(ListResourcesRequestSchema, async () => {
 server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
   const { uri } = request.params;
 
-  if (uri === 'memex://stats') {
+  if (uri === 'codicil://stats') {
     const stats = getStats();
     return {
       contents: [{ uri, mimeType: 'application/json', text: JSON.stringify(stats, null, 2) }]
     };
   }
 
-  if (uri === 'memex://graph') {
+  if (uri === 'codicil://graph') {
     const summary = getGraphSummary();
     return {
       contents: [{ uri, mimeType: 'application/json', text: JSON.stringify(summary, null, 2) }]
@@ -533,7 +533,7 @@ server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
 async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  console.error('Memex MCP Server started');
+  console.error('Codicil MCP Server started');
 }
 
 main().catch((error) => {

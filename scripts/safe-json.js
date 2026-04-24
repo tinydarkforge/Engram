@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * Safe JSON - Hardened JSON file reading and schema validation for Memex
+ * Safe JSON - Hardened JSON file reading and schema validation for Codicil
  *
  * Wraps all JSON reads in try/catch with graceful fallback.
  * Validates required shapes for index.json and sessions-index.json.
@@ -24,7 +24,7 @@ function readJSON(filePath, fallback = null) {
 }
 
 /**
- * Validate Memex index.json shape.
+ * Validate Codicil index.json shape.
  * Returns { valid: true } or { valid: false, errors: [...] }.
  */
 function validateIndex(data) {

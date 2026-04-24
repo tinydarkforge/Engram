@@ -1,18 +1,18 @@
-# Memex Cheatsheet
+# Codicil Cheatsheet
 
-Quick reference for all Memex commands, API endpoints, and MCP tools.
+Quick reference for all Codicil commands, API endpoints, and MCP tools.
 
 ---
 
 ## CLI Commands
 
-### memex-loader.js (Main CLI)
+### codicil-loader.js (Main CLI)
 
 ```bash
-node scripts/memex-loader.js <command> [args]
+node scripts/codicil-loader.js <command> [args]
 
 # Or with alias:
-memex <command> [args]
+codicil <command> [args]
 ```
 
 | Command | Description |
@@ -53,7 +53,7 @@ stats             # Show index statistics
 ```bash
 # Transform assertions with confirmation
 node scripts/transform.js [options]
-  --plane <plane>              # Default: project:Memex
+  --plane <plane>              # Default: project:Codicil
   --action <action>            # all|promote|verify|fossilize|weight
   --no-dry-run                 # Execute (default is dry-run)
   --confidence <f>             # Min confidence for promotion (default: 0.7)
@@ -61,10 +61,10 @@ node scripts/transform.js [options]
   --yes                        # Skip confirmation prompt
 
 # Detect contradictions in a plane
-node scripts/contradiction-sentinel.js --plane project:Memex
+node scripts/contradiction-sentinel.js --plane project:Codicil
 
 # Query ledger facts
-node scripts/ledger.js query project:Memex
+node scripts/ledger.js query project:Codicil
 ```
 
 ---
@@ -74,7 +74,7 @@ node scripts/ledger.js query project:Memex
 ```bash
 npm start                    # Start web dashboard (port 3000)
 npm test                     # Run all tests
-npm run startup              # Load Memex context
+npm run startup              # Load Codicil context
 npm run status               # System status
 npm run search -- <query>    # Keyword search
 npm run semantic -- "query"  # Semantic search
@@ -140,9 +140,9 @@ Configure in your AI assistant:
 ```json
 {
   "mcpServers": {
-    "memex": {
+    "codicil": {
       "command": "node",
-      "args": ["/path/to/Memex/scripts/mcp-server.mjs"]
+      "args": ["/path/to/Codicil/scripts/mcp-server.mjs"]
     }
   }
 }
@@ -171,8 +171,8 @@ Configure in your AI assistant:
 
 | URI | Description |
 |-----|-------------|
-| `memex://stats` | System overview statistics |
-| `memex://graph` | Concept graph summary |
+| `codicil://stats` | System overview statistics |
+| `codicil://graph` | Concept graph summary |
 
 ---
 
@@ -180,8 +180,8 @@ Configure in your AI assistant:
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `MEMEX_PATH` | Path to Memex data directory | Auto-detected |
-| `REPOS_ROOT` | Parent directory of all repos | `../` from MEMEX_PATH |
+| `CODICIL_PATH` | Path to Codicil data directory | Auto-detected |
+| `REPOS_ROOT` | Parent directory of all repos | `../` from CODICIL_PATH |
 | `AGENTBRIDGE_URL` | AgentBridge server URL (enables integration) | unset (disabled) |
 | `AGENTBRIDGE_TOKEN` | Auth token for AgentBridge | unset |
 | `PORT` | Web dashboard port | `3000` |
@@ -192,14 +192,14 @@ Configure in your AI assistant:
 ## File Structure
 
 ```
-Memex/
+Codicil/
 ├── index.json                         # Main index (4KB)
 ├── summaries/projects/
 │   └── <Project>/
 │       ├── sessions-index.json        # Session list (lightweight)
 │       └── sessions/<id>.json         # Full session details
 ├── .cache/
-│   └── memex.db                       # Assertion ledger (SQLite)
+│   └── codicil.db                       # Assertion ledger (SQLite)
 ├── .neural/
 │   ├── bloom.json                     # Bloom filter
 │   ├── graph.msgpack                  # Concept graph
@@ -222,9 +222,9 @@ Memex/
 
 ### First-time setup
 ```bash
-cd ~/code/Memex
+cd ~/code/Codicil
 npm install
-node scripts/memex-loader.js startup
+node scripts/codicil-loader.js startup
 node scripts/bloom-filter.js build
 ```
 
@@ -236,10 +236,10 @@ node scripts/bloom-filter.js build
 ### Search past work
 ```bash
 # Keyword (fast)
-node scripts/memex-loader.js search "docker deployment"
+node scripts/codicil-loader.js search "docker deployment"
 
 # Semantic (smarter)
-node scripts/memex-loader.js semantic "how we handle auth"
+node scripts/codicil-loader.js semantic "how we handle auth"
 
 # Git history
 node scripts/neural-memory.js search "memory leak fix"

@@ -1,6 +1,6 @@
 # Monthly Task Reports
 
-This folder contains comprehensive monthly task reports for the Memex project.
+This folder contains comprehensive monthly task reports for the Codicil project.
 
 ## Purpose
 
@@ -53,4 +53,4 @@ Tasks are organized into these categories:
 
 ---
 
-**Note:** These reports complement the Memex session summaries which track detailed development work.
+**Note:** These reports complement the Codicil session summaries which track detailed development work.

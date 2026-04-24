@@ -9,7 +9,7 @@ function mkAssertion(overrides = {}) {
   const base = {
     confidence: 0.8,
     status: 'established',
-    plane: 'project:Memex',
+    plane: 'project:Codicil',
     created_at: new Date().toISOString(),
     last_reinforced: null,
     last_verified: null,
@@ -86,20 +86,20 @@ describe('Decay Models', () => {
 
   describe('episodic', () => {
     it('returns flat confidence when plane was active recently', () => {
-      const a = mkAssertion({ confidence: 0.7, plane: 'project:Memex' });
-      const context = { planeActivity: { 'project:Memex': daysAgo(5) } };
+      const a = mkAssertion({ confidence: 0.7, plane: 'project:Codicil' });
+      const context = { planeActivity: { 'project:Codicil': daysAgo(5) } };
       assert.equal(decayModels.episodic(a, new Date(), context), 0.7);
     });
 
     it('applies exponential decay when plane has been idle > 30 days', () => {
-      const a = mkAssertion({ confidence: 0.7, plane: 'project:Memex' });
-      const context = { planeActivity: { 'project:Memex': daysAgo(40) } };
+      const a = mkAssertion({ confidence: 0.7, plane: 'project:Codicil' });
+      const context = { planeActivity: { 'project:Codicil': daysAgo(40) } };
       const result = decayModels.episodic(a, new Date(), context);
       assert.ok(result < 0.7, `should decay after idle, got ${result}`);
     });
 
     it('returns flat confidence when no plane activity data provided', () => {
-      const a = mkAssertion({ confidence: 0.7, plane: 'project:Memex' });
+      const a = mkAssertion({ confidence: 0.7, plane: 'project:Codicil' });
       assert.equal(decayModels.episodic(a), 0.7);
     });
   });

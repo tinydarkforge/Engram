@@ -1,4 +1,4 @@
-# Memex - November 2025 Task Report
+# Codicil - November 2025 Task Report
 
 **Month:** November 2025
 **Assignee:** @Pamperito74 + Claude
@@ -10,14 +10,14 @@
 
 ## Executive Summary
 
-November 2025 marked the **birth and rapid evolution of Memex** - from initial concept to production-ready v3.0:
+November 2025 marked the **birth and rapid evolution of Codicil** - from initial concept to production-ready v3.0:
 - 🚀 **3 Major Versions** released in one month (2.0, 3.0, 3.1)
 - 📦 **94-98% Token Savings** achieved
 - ⚡ **67% File Size Reduction** with gzip compression
 - 🎯 **Sub-100ms Startup** for instant context loading
 - 💰 **$35/month Savings** in Claude API costs
 
-This month established Memex as the foundational memory system for Claude development.
+This month established Codicil as the foundational memory system for Claude development.
 
 ---
 
@@ -67,7 +67,7 @@ This month established Memex as the foundational memory system for Claude develo
 
 | Component | Description | Purpose |
 |-----------|-------------|---------|
-| **memex-loader.js** | Core loader | Index loading, project detection |
+| **codicil-loader.js** | Core loader | Index loading, project detection |
 | **index.json** | Central index | Global standards + projects |
 | **Sessions Structure** | Session storage | Capture dev work |
 | **Scripts** | Utility scripts | Management tools |
@@ -87,9 +87,9 @@ This month established Memex as the foundational memory system for Claude develo
 
 | Task | Description | Status |
 |------|-------------|--------|
-| Initial Memex concept | Extended memory for Claude | ✅ Complete |
+| Initial Codicil concept | Extended memory for Claude | ✅ Complete |
 | Directory structure | Organized file system | ✅ Complete |
-| Core loader implementation | memex-loader.js v1 | ✅ Complete |
+| Core loader implementation | codicil-loader.js v1 | ✅ Complete |
 | Index schema design | Structured JSON format | ✅ Complete |
 | Session storage format | Session summaries | ✅ Complete |
 
@@ -126,8 +126,8 @@ This month established Memex as the foundational memory system for Claude develo
 ### Token Savings
 
 ```
-Before Memex: 50,000 tokens/query
-After Memex:  1,000 tokens/query
+Before Codicil: 50,000 tokens/query
+After Codicil:  1,000 tokens/query
 Reduction:    98% ⬇️
 
 Monthly cost before: $37.50
@@ -189,7 +189,7 @@ File Operations:
 ### Core Architecture
 
 ```
-Memex/
+Codicil/
 ├── index.json                    # Central index (1.9KB compressed)
 ├── summaries/projects/           # Project-specific data
 │   └── {project}/
@@ -199,7 +199,7 @@ Memex/
 │   ├── pr-guidelines.md
 │   └── ...
 └── scripts/
-    ├── memex-loader.js          # Main loader
+    ├── codicil-loader.js          # Main loader
     ├── remember                 # Session capture
     └── utilities                # Helper scripts
 ```
@@ -314,7 +314,7 @@ Memex/
 **Tests Written:** Initial test suite
 
 Key commits:
-- `06296a9` - feat(memex): initialize Memex memory system
+- `06296a9` - feat(codicil): initialize Codicil memory system
 - Multiple iterations leading to v3.0.0
 
 ---

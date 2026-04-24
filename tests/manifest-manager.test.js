@@ -11,9 +11,9 @@ describe('ManifestManager', () => {
   let ManifestManager;
 
   before(() => {
-    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'memex-manifest-'));
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'codicil-manifest-'));
 
-    // Create minimal Memex structure
+    // Create minimal Codicil structure
     fs.mkdirSync(path.join(tmpDir, 'metadata', 'projects'), { recursive: true });
     fs.mkdirSync(path.join(tmpDir, 'summaries', 'projects', 'TestProj'), { recursive: true });
     fs.writeFileSync(path.join(tmpDir, 'index.json'), JSON.stringify({ v: '4.0.0' }));
@@ -22,7 +22,7 @@ describe('ManifestManager', () => {
       JSON.stringify({ project: 'TestProj', sessions: [] })
     );
 
-    process.env.MEMEX_PATH = tmpDir;
+    process.env.CODICIL_PATH = tmpDir;
 
     // Clear module cache
     Object.keys(require.cache)
@@ -33,7 +33,7 @@ describe('ManifestManager', () => {
   });
 
   after(() => {
-    delete process.env.MEMEX_PATH;
+    delete process.env.CODICIL_PATH;
     fs.rmSync(tmpDir, { recursive: true, force: true });
   });
 
@@ -59,7 +59,7 @@ describe('ManifestManager', () => {
     await manager.generate();
     manager.save();
 
-    const manifestPath = path.join(tmpDir, '.memex-manifest.json');
+    const manifestPath = path.join(tmpDir, '.codicil-manifest.json');
     assert.ok(fs.existsSync(manifestPath));
     const data = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
     assert.equal(data.version, '4.0.0');
@@ -124,7 +124,7 @@ describe('ManifestManager', () => {
 
   it('detectChanges() returns is_first_run when no previous manifest', async () => {
     // Remove manifest
-    const manifestPath = path.join(tmpDir, '.memex-manifest.json');
+    const manifestPath = path.join(tmpDir, '.codicil-manifest.json');
     if (fs.existsSync(manifestPath)) fs.unlinkSync(manifestPath);
 
     const manager = new ManifestManager();
@@ -134,7 +134,7 @@ describe('ManifestManager', () => {
   });
 
   it('needsIndexUpdate() returns true when no manifest exists', () => {
-    const manifestPath = path.join(tmpDir, '.memex-manifest.json');
+    const manifestPath = path.join(tmpDir, '.codicil-manifest.json');
     if (fs.existsSync(manifestPath)) fs.unlinkSync(manifestPath);
 
     const manager = new ManifestManager();

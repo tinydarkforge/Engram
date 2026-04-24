@@ -4,7 +4,7 @@
 >
 > **Last used:** December 12, 2025
 > **Duration:** ~2-3 hours autonomous work
-> **Output:** EPIC document + Memex knowledge persistence
+> **Output:** EPIC document + Codicil knowledge persistence
 
 ---
 
@@ -83,9 +83,9 @@ D. A high-level vision for evolving the system
 ⚠️ Do NOT break the EPIC into tasks yet.
 Only deliver the full EPIC narrative for now; we'll decompose later.
 
-4. Persist all knowledge in Memex
+4. Persist all knowledge in Codicil
 
-Store your findings, insights, mental model, and system map in Memex within the repository, so future sessions can use this context immediately without starting from zero.
+Store your findings, insights, mental model, and system map in Codicil within the repository, so future sessions can use this context immediately without starting from zero.
 
 🏁 Goal
 
@@ -110,12 +110,12 @@ Lay the groundwork to transform the project into a system that is:
    - Prioritized improvements
    - High-level vision
 
-2. **Technical Debt Tracking** - `docs/memex/TECHNICAL_DEBT.md`
+2. **Technical Debt Tracking** - `docs/codicil/TECHNICAL_DEBT.md`
    - Categorized issues by severity
    - Code locations
    - Suggested fixes
 
-3. **System Architecture** - `docs/memex/SYSTEM_ARCHITECTURE.md`
+3. **System Architecture** - `docs/codicil/SYSTEM_ARCHITECTURE.md`
    - Full platform knowledge map
    - Component relationships
    - Data flows
@@ -124,7 +124,7 @@ Lay the groundwork to transform the project into a system that is:
    - Summary of findings
    - Links to documentation
 
-5. **Memex Session** - Persisted for future sessions
+5. **Codicil Session** - Persisted for future sessions
 
 ---
 

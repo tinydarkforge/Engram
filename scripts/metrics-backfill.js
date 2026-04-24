@@ -3,22 +3,22 @@
 const fs = require('fs');
 const path = require('path');
 const { glob } = require('glob');
-const { resolveMemexPath } = require('./paths');
+const { resolveCodicilPath } = require('./paths');
 const { readJSON } = require('./safe-json');
 const { METRICS_PATH } = require('./metrics');
 
-const MEMEX_PATH = resolveMemexPath(__dirname);
+const CODICIL_PATH = resolveCodicilPath(__dirname);
 
 async function scanSessions() {
   const sessionFiles = await glob('summaries/projects/*/sessions-index.json', {
-    cwd: MEMEX_PATH
+    cwd: CODICIL_PATH
   });
 
   let totalSessions = 0;
   let lastSessionDate = null;
 
   for (const file of sessionFiles) {
-    const fullPath = path.join(MEMEX_PATH, file);
+    const fullPath = path.join(CODICIL_PATH, file);
     const index = readJSON(fullPath);
     if (!index || !Array.isArray(index.sessions)) continue;
 

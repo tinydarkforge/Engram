@@ -11,7 +11,7 @@ function hasIndexFiles(dir) {
   );
 }
 
-function findMemexRoot(startDir) {
+function findCodicilRoot(startDir) {
   let current = path.resolve(startDir);
   while (true) {
     if (hasIndexFiles(current)) {
@@ -24,24 +24,24 @@ function findMemexRoot(startDir) {
   return null;
 }
 
-function resolveMemexPath(fromDir = __dirname) {
-  if (process.env.MEMEX_PATH) {
-    const envPath = path.resolve(process.env.MEMEX_PATH);
+function resolveCodicilPath(fromDir = __dirname) {
+  if (process.env.CODICIL_PATH) {
+    const envPath = path.resolve(process.env.CODICIL_PATH);
     return envPath;
   }
   const defaultPath = path.resolve(fromDir, '..');
   if (hasIndexFiles(defaultPath)) {
     return defaultPath;
   }
-  const found = findMemexRoot(fromDir);
+  const found = findCodicilRoot(fromDir);
   return found || defaultPath;
 }
 
-function resolveReposRoot(memexPath) {
-  if (process.env.MEMEX_REPOS_ROOT) {
-    return path.resolve(process.env.MEMEX_REPOS_ROOT);
+function resolveReposRoot(codicilPath) {
+  if (process.env.CODICIL_REPOS_ROOT) {
+    return path.resolve(process.env.CODICIL_REPOS_ROOT);
   }
-  return path.resolve(memexPath, '..');
+  return path.resolve(codicilPath, '..');
 }
 
 function normalizeProjectSlug(projectName) {
@@ -53,8 +53,8 @@ function normalizeProjectSlug(projectName) {
     .replace(/^-|-$/g, '');
 }
 
-function listProjectDirectories(memexPath) {
-  const projectsDir = path.join(memexPath, 'summaries', 'projects');
+function listProjectDirectories(codicilPath) {
+  const projectsDir = path.join(codicilPath, 'summaries', 'projects');
   if (!fs.existsSync(projectsDir)) return [];
 
   try {
@@ -66,10 +66,10 @@ function listProjectDirectories(memexPath) {
   }
 }
 
-function resolveProjectDirName(memexPath, projectName) {
+function resolveProjectDirName(codicilPath, projectName) {
   const sanitized = String(projectName || '').replace(/[^a-zA-Z0-9._-]/g, '');
   const slug = normalizeProjectSlug(projectName);
-  const projectsDir = listProjectDirectories(memexPath);
+  const projectsDir = listProjectDirectories(codicilPath);
 
   // Prefer an existing exact directory name first.
   if (sanitized && projectsDir.includes(sanitized)) {
@@ -99,7 +99,7 @@ function resolveProjectDirName(memexPath, projectName) {
 }
 
 module.exports = {
-  resolveMemexPath,
+  resolveCodicilPath,
   resolveReposRoot,
   normalizeProjectSlug,
   resolveProjectDirName,

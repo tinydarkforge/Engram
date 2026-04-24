@@ -75,7 +75,7 @@ describe('EventConsumer', () => {
             res.end(JSON.stringify([
               {
                 id: 'evt-001',
-                event_type: 'memex.query.requested',
+                event_type: 'codicil.query.requested',
                 timestamp: new Date().toISOString(),
                 metadata: {
                   query: 'test search',
@@ -120,8 +120,8 @@ describe('EventConsumer', () => {
     });
 
     it('polls for events and processes them', async () => {
-      // Create a mock memex with search method
-      const mockMemex = {
+      // Create a mock codicil with search method
+      const mockCodicil = {
         search: (query) => ({
           query,
           results: [{ type: 'topic', topic: 'test' }],
@@ -141,7 +141,7 @@ describe('EventConsumer', () => {
       const consumer = new EventConsumer({
         url: `http://127.0.0.1:${mockPort}`,
         pollInterval: 60000,
-        memex: mockMemex,
+        codicil: mockCodicil,
         bridge: mockBridge,
       });
 
@@ -160,21 +160,21 @@ describe('EventConsumer', () => {
 
       // Should have emitted a result
       assert.equal(emittedEvents.length, 1);
-      assert.equal(emittedEvents[0].type, 'memex.query.result');
+      assert.equal(emittedEvents[0].type, 'codicil.query.result');
       assert.equal(emittedEvents[0].meta.query, 'test search');
       assert.equal(emittedEvents[0].meta.source, 'keyword');
       assert.equal(emittedEvents[0].meta.requester, 'test-agent');
     });
 
     it('deduplicates events by id', async () => {
-      const mockMemex = {
+      const mockCodicil = {
         search: () => ({ results: [], total: 0 }),
       };
 
       const consumer = new EventConsumer({
         url: `http://127.0.0.1:${mockPort}`,
         pollInterval: 60000,
-        memex: mockMemex,
+        codicil: mockCodicil,
         bridge: { emit: () => Promise.resolve({ sent: true }) },
       });
 
@@ -198,7 +198,7 @@ describe('EventConsumer', () => {
       const consumer = new EventConsumer({
         url: `http://127.0.0.1:${mockPort}`,
         pollInterval: 60000,
-        memex: { search: () => ({ results: [], total: 0 }) },
+        codicil: { search: () => ({ results: [], total: 0 }) },
         bridge: bridgePromise,
       });
 
@@ -208,11 +208,11 @@ describe('EventConsumer', () => {
       assert.equal(emittedEvents.length, 1);
     });
 
-    it('increments error count on missing memex', async () => {
+    it('increments error count on missing codicil', async () => {
       const consumer = new EventConsumer({
         url: `http://127.0.0.1:${mockPort}`,
         pollInterval: 60000,
-        memex: null, // no memex instance
+        codicil: null, // no codicil instance
       });
 
       await consumer._poll();
@@ -225,7 +225,7 @@ describe('EventConsumer', () => {
       const consumer = new EventConsumer({
         url: `http://127.0.0.1:${mockPort}`,
         pollInterval: 60000,
-        memex: { search: () => ({ results: [], total: 0 }) },
+        codicil: { search: () => ({ results: [], total: 0 }) },
         bridge: { emit: () => Promise.resolve({ sent: true }) },
       });
 

@@ -32,14 +32,14 @@ console.log(`Created assertion: ${factId}`);
 | Plane | Purpose | Examples |
 |-------|---------|----------|
 | `user:name` | Personal decisions, opinions | `user:daniel`, `user:alice` |
-| `project:name` | Project facts, architecture | `project:Memex`, `project:DemoProject` |
+| `project:name` | Project facts, architecture | `project:Codicil`, `project:DemoProject` |
 | `session:id` | Session-derived facts | `session:ci-2026-04-19-123456` |
 | `api:source` | External API facts | `api:github`, `api:weather` |
 
 ### When to Use Each
 
 - **user:daniel** — "I prefer TypeScript over Python" (personal preference)
-- **project:Memex** — "Memex uses SQLite for persistence" (codebase fact)
+- **project:Codicil** — "Codicil uses SQLite for persistence" (codebase fact)
 - **session:abc123** — "During session abc123, we discovered X" (session output)
 - **api:github** — "GitHub says repo has 10K stars" (external fact)
 
@@ -47,17 +47,17 @@ console.log(`Created assertion: ${factId}`);
 
 ```javascript
 // All active facts in a plane
-const projectFacts = ledger.queryActiveByPlane('project:Memex', { limit: 100 });
+const projectFacts = ledger.queryActiveByPlane('project:Codicil', { limit: 100 });
 console.log(`Found ${projectFacts.length} facts`);
 
 // Filter by class
-const stateBoundFacts = ledger.queryActiveByPlane('project:Memex', {
+const stateBoundFacts = ledger.queryActiveByPlane('project:Codicil', {
   classes: ['state_bound'],
   limit: 50
 });
 
 // Get facts created after a date
-const recent = ledger.queryActiveByPlane('project:Memex', {
+const recent = ledger.queryActiveByPlane('project:Codicil', {
   since: '2026-04-01T00:00:00Z'
 });
 ```
@@ -264,8 +264,8 @@ Flat if the plane is active, exponential if idle >30 days. For project facts.
 ```javascript
 {
   staleness_model: 'episodic',
-  plane: 'project:Memex',
-  claim: 'Memex uses SQLite'  // True while project is active
+  plane: 'project:Codicil',
+  claim: 'Codicil uses SQLite'  // True while project is active
 }
 ```
 
@@ -369,7 +369,7 @@ setInterval(() => {
 ```javascript
 // Find all claims about performance
 const perfFacts = ledger.queryByClaim('performance', {
-  plane: 'project:Memex',
+  plane: 'project:Codicil',
   limit: 20
 });
 
@@ -383,7 +383,7 @@ for (const fact of perfFacts) {
 const { transformPlane } = require('./scripts/transform');
 
 // Promote all tentative facts with 2+ sources
-await transformPlane('project:Memex', {
+await transformPlane('project:Codicil', {
   dryRun: false,
   action: 'promote',
   confidenceThreshold: 0.7

@@ -1,5 +1,5 @@
 /**
- * Memex Web UI - Frontend Application
+ * Codicil Web UI - Frontend Application
  */
 
 // ─────────────────────────────────────────────────────────────

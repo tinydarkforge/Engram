@@ -1,5 +1,5 @@
 #!/bin/bash
-# Setup Memex aliases for easy access from any repo
+# Setup Codicil aliases for easy access from any repo
 
 SHELL_RC="$HOME/.zshrc"
 
@@ -8,16 +8,16 @@ if [ -f "$HOME/.bashrc" ]; then
   SHELL_RC="$HOME/.bashrc"
 fi
 
-echo "Setting up Memex aliases in $SHELL_RC..."
+echo "Setting up Codicil aliases in $SHELL_RC..."
 
 # Add aliases if not already present
-if ! grep -q "MEMEX=" "$SHELL_RC"; then
+if ! grep -q "CODICIL=" "$SHELL_RC"; then
   cat >> "$SHELL_RC" << 'EOF'
 
-# Memex - AI assistant's Shared Memory
-export MEMEX="${MEMEX_PATH:-$HOME/code/Memex}"
-alias memex='node $MEMEX/scripts/memex-loader.js'
-alias save-session='node $MEMEX/scripts/save-session.js'
+# Codicil - AI assistant's Shared Memory
+export CODICIL="${CODICIL_PATH:-$HOME/code/Codicil}"
+alias codicil='node $CODICIL/scripts/codicil-loader.js'
+alias save-session='node $CODICIL/scripts/save-session.js'
 EOF
   echo "✅ Aliases added to $SHELL_RC"
 else
@@ -31,8 +31,8 @@ echo ""
 echo "✅ Setup complete!"
 echo ""
 echo "Now you can use from any directory:"
-echo "  memex startup"
-echo "  memex quick 'commit format'"
+echo "  codicil startup"
+echo "  codicil quick 'commit format'"
 echo "  save-session 'Your summary' --topics tag1,tag2"
 echo ""
 echo "Restart your terminal or run: source $SHELL_RC"

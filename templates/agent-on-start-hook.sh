@@ -1,21 +1,21 @@
 #!/bin/bash
-# Generic assistant startup hook for Memex
+# Generic assistant startup hook for Codicil
 
-MEMEX_PATH="${MEMEX_PATH:-$HOME/code/Memex}"
+CODICIL_PATH="${CODICIL_PATH:-$HOME/code/Codicil}"
 
-if [ ! -d "$MEMEX_PATH" ]; then
+if [ ! -d "$CODICIL_PATH" ]; then
   exit 0
 fi
 
 # Optional update from configured upstream
-if [ -n "$MEMEX_REPO_URL" ]; then
+if [ -n "$CODICIL_REPO_URL" ]; then
   (
-    cd "$MEMEX_PATH" || exit
+    cd "$CODICIL_PATH" || exit
     if ! git remote | grep -q "^upstream$"; then
-      git remote add upstream "$MEMEX_REPO_URL" 2>/dev/null || true
+      git remote add upstream "$CODICIL_REPO_URL" 2>/dev/null || true
     fi
     git fetch upstream --quiet 2>/dev/null || true
   ) &
 fi
 
-node "$MEMEX_PATH/scripts/memex-loader.js" startup >/dev/null 2>&1 || true
+node "$CODICIL_PATH/scripts/codicil-loader.js" startup >/dev/null 2>&1 || true

@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
 /**
- * Memex Loader v2.0
- * Efficiently loads Memex knowledge for AI assistant
+ * Codicil Loader v2.0
+ * Efficiently loads Codicil knowledge for AI assistant
  * Optimized for token efficiency and speed with abbreviated keys
  */
 
@@ -15,13 +15,13 @@ const PersistentCache = require('./persistent-cache');
 const ManifestManager = require('./manifest-manager');
 const VectorSearch = require('./vector-search');
 const BloomFilter = require('./bloom-filter');
-const { resolveMemexPath, resolveProjectDirName } = require('./paths');
+const { resolveCodicilPath, resolveProjectDirName } = require('./paths');
 const agentbridge = require('./agentbridge-client');
 const { readJSON, validateIndex } = require('./safe-json');
 
-const MEMEX_PATH = resolveMemexPath(__dirname);
+const CODICIL_PATH = resolveCodicilPath(__dirname);
 
-class Memex {
+class Codicil {
   constructor() {
     this.index = null;
     this.currentProject = null;
@@ -97,7 +97,7 @@ class Memex {
     }
 
     // Cache miss - load from file
-    const basePath = path.join(MEMEX_PATH, 'index');
+    const basePath = path.join(CODICIL_PATH, 'index');
     const msgpackPath = `${basePath}.msgpack`;
     const gzipPath = `${basePath}.json.gz`;
     const jsonPath = `${basePath}.json`;
@@ -136,7 +136,7 @@ class Memex {
     }
 
     if (!this.index) {
-      throw new Error(`Memex index not found at ${basePath}.[msgpack|json.gz|json]`);
+      throw new Error(`Codicil index not found at ${basePath}.[msgpack|json.gz|json]`);
     }
 
     // Validate index shape
@@ -222,7 +222,7 @@ class Memex {
     }
 
     const metadataFile = path.join(
-      MEMEX_PATH,
+      CODICIL_PATH,
       this.index.p[projectName].mf
     );
 
@@ -279,7 +279,7 @@ class Memex {
    * This is called ONLY if quick_answer isn't sufficient
    */
   loadContent(filePath) {
-    const fullPath = path.join(MEMEX_PATH, filePath);
+    const fullPath = path.join(CODICIL_PATH, filePath);
 
     if (!fs.existsSync(fullPath)) {
       return null;
@@ -324,13 +324,13 @@ class Memex {
 
     // #27: Bloom Filter pre-check for instant negative lookups
     if (this.shouldSkipSearch(query, queryTerms)) {
-      // Definitely not in Memex, return immediately
+      // Definitely not in Codicil, return immediately
       return {
         query,
         results: [],
         total: 0,
         bloom_filter_skip: true,
-        message: `"${query}" definitely not found in Memex (bloom filter)`
+        message: `"${query}" definitely not found in Codicil (bloom filter)`
       };
     }
 
@@ -489,9 +489,9 @@ class Memex {
     }
 
     // Load from file
-    const projectDirName = resolveProjectDirName(MEMEX_PATH, projectName);
+    const projectDirName = resolveProjectDirName(CODICIL_PATH, projectName);
     const detailsPath = path.join(
-      MEMEX_PATH,
+      CODICIL_PATH,
       'summaries/projects',
       projectDirName,
       'sessions',
@@ -501,7 +501,7 @@ class Memex {
     if (!fs.existsSync(detailsPath)) {
       // Fallback: Try loading from sessions-index.json (non-lazy format)
       const indexPath = path.join(
-        MEMEX_PATH,
+        CODICIL_PATH,
         'summaries/projects',
         projectDirName,
         'sessions-index.json'
@@ -539,9 +539,9 @@ class Memex {
    * Returns only id, date, summary, topics (no heavy details)
    */
   listSessions(projectName) {
-    const projectDirName = resolveProjectDirName(MEMEX_PATH, projectName);
+    const projectDirName = resolveProjectDirName(CODICIL_PATH, projectName);
     const indexPath = path.join(
-      MEMEX_PATH,
+      CODICIL_PATH,
       'summaries/projects',
       projectDirName,
       'sessions-index.json'
@@ -630,7 +630,7 @@ class Memex {
     const result = this.startup();
 
     return `
-✅ Memex v${result.version} Ready (${result.load_time_ms}ms)
+✅ Codicil v${result.version} Ready (${result.load_time_ms}ms)
 
 📊 Context Loaded:
   • Index Size: ${result.index.size_kb}KB (60-70% smaller than v1)
@@ -653,10 +653,10 @@ ${result.current_project.name ? `
   • Abbreviated keys with _legend for human readability
 
 💡 Quick Commands:
-  • @memex <query>     - Ask anything
-  • @memex search <q>  - Search all projects
-  • @memex load <proj> - Load project context
-  • @memex list        - List all projects
+  • @codicil <query>     - Ask anything
+  • @codicil search <q>  - Search all projects
+  • @codicil load <proj> - Load project context
+  • @codicil list        - List all projects
 
 Token-efficient mode active. Most queries answered from ${result.index.size_kb}KB index.
 `.trim();
@@ -665,23 +665,23 @@ Token-efficient mode active. Most queries answered from ${result.index.size_kb}K
 
 // CLI Usage
 if (require.main === module) {
-  const memex = new Memex();
+  const codicil = new Codicil();
   const command = process.argv[2];
 
   try {
     switch (command) {
       case 'startup':
-        console.log(memex.getStartupMessage());
+        console.log(codicil.getStartupMessage());
         break;
 
       case 'search': {
         const query = process.argv.slice(3).join(' ');
-        memex.loadIndex();
+        codicil.loadIndex();
         const searchStart = Date.now();
-        const results = memex.search(query);
+        const results = codicil.search(query);
         const searchMs = Date.now() - searchStart;
         console.log(JSON.stringify(results, null, 2));
-        memex._bridge.then(bridge => bridge.emit('memex.query.result', {
+        codicil._bridge.then(bridge => bridge.emit('codicil.query.result', {
           query, source: 'keyword', results_count: results.total, latency_ms: searchMs,
         })).catch(() => {});
         break;
@@ -692,11 +692,11 @@ if (require.main === module) {
         (async () => {
           try {
             const semanticStart = Date.now();
-            const semanticResults = await memex.semanticSearch(semanticQuery);
+            const semanticResults = await codicil.semanticSearch(semanticQuery);
             const semanticMs = Date.now() - semanticStart;
             console.log(JSON.stringify(semanticResults, null, 2));
-            const bridge = await memex._bridge;
-            bridge.emit('memex.query.result', {
+            const bridge = await codicil._bridge;
+            bridge.emit('codicil.query.result', {
               query: semanticQuery, source: 'semantic', results_count: semanticResults.results?.length || 0, latency_ms: semanticMs,
             });
           } catch (e) {
@@ -707,31 +707,31 @@ if (require.main === module) {
       }
 
       case 'list':
-        memex.loadIndex();
-        const projects = memex.listProjects();
+        codicil.loadIndex();
+        const projects = codicil.listProjects();
         console.log(JSON.stringify(projects, null, 2));
         break;
 
       case 'quick':
         const question = process.argv.slice(3).join(' ');
-        memex.loadIndex();
-        memex.detectProject();
-        const answer = memex.quickAnswer(question);
+        codicil.loadIndex();
+        codicil.detectProject();
+        const answer = codicil.quickAnswer(question);
         console.log(JSON.stringify(answer, null, 2));
         break;
 
       case 'content':
         const filePath = process.argv[3];
-        memex.loadIndex();
-        const content = memex.loadContent(filePath);
+        codicil.loadIndex();
+        const content = codicil.loadContent(filePath);
         console.log(JSON.stringify(content, null, 2));
         break;
 
       case 'expand':
         // Expand abbreviated keys to full names
         const context = process.argv[3] || 'root';
-        memex.loadIndex();
-        const legend = memex.index._legend[context];
+        codicil.loadIndex();
+        const legend = codicil.index._legend[context];
         console.log(JSON.stringify(legend, null, 2));
         break;
 
@@ -739,38 +739,38 @@ if (require.main === module) {
         (async () => {
           const suppressIssues = process.argv.includes('--no-issues');
           const startTime = Date.now();
-          const indexPath = path.join(MEMEX_PATH, 'index.json');
-          const indexGzipPath = path.join(MEMEX_PATH, 'index.json.gz');
-          const indexMsgpackPath = path.join(MEMEX_PATH, 'index.msgpack');
+          const indexPath = path.join(CODICIL_PATH, 'index.json');
+          const indexGzipPath = path.join(CODICIL_PATH, 'index.json.gz');
+          const indexMsgpackPath = path.join(CODICIL_PATH, 'index.msgpack');
           const hasIndex = fs.existsSync(indexPath) || fs.existsSync(indexGzipPath) || fs.existsSync(indexMsgpackPath);
 
           if (!hasIndex) {
-            console.log('Memex Status');
+            console.log('Codicil Status');
             console.log('='.repeat(40));
             console.log('');
             console.log('Index not found.');
             console.log('');
             console.log('Next steps:');
             console.log('  1. Run: npm run setup');
-            console.log(`  2. Ensure MEMEX_PATH points to your Memex directory (currently: ${MEMEX_PATH})`);
+            console.log(`  2. Ensure CODICIL_PATH points to your Codicil directory (currently: ${CODICIL_PATH})`);
             return;
           }
 
           let indexResult;
           try {
-            indexResult = memex.loadIndex();
+            indexResult = codicil.loadIndex();
           } catch (e) {
-            console.log('Memex Status');
+            console.log('Codicil Status');
             console.log('='.repeat(40));
             console.log('');
             console.log(`Failed to load index: ${e.message}`);
             console.log('');
             console.log('Next steps:');
             console.log('  1. Run: npm run setup');
-            console.log(`  2. Verify index files exist under ${MEMEX_PATH}`);
+            console.log(`  2. Verify index files exist under ${CODICIL_PATH}`);
             return;
           }
-          memex.detectProject();
+          codicil.detectProject();
           const loadMs = Date.now() - startTime;
 
           const issues = [];
@@ -778,7 +778,7 @@ if (require.main === module) {
           // Schema version check
           try {
             const { CURRENT_SCHEMA_VERSION, getSchemaVersion } = require('./migrations');
-            const schemaVersion = getSchemaVersion(memex.index);
+            const schemaVersion = getSchemaVersion(codicil.index);
             if (schemaVersion < CURRENT_SCHEMA_VERSION) {
               issues.push(`Schema version ${schemaVersion} is behind ${CURRENT_SCHEMA_VERSION}. Run: npm run migrate`);
             }
@@ -788,13 +788,13 @@ if (require.main === module) {
 
           // Version consistency check
           const pkg = require('../package.json');
-          if (pkg.version !== memex.index.v) {
-            issues.push(`Version mismatch: package.json=${pkg.version}, index=${memex.index.v}`);
+          if (pkg.version !== codicil.index.v) {
+            issues.push(`Version mismatch: package.json=${pkg.version}, index=${codicil.index.v}`);
           }
 
           // Check for missing metadata files
-          for (const [name, proj] of Object.entries(memex.index.p)) {
-            const mfPath = path.join(MEMEX_PATH, proj.mf);
+          for (const [name, proj] of Object.entries(codicil.index.p)) {
+            const mfPath = path.join(CODICIL_PATH, proj.mf);
             if (!fs.existsSync(mfPath)) {
               issues.push(`Missing metadata: ${proj.mf} (project: ${name})`);
             }
@@ -802,15 +802,15 @@ if (require.main === module) {
 
           // Cache stats
           let cacheStats = { total_entries: 0, database_size_kb: 0 };
-          try { cacheStats = memex.persistentCache.getStats(); } catch (e) { /* no cache */ }
+          try { cacheStats = codicil.persistentCache.getStats(); } catch (e) { /* no cache */ }
 
           // Bloom filter stats
           let bloomStats = null;
-          try { if (memex.bloomFilter) bloomStats = memex.bloomFilter.getStats(); } catch (e) { /* no bloom */ }
+          try { if (codicil.bloomFilter) bloomStats = codicil.bloomFilter.getStats(); } catch (e) { /* no bloom */ }
 
           // Vector search stats
           let vectorStats = { total_embeddings: 0, file_size_kb: 0 };
-          try { vectorStats = memex.vectorSearch.getStats(); } catch (e) { /* no vectors */ }
+          try { vectorStats = codicil.vectorSearch.getStats(); } catch (e) { /* no vectors */ }
 
           // Metrics
           let metrics = null;
@@ -822,12 +822,12 @@ if (require.main === module) {
           }
 
           // Per-project session counts
-          const projectStats = memex.listProjects().map(p => `    ${p.name}: ${p.session_count} sessions (last: ${p.last_updated || 'unknown'})`);
+          const projectStats = codicil.listProjects().map(p => `    ${p.name}: ${p.session_count} sessions (last: ${p.last_updated || 'unknown'})`);
 
           // Find last saved session across all projects
           let lastSession = null;
-          for (const [name] of Object.entries(memex.index.p)) {
-            const sessions = memex.listSessions(name);
+          for (const [name] of Object.entries(codicil.index.p)) {
+            const sessions = codicil.listSessions(name);
             if (sessions.length > 0 && (!lastSession || sessions[0].date > lastSession.date)) {
               lastSession = { ...sessions[0], project: name };
             }
@@ -836,7 +836,7 @@ if (require.main === module) {
           // AgentBridge status
           let bridgeStatus = 'disabled (AGENTBRIDGE_URL not set)';
           try {
-            const bridge = await memex._bridge;
+            const bridge = await codicil._bridge;
             if (bridge.isConnected()) {
               bridgeStatus = `connected (${process.env.AGENTBRIDGE_URL})`;
             }
@@ -844,10 +844,10 @@ if (require.main === module) {
             bridgeStatus = 'error';
           }
 
-          console.log(`Memex v${memex.index.v} Status`);
+          console.log(`Codicil v${codicil.index.v} Status`);
           console.log('='.repeat(40));
           console.log('');
-          console.log(`Version:        ${memex.index.v}`);
+          console.log(`Version:        ${codicil.index.v}`);
           console.log(`Load time:      ${loadMs}ms`);
           console.log(`Index format:   ${indexResult.format}`);
           console.log(`Index size:     ${indexResult.size_kb}KB`);
@@ -920,9 +920,9 @@ if (require.main === module) {
       }
 
       default:
-        console.log('Memex v4.0.0 - Token-optimized knowledge base');
+        console.log('Codicil v4.0.0 - Token-optimized knowledge base');
         console.log('');
-        console.log('Usage: memex-loader.js [command] [args]');
+        console.log('Usage: codicil-loader.js [command] [args]');
         console.log('');
         console.log('Commands:');
         console.log('  startup            - Load and display startup info');
@@ -940,4 +940,4 @@ if (require.main === module) {
   }
 }
 
-module.exports = Memex;
+module.exports = Codicil;
