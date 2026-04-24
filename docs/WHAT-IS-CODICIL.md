@@ -1,202 +1,137 @@
 # What is Codicil?
 
-> A simple guide to understanding Codicil - AI assistant's memory system.
+A plain-language guide to understanding Codicil.
 
 ---
 
 ## The Problem
 
-Every time you start a new AI assistant session, AI assistant forgets everything from before. You have to explain the same things again and again:
-
-- "What's our commit format?"
-- "How do we deploy?"
-- "What did we do last week?"
-- "What are our coding standards?"
-
-**This wastes time and tokens.**
+Every AI coding session starts from zero. You re-explain commit format, deployment steps, past decisions, what broke last week. That repeated context costs tokens and time — and it's imprecise, because you can't always remember what's worth surfacing.
 
 ---
 
-## The Solution: Codicil
+## What Codicil Does
 
-**Codicil is a "memory system" for AI assistant.**
+**Codicil is a local memory and fact ledger for AI coding agents.**
 
-Think of it like a notebook. Before Codicil, AI assistant woke up with amnesia every day. After Codicil, AI assistant reads the notebook first and knows the rules + history.
+It stores engineering sessions as structured records, ranks facts by how well-corroborated they are, detects contradictions, and feeds a token-budgeted slice of relevant context to Claude Code via MCP — automatically, on every query.
 
-### What Codicil Does
-
-1. **AGENTS.md files** - Instructions that AI assistant reads automatically when starting
-   - `~/.agents/AGENTS.md` = Global rules (all projects)
-   - `project/.agents/AGENTS.md` = Project-specific rules
-
-2. **Session memory** - When we finish working, we save what we did to Codicil
-
-3. **Smart search** - AI assistant can search past sessions to find how we solved problems before
+No account. No cloud. No telemetry. Files stay on your machine.
 
 ---
 
 ## How It Works
 
-### When You Start AI assistant Code
+### 1. You save sessions
 
-```
-1. AI assistant wakes up
-2. AI assistant reads ~/.agents/AGENTS.md (global rules)
-3. AI assistant reads project/.agents/AGENTS.md (project rules)
-4. NOW AI assistant is ready to help you
-```
-
-So when you ask something, AI assistant **already knows**:
-- Commit format (`feat:`, `fix:`, etc.)
-- Branch naming (`feature/`, `fix/`, etc.)
-- Workflows (assign issues, update reports, etc.)
-- Project info (URLs, how to deploy, tech stack)
-
-### Simple Diagram
-
-```
-┌─────────────────────────────────────────┐
-│           YOU START CLAUDE              │
-└─────────────────┬───────────────────────┘
-                  ▼
-┌─────────────────────────────────────────┐
-│  📖 Reads AGENTS.md files automatically │  ← Always happens
-└─────────────────┬───────────────────────┘
-                  ▼
-┌─────────────────────────────────────────┐
-│  🧠 AI assistant now knows the rules          │
-└─────────────────┬───────────────────────┘
-                  ▼
-┌─────────────────────────────────────────┐
-│  💬 You ask a question                  │
-└─────────────────────────────────────────┘
-```
-
-### What AI assistant Does NOT Read Automatically
-
-The **session history** (past conversations) - AI assistant only searches those when you ask:
+After finishing a feature, fixing a bug, or making an architectural decision:
 
 ```bash
-node ~/code/Codicil/scripts/neural-memory.js query "how did we fix X"
+./scripts/remember "Switched auth to PKCE flow — dropped implicit grant due to security audit" --topics auth,security,oauth
 ```
+
+Or let git hooks capture it automatically on commit.
+
+### 2. Codicil indexes and ranks what it knows
+
+Sessions are indexed in a four-layer stack. Queries traverse layers in order, stopping as early as possible:
+
+```
+Bloom filter (243 bytes, 0.1ms)
+  → "not known" = stop immediately, zero tokens consumed
+
+Index (4 KB, ~10ms)
+  → compact summaries — answers 80% of queries
+
+Session detail (per-file, ~5ms)
+  → full notes, diffs, topics
+
+Assertion ledger (SQLite, 5–15ms)
+  → structured facts with confidence, quorum, decay, contradiction state
+```
+
+Context is always packed to a caller-specified token budget. You control how much the agent gets.
+
+### 3. Claude Code queries it automatically
+
+Once connected via MCP, Claude Code uses Codicil tools transparently:
+
+- `neural_search` — finds relevant past sessions by meaning
+- `ledger_select_context` — pulls ranked facts into the current context budget
+- `get_bundle` — loads pre-compiled project context
+- `remember` — saves the current session
 
 ---
 
-## Benefits & Gains
+## The Assertion Ledger
 
-### 1. Token Savings
+Beyond session notes, Codicil maintains a fact database — the **assertion ledger**. Every claim has:
 
-| Without Codicil | With Codicil |
-|---------------|------------|
-| Explain commit format every session (~100 tokens) | Already knows (0 tokens) |
-| Explain project structure (~500 tokens) | Already knows (0 tokens) |
-| Explain workflows (~200 tokens) | Already knows (0 tokens) |
-| Explain deployment process (~300 tokens) | Already knows (0 tokens) |
-| **~1,100 tokens wasted per session** | **~200 tokens (AGENTS.md load)** |
+- **Confidence** `[0.0–1.0]` — starts uncertain, grows when multiple sessions corroborate it
+- **Quorum** — count of independent sources that agree
+- **Status** — `tentative → established → fossilized`
+- **Decay model** — different fact types age differently (build status ≠ architecture decision)
+- **Tension** — automatic contradiction detection; conflicting facts surface as alerts
 
-**Savings: ~900 tokens per session = ~80% reduction in repeated context**
+When you ask "how does auth work here?", the ledger returns the highest-ranked, most-corroborated facts — not the most recent session dump.
 
-Over 10 sessions = 9,000 tokens saved
-Over 100 sessions = 90,000 tokens saved
+---
 
-### 2. Time Savings
-
-| Task | Without Codicil | With Codicil |
-|------|---------------|------------|
-| Explain standards | 2-5 minutes | 0 minutes |
-| Find past solution | 10-30 minutes searching | 30 seconds (neural search) |
-| Onboard new AI assistant session | 5-10 minutes | Instant |
-| Remember what we did last week | Manual notes | `remember` command |
-
-**Average time saved: 15-30 minutes per session**
-
-### 3. Consistency
+## What You Get
 
 | Without Codicil | With Codicil |
-|---------------|------------|
-| Different commit formats | Always `<type>(<scope>): <desc>` |
-| Forget to assign issues | Always assign to maintainer |
-| Inconsistent branch names | Always `feat/`, `fix/`, etc. |
-| Miss steps in workflow | Workflow documented and followed |
-
-### 4. Knowledge Preservation
-
-- Sessions are saved with `remember` command
-- Past solutions can be searched semantically
-- Team knowledge is not lost when people forget
-- New team members (or AI assistant sessions) can access history
+|----------------|--------------|
+| Re-explain commit format every session | Claude already knows it |
+| Re-explain deployment steps | Surfaced from past sessions |
+| Contradictory context from stale notes | Contradiction detection flags it |
+| No way to know which past sessions are relevant | Semantic search + confidence ranking |
+| Context budget uncontrolled | Token-budgeted retrieval |
 
 ---
 
 ## Quick Reference
 
-### Save What You Did
-
 ```bash
-~/code/Codicil/scripts/remember "what you did" --topics tag1,tag2
+# Save a session
+./scripts/remember "what you did" --topics tag1,tag2
+
+# Semantic search
+node scripts/codicil-loader.js semantic "how did we handle auth"
+
+# Keyword search
+node scripts/codicil-loader.js search "oauth"
+
+# Dashboard
+npm start  # http://127.0.0.1:3000/
+
+# Ledger stats
+npm run ledger:stats
 ```
 
-### Search Past Sessions
+Full reference: [`docs/CHEATSHEET.md`](./CHEATSHEET.md) · Architecture: [`HOW-IT-WORKS.md`](../HOW-IT-WORKS.md)
 
-```bash
-node ~/code/Codicil/scripts/neural-memory.js query "your question"
+---
+
+## Architecture in One Diagram
+
 ```
+You work  →  remember / git-hook  →  session saved to summaries/
+                                      ↓
+                                   indexed (bloom + index.json)
+                                      ↓
+                                   facts extracted → assertion ledger (SQLite)
 
-### Get Project Context
-
-```bash
-node ~/code/Codicil/scripts/neural-memory.js bundle <ProjectName>
-```
-
-### Deploy to All Repos
-
-```bash
-node ~/code/Codicil/scripts/deploy-neural.js
+Claude queries  →  MCP tool call  →  bloom check (0 tokens if miss)
+                                      ↓
+                                   index scan (4 KB)
+                                      ↓
+                                   session detail (on demand)
+                                      ↓
+                                   ledger ranking (confidence × quorum × decay)
+                                      ↓
+                                   budget-packed context → Claude
 ```
 
 ---
 
-## Architecture
-
-```
-~/.agents/AGENTS.md                    ← Global rules (all projects)
-~/code/<project>/.agents/AGENTS.md      ← Project-specific rules
-
-~/code/Codicil/
-├── .neural/
-│   ├── embeddings.msgpack             # Sessions as vectors (for search)
-│   ├── graph.msgpack                  # Concepts linked together
-│   └── bundles/*.msgpack              # Pre-compiled contexts
-├── docs/
-│   └── WHAT-IS-CODICIL.md               # This file!
-└── scripts/
-    ├── neural-memory.js               # Build/query neural structures
-    ├── deploy-neural.js               # Deploy to all repos
-    └── remember                       # Save sessions
-```
-
----
-
-## Simple Analogy for Non-Technical People
-
-> **Codicil is like giving AI assistant a company handbook.**
->
-> Before: Every new employee (AI assistant session) starts on day 1 knowing nothing.
->
-> After: Every new employee reads the handbook first and knows all the rules, processes, and even some history of past projects.
-
----
-
-## Summary
-
-| Aspect | Benefit |
-|--------|---------|
-| **Tokens** | ~80% reduction in repeated explanations |
-| **Time** | 15-30 minutes saved per session |
-| **Consistency** | Same standards every time |
-| **Knowledge** | Nothing is lost, everything searchable |
-| **Onboarding** | Instant context for new sessions |
-
----
-
-*Last updated: December 11, 2025*
+*For the full technical deep dive, see [`HOW-IT-WORKS.md`](../HOW-IT-WORKS.md).*

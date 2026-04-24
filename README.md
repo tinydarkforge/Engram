@@ -37,7 +37,7 @@ cd Codicil && npm install && npm run setup
 claude mcp add codicil -s user -- node "$(pwd)/scripts/mcp-server.mjs"
 ```
 
-Codicil is now a tool in every Claude Code session. It remembers what you did, ranks what it knows, and injects a token-budgeted slice of context on demand. Average query: ~1,000 tokens vs ~50,000 without it.
+Codicil is now a tool in every Claude Code session. It remembers what you did, ranks what it knows, and injects a budget-capped slice of context on demand — stopping at the earliest retrieval layer that answers the query.
 
 ---
 
@@ -47,7 +47,7 @@ Codicil captures engineering work and exposes it as structured memory:
 
 - **Session memory** — Git-hook capture or manual `remember`. Sessions carry notes, topics, diffs, test deltas. Per-project, per-repo, across every codebase on your machine.
 - **Assertion ledger** — SQLite-backed fact store. Every claim has confidence `[0.0–1.0]`, status (`tentative → established → fossilized`), quorum count, lineage, and decay. Contradictions surface as unresolved tensions.
-- **Token-efficient retrieval** — Four-layer stack (bloom filter → index → session detail → ledger). Stops at the earliest layer that answers the query. 94–98% token reduction vs raw session dumps.
+- **Token-efficient retrieval** — Four-layer stack (bloom filter → index → session detail → ledger). Stops at the earliest layer that answers the query. 80% of queries answered from a 4 KB index. Context is always token-budgeted by the caller.
 - **MCP-native** — stdio and Streamable HTTP transport. Tools: `neural_search`, `remember`, `ledger_ingest`, `ledger_query`, `ledger_select_context`, `cross_project_search`, `get_bundle`, `recent_sessions`.
 - **Dashboard + HTTP API** — Local web UI at `:3000` for browsing sessions, inspecting ledger state, reviewing tensions.
 
@@ -107,7 +107,7 @@ Codicil is **not** a hosted memory SaaS, a vector-DB-as-a-service, or a RAG fram
 | Contradiction detection              | Yes         | No          | No          |
 | MCP-native (Claude Code)             | Yes         | No          | No          |
 | Git-hook session capture             | Yes         | Partial     | Partial     |
-| Token-efficient retrieval            | Yes (94–98%)| No          | No          |
+| Token-efficient retrieval            | Yes (budgeted)| No        | No          |
 | Runs fully offline                   | Yes         | No          | No          |
 
 ---
@@ -177,7 +177,7 @@ npm run ledger:stats
 npm run ledger:migrate
 ```
 
-Full CLI reference: [`CHEATSHEET.md`](CHEATSHEET.md) · deep dive: [`HOW-IT-WORKS.md`](HOW-IT-WORKS.md).
+Full CLI reference: [`CHEATSHEET.md`](docs/CHEATSHEET.md) · deep dive: [`HOW-IT-WORKS.md`](HOW-IT-WORKS.md).
 
 ---
 
@@ -209,7 +209,7 @@ The dashboard is read-only by default. Ledger mutations require the MCP or CLI p
 
 ```text
 scripts/     runtime, CLI, servers, MCP tools, ledger
-tests/       358 tests across 27 files (node:test)
+tests/       29 test files (node:test)
 web/         dashboard UI (static)
 docs/        setup, reference, operational docs
 schemas/     JSON schemas for sessions + ledger
@@ -234,7 +234,7 @@ summaries/   per-project session indexes + records
 
 - [`QUICKSTART.md`](QUICKSTART.md) — end-to-end first session
 - [`HOW-IT-WORKS.md`](HOW-IT-WORKS.md) — architecture deep dive
-- [`CHEATSHEET.md`](CHEATSHEET.md) — CLI + MCP reference
+- [`CHEATSHEET.md`](docs/CHEATSHEET.md) — CLI + MCP reference
 - [`docs/LEDGER-GUIDE.md`](docs/LEDGER-GUIDE.md) — assertion ledger operator guide
 - [`docs/ASSERTION-API-REFERENCE.md`](docs/ASSERTION-API-REFERENCE.md) — ledger API
 - [`docs/remote-setup.md`](docs/remote-setup.md) — remote MCP transport

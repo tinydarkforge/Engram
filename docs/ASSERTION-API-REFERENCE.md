@@ -755,6 +755,6 @@ Key constraints:
 ## See Also
 
 - [Ledger Guide](./LEDGER-GUIDE.md) — Tutorials and practical examples
-- [PHASE-10-ASSERTION-LEDGER.md](../PHASE-10-ASSERTION-LEDGER.md) — Overview and use cases
+- [HOW-IT-WORKS.md](../HOW-IT-WORKS.md) — Architecture and assertion ledger overview
 - [tests/ledger.test.js](../tests/ledger.test.js) — 50+ runnable examples
 - [tests/transform.test.js](../tests/transform.test.js) — Transform script examples

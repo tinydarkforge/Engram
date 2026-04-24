@@ -1,7 +1,7 @@
 {
   "name": "@tinydarkforge/codicil",
   "version": "4.0.1",
-  "description": "Persistent memory for AI coding assistants - 94-98% token savings (benchmarked)",
+  "description": "Local-first memory and assertion ledger for AI coding agents. Confidence-weighted, contradiction-aware, token-budgeted context over MCP.",
   "main": "scripts/codicil-loader.js",
   "bin": {
     "codicil": "scripts/codicil-loader.js"
@@ -28,7 +28,7 @@
     "git:query": "node scripts/index-git.js query",
     "semantic:stats": "node scripts/vector-search.js stats",
     "ledger:migrate": "node scripts/migrations.js",
-    "ledger:stats": "node -e \"const l = require('./scripts/ledger'); if (l.stats) console.log(JSON.stringify(l.stats(), null, 2)); else console.log('ledger not yet implemented');\"",
+    "ledger:stats": "node -e \"try { const l = require('./scripts/ledger'); console.log(JSON.stringify(l.stats(), null, 2)); } catch(e) { if (e.message && e.message.includes('no such table')) { console.error('Ledger not initialized. Run: npm run ledger:migrate'); process.exit(1); } throw e; }\"",
     "benchmark": "node scripts/benchmark-tokens.js"
   },
   "files": [
