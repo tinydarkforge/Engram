@@ -1,16 +1,16 @@
 <!-- markdownlint-disable MD033 MD041 -->
 
 ```text
-                           █████ █████ ████  █████ █████ █████ █
-    ╔═══════════╗          █     █   █ █   █   █   █       █   █
-    ║   ╓─╥─╖   ║          █     █   █ █   █   █   █       █   █
-    ║  ╔═════╗  ║          █     █   █ █   █   █   █       █   █
-    ║  ║● · ●║  ║          █████ █████ ████  █████ █████ █████ █████
+                           █████ █   █ █████ ████   ███  █   █
+    ╔═══════════╗          █     ██  █ █     █   █ █   █ ██ ██
+    ║   ╓─╥─╖   ║          ████  █ █ █ █  ██ ████  █████ █ █ █
+    ║  ╔═════╗  ║          █     █  ██ █   █ █  █  █   █ █   █
+    ║  ║● · ●║  ║          █████ █   █ █████ █   █ █   █ █   █
     ║  ║  ▬  ║  ║
     ║  ╚══╤══╝  ║          ━━━━━━━━━━ MEMORY LEDGER ━━━━━━━━━━━━━
     ║  ███████  ║          Sessions · Facts · Confidence · MCP
     ║   ▀▀ ▀▀   ║          · Local-first — one ledger, one
-    ║ CodiCil_  ║            confidence model, one context
+    ║  Engram_  ║            confidence model, one context
     ╚═══════════╝            budget. MIT · No account · No tel.
 ```
 
@@ -20,10 +20,10 @@
   <img alt="mcp" src="https://img.shields.io/badge/MCP-native-00cc66.svg?style=flat-square&labelColor=0a0a0a">
   <img alt="platform" src="https://img.shields.io/badge/platform-macOS%20%7C%20Linux-00cc66.svg?style=flat-square&labelColor=0a0a0a">
   <a href="SECURITY.md"><img alt="security" src="https://img.shields.io/badge/security-policy-00cc66.svg?style=flat-square&labelColor=0a0a0a"></a>
-  <a href="https://github.com/tinydarkforge/Codicil/actions/workflows/ci.yml"><img alt="ci" src="https://github.com/TinyDarkForge/Codicil/actions/workflows/ci.yml/badge.svg?branch=main"></a>
+  <a href="https://github.com/tinydarkforge/Engram/actions/workflows/ci.yml"><img alt="ci" src="https://github.com/TinyDarkForge/Engram/actions/workflows/ci.yml/badge.svg?branch=main"></a>
 </p>
 
-> **Codicil** is a local-first memory and assertion ledger for AI coding agents. It persists session notes across every repo, ranks facts by confidence and corroboration, surfaces contradictions, and feeds the whole thing to Claude Code over MCP. No account. No telemetry. Local files only.
+> **Engram** is a local-first memory and assertion ledger for AI coding agents. It persists session notes across every repo, ranks facts by confidence and corroboration, surfaces contradictions, and feeds the whole thing to Claude Code over MCP. No account. No telemetry. Local files only.
 
 > **Status:** Pre-1.0 (`v4.0.3`). Available on npm. MCP server is stable; assertion ledger is active development.
 
@@ -32,18 +32,18 @@
 ## ░▒▓█ TL;DR
 
 ```bash
-git clone https://github.com/tinydarkforge/Codicil.git
-cd Codicil && npm install && npm run setup
-claude mcp add codicil -s user -- node "$(pwd)/scripts/mcp-server.mjs"
+git clone https://github.com/tinydarkforge/Engram.git
+cd Engram && npm install && npm run setup
+claude mcp add engram -s user -- node "$(pwd)/scripts/mcp-server.mjs"
 ```
 
-Codicil is now a tool in every Claude Code session. It remembers what you did, ranks what it knows, and injects a budget-capped slice of context on demand — stopping at the earliest retrieval layer that answers the query.
+Engram is now a tool in every Claude Code session. It remembers what you did, ranks what it knows, and injects a budget-capped slice of context on demand — stopping at the earliest retrieval layer that answers the query.
 
 ---
 
 ## ░▒▓█ What it does today
 
-Codicil captures engineering work and exposes it as structured memory:
+Engram captures engineering work and exposes it as structured memory:
 
 - **Session memory** — Git-hook capture or manual `remember`. Sessions carry notes, topics, diffs, test deltas. Per-project, per-repo, across every codebase on your machine.
 - **Assertion ledger** — SQLite-backed fact store. Every claim has confidence `[0.0–1.0]`, status (`tentative → established → fossilized`), quorum count, lineage, and decay. Contradictions surface as unresolved tensions.
@@ -51,7 +51,7 @@ Codicil captures engineering work and exposes it as structured memory:
 - **MCP-native** — stdio and Streamable HTTP transport. Tools: `neural_search`, `remember`, `ledger_ingest`, `ledger_query`, `ledger_select_context`, `cross_project_search`, `get_bundle`, `recent_sessions`.
 - **Dashboard + HTTP API** — Local web UI at `:3000` for browsing sessions, inspecting ledger state, reviewing tensions.
 
-Codicil does not call any remote model by default. Semantic search runs a local ONNX embedding model (`@huggingface/transformers`) that loads lazily on the first semantic query. If you never invoke semantic search, no model is ever downloaded.
+Engram does not call any remote model by default. Semantic search runs a local ONNX embedding model (`@huggingface/transformers`) that loads lazily on the first semantic query. If you never invoke semantic search, no model is ever downloaded.
 
 ---
 
@@ -74,7 +74,7 @@ Facts are ranked by `decay × status × quorum × tension × weight` and packed 
 
 The ledger is where session notes become structured, queryable knowledge. Every assertion records:
 
-- **Plane** — authority scope (`user:alice`, `project:codicil`, `session:xyz`)
+- **Plane** — authority scope (`user:alice`, `project:engram`, `session:xyz`)
 - **Claim** — terse fact text
 - **Confidence** — `[0.0–1.0]`, starts uncertain, grows with corroboration
 - **Quorum** — independent sources confirming the fact
@@ -89,18 +89,18 @@ Tensions surface as alerts; unresolved ones downweight their claims in context s
 
 ## ░▒▓█ Positioning
 
-Codicil is **not** a hosted memory SaaS, a vector-DB-as-a-service, or a RAG framework. It is **a local ledger and MCP server** for engineering context.
+Engram is **not** a hosted memory SaaS, a vector-DB-as-a-service, or a RAG framework. It is **a local ledger and MCP server** for engineering context.
 
-| Alternative      | When to pick it instead of Codicil                              |
+| Alternative      | When to pick it instead of Engram                              |
 |------------------|-----------------------------------------------------------------|
 | **mem0**         | You want hosted memory, team sync, managed upgrades.            |
 | **Letta / Zep**  | You want agent-framework primitives and hosted chat state.      |
 | **Plain RAG**    | You only need retrieval over static docs, no fact lifecycle.    |
 | **Raw SQLite**   | You want a schema you control and don't need MCP or ranking.    |
 
-**Codicil's niche:** local-first, confidence-weighted, contradiction-aware, token-budgeted context for AI coding agents. Runs fully offline. If you want dashboards-as-a-service or team-wide sync, pick mem0 or Zep.
+**Engram's niche:** local-first, confidence-weighted, contradiction-aware, token-budgeted context for AI coding agents. Runs fully offline. If you want dashboards-as-a-service or team-wide sync, pick mem0 or Zep.
 
-| Feature                              | **Codicil** | mem0        | Letta / Zep |
+| Feature                              | **Engram** | mem0        | Letta / Zep |
 |--------------------------------------|:-----------:|:-----------:|:-----------:|
 | Local-first (no cloud required)      | Yes         | No          | No          |
 | Assertion ledger (confidence/quorum) | Yes         | No          | No          |
@@ -123,15 +123,15 @@ Codicil is **not** a hosted memory SaaS, a vector-DB-as-a-service, or a RAG fram
 ## ░▒▓█ Install
 
 ```bash
-npm install -g @tinydarkforge/codicil
-codicil setup
+npm install -g @tinydarkforge/engram
+engram setup
 ```
 
 Or from source:
 
 ```bash
-git clone https://github.com/tinydarkforge/Codicil.git
-cd Codicil
+git clone https://github.com/tinydarkforge/Engram.git
+cd Engram
 npm install
 npm run setup
 ```
@@ -140,12 +140,12 @@ npm run setup
 
 **npm install (global):**
 ```bash
-claude mcp add codicil -s user -- codicil mcp
+claude mcp add engram -s user -- engram mcp
 ```
 
 **From source:**
 ```bash
-claude mcp add codicil -s user -- node "$(pwd)/scripts/mcp-server.mjs"
+claude mcp add engram -s user -- node "$(pwd)/scripts/mcp-server.mjs"
 ```
 
 
@@ -155,28 +155,28 @@ claude mcp add codicil -s user -- node "$(pwd)/scripts/mcp-server.mjs"
 
 ```bash
 # Save a session
-codicil remember "Implemented OAuth callback handling" --topics auth,oauth
+engram remember "Implemented OAuth callback handling" --topics auth,oauth
 
 # Interactive save
-codicil remember --interactive
+engram remember --interactive
 
 # Git-hook capture (auto-save on commit)
 ./scripts/git-hook-capture.sh install   # from source clone
 
 # Semantic search
-codicil semantic "authentication work"
+engram semantic "authentication work"
 
 # Keyword search
-codicil search "oauth"
+engram search "oauth"
 
 # Status
-codicil status
+engram status
 
 # Launch dashboard
-codicil start   # http://127.0.0.1:3000/
+engram start   # http://127.0.0.1:3000/
 
 # Ledger CLI
-codicil status   # includes ledger health
+engram status   # includes ledger health
 npm run ledger:stats   # from source clone
 ```
 
@@ -200,8 +200,8 @@ The dashboard is read-only by default. Ledger mutations require the MCP or CLI p
 ## ░▒▓█ Security
 
 - **No network calls** unless you opt in. The embedding model downloads lazily on the first semantic query and is then cached locally — if you never invoke semantic search, nothing is fetched.
-- **No telemetry.** Codicil does not phone home. Ever.
-- **Local files only.** All session data lives under the repo in `summaries/` and the ledger DB in `.cache/codicil.db`.
+- **No telemetry.** Engram does not phone home. Ever.
+- **Local files only.** All session data lives under the repo in `summaries/` and the ledger DB in `.cache/engram.db`.
 - **Vuln disclosure:** [`SECURITY.md`](SECURITY.md).
 
 ---
@@ -230,4 +230,4 @@ summaries/   per-project session indexes + records
 
 ---
 
-<p align="center"><em>CodiCil — because every agent deserves a ledger, not a goldfish bowl.</em></p>
+<p align="center"><em>Engram — because every agent deserves a ledger, not a goldfish bowl.</em></p>
