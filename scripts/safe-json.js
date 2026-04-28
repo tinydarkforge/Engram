@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * Safe JSON - Hardened JSON file reading and schema validation for Codicil
+ * Safe JSON - Hardened JSON file reading and schema validation for Engram
  *
  * Wraps all JSON reads in try/catch with graceful fallback.
  * Validates required shapes for index.json and sessions-index.json.
@@ -24,7 +24,7 @@ function readJSON(filePath, fallback = null) {
 }
 
 /**
- * Validate Codicil index.json shape.
+ * Validate Engram index.json shape.
  * Returns { valid: true } or { valid: false, errors: [...] }.
  */
 function validateIndex(data) {

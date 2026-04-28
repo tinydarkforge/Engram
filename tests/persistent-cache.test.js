@@ -12,10 +12,10 @@ describe('PersistentCache', () => {
   let PersistentCache;
 
   before(() => {
-    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'codicil-cache-test-'));
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'engram-cache-test-'));
 
-    // Set CODICIL_PATH so cache writes to our tmp dir
-    process.env.CODICIL_PATH = tmpDir;
+    // Set ENGRAM_PATH so cache writes to our tmp dir
+    process.env.ENGRAM_PATH = tmpDir;
 
     // Ensure .cache subdir exists
     fs.mkdirSync(path.join(tmpDir, '.cache'), { recursive: true });
@@ -29,7 +29,7 @@ describe('PersistentCache', () => {
   });
 
   after(() => {
-    delete process.env.CODICIL_PATH;
+    delete process.env.ENGRAM_PATH;
     fs.rmSync(tmpDir, { recursive: true, force: true });
   });
 

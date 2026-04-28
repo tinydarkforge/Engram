@@ -2,7 +2,7 @@
 /* eslint-disable */
 
 /**
- * Codicil - Memory System
+ * Engram - Memory System
  *
  * Just git commit search. That's what works.
  * The session-based stuff wasn't being used.
@@ -15,10 +15,10 @@
 
 const fs = require('fs');
 const path = require('path');
-const { resolveCodicilPath } = require('./paths');
+const { resolveEngramPath } = require('./paths');
 
-const CODICIL_PATH = resolveCodicilPath(__dirname);
-const NEURAL_PATH = path.join(CODICIL_PATH, '.neural');
+const ENGRAM_PATH = resolveEngramPath(__dirname);
+const NEURAL_PATH = path.join(ENGRAM_PATH, '.neural');
 const GIT_INDEX_PATH = path.join(NEURAL_PATH, 'git-index.msgpack');
 
 // CLI
@@ -88,7 +88,7 @@ const command = process.argv[2];
         const statsIndexer = new GitIndexer3();
         const stats = statsIndexer.getStats();
 
-        console.log('📊 Codicil Stats\n');
+        console.log('📊 Engram Stats\n');
         console.log(`Built: ${stats.built}`);
         console.log(`Since: ${stats.since}`);
         console.log(`Commits: ${stats.total_commits}`);
@@ -101,7 +101,7 @@ const command = process.argv[2];
         break;
 
       default:
-        console.log('Codicil - Git Search\n');
+        console.log('Engram - Git Search\n');
         console.log('Usage:');
         console.log('  node neural-memory.js search "query"  # Search git history');
         console.log('  node neural-memory.js build           # Rebuild git index');

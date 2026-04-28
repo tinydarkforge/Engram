@@ -1,4 +1,4 @@
-# Codicil - December 2025 Task Report
+# Engram - December 2025 Task Report
 
 **Month:** December 2025
 **Assignee:** maintainer + Claude
@@ -94,7 +94,7 @@ Three major optimizations delivering immediate value:
 - Instant "does not exist" answers (0.1ms vs 50-100ms)
 - 243 bytes for 101 terms
 - 0.03% false positive rate
-- Integrated into `codicil.search()`
+- Integrated into `engram.search()`
 
 **Git Hooks (#36):**
 - `git-hook-capture.sh` with install/uninstall
@@ -104,7 +104,7 @@ Three major optimizations delivering immediate value:
 - `--auto` mode in remember script
 
 **Documentation:**
-- `HOW-CODICIL-SAVES-TOKENS.md` (195 lines)
+- `HOW-ENGRAM-SAVES-TOKENS.md` (195 lines)
 - `OVERVIEW.md` (150 lines)
 - `PHASE-1-OPTIMIZATIONS.md` (207 lines)
 
@@ -187,7 +187,7 @@ Three major optimizations delivering immediate value:
 
 ### Overview
 
-Full implementation of MessagePack binary format across **all** Codicil data files, exceeding size reduction targets.
+Full implementation of MessagePack binary format across **all** Engram data files, exceeding size reduction targets.
 
 ### Tasks Completed
 
@@ -244,7 +244,7 @@ Total Savings: 17.99 KB
 | 5 | Feature | Lazy loading implementation | v3.3.0 | ✅ |
 | 6 | Feature | Bloom filter for instant negatives | v3.3.0 | ✅ |
 | 7 | Feature | Git hook auto-capture | v3.3.0 | ✅ |
-| 8 | Docs | HOW-CODICIL-SAVES-TOKENS.md | v3.3.0 | ✅ |
+| 8 | Docs | HOW-ENGRAM-SAVES-TOKENS.md | v3.3.0 | ✅ |
 | 9 | Docs | OVERVIEW.md | v3.3.0 | ✅ |
 | 10 | Docs | PHASE-1-OPTIMIZATIONS.md | v3.3.0 | ✅ |
 
@@ -335,7 +335,7 @@ Total Savings: 17.99 KB
 
 | Document | Version | Lines | Purpose |
 |----------|---------|-------|---------|
-| HOW-CODICIL-SAVES-TOKENS.md | v3.3.0 | 195 | Token savings guide |
+| HOW-ENGRAM-SAVES-TOKENS.md | v3.3.0 | 195 | Token savings guide |
 | OVERVIEW.md | v3.3.0 | 150 | One-page overview |
 | PHASE-1-OPTIMIZATIONS.md | v3.3.0 | 207 | Phase 1 technical details |
 | MESSAGEPACK-MIGRATION.md | v4.0.0 | 345 | Migration guide |
@@ -447,7 +447,7 @@ Unprecedented velocity:
 ### Complete Architecture
 
 ```
-Codicil v4.0/
+Engram v4.0/
 ├── index.msgpack (6.2KB)          # 54% smaller
 ├── index.json (13.5KB)            # Fallback
 ├── summaries/projects/
@@ -461,7 +461,7 @@ Codicil v4.0/
 │   ├── commit-standards.msgpack   # 32% smaller
 │   └── commit-standards.json      # Fallback
 └── scripts/
-    ├── codicil-loader.js            # Core loader
+    ├── engram-loader.js             # Core loader
     ├── lazy-loader.js             # Lazy loading
     ├── bloom-filter.js            # Instant negatives
     ├── persistent-cache.js        # SQLite cache
@@ -626,7 +626,7 @@ Epic F1 and Phase 1 enable:
 **Test Commits:** 5+
 
 Key commits:
-- `06296a9` - Initialize Codicil (Nov)
+- `06296a9` - Initialize Engram (Nov)
 - `55d3039` - MessagePack v3.1.0 (Dec 2)
 - `d5611fa` - Persistent cache v3.1.1 (Dec 2)
 - `e82f089` - Incremental updates v3.2.0 (Dec 2)
@@ -640,7 +640,7 @@ Key commits:
 
 - **Epic Planning:** [TASKS/EPICS/](../../TASKS/EPICS/)
 - **Migration Guide:** [MESSAGEPACK-MIGRATION.md](../../MESSAGEPACK-MIGRATION.md)
-- **Token Savings:** [HOW-CODICIL-SAVES-TOKENS.md](../../HOW-CODICIL-SAVES-TOKENS.md)
+- **Token Savings:** [HOW-ENGRAM-SAVES-TOKENS.md](../../HOW-ENGRAM-SAVES-TOKENS.md)
 - **Overview:** [OVERVIEW.md](../../OVERVIEW.md)
 - **Phase 1:** [PHASE-1-OPTIMIZATIONS.md](../../PHASE-1-OPTIMIZATIONS.md)
 - **Changelog:** [CHANGELOG.md](../../CHANGELOG.md)

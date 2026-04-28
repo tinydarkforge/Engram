@@ -1,10 +1,10 @@
 /* eslint-disable */
 const fs = require('fs');
 const path = require('path');
-const { resolveCodicilPath } = require('./paths');
+const { resolveEngramPath } = require('./paths');
 
-const CODICIL_PATH = resolveCodicilPath(__dirname);
-const METRICS_PATH = path.join(CODICIL_PATH, '.cache', 'metrics.json');
+const ENGRAM_PATH = resolveEngramPath(__dirname);
+const METRICS_PATH = path.join(ENGRAM_PATH, '.cache', 'metrics.json');
 const LOCK_TTL_MS = 30 * 1000;
 
 function atomicWriteFileSync(targetPath, content) {

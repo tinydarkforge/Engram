@@ -2,7 +2,7 @@
 /* eslint-disable */
 
 /**
- * Git-Native Indexing for Codicil
+ * Git-Native Indexing for Engram
  *
  * Indexes git commits across all known projects for semantic search.
  * This captures institutional knowledge that lives in commit history
@@ -24,27 +24,27 @@ const fs = require('fs');
 const path = require('path');
 const { execSync, spawnSync } = require('child_process');
 const { encode: msgpackEncode, decode: msgpackDecode } = require('@msgpack/msgpack');
-const { resolveCodicilPath, resolveReposRoot } = require('./paths');
+const { resolveEngramPath, resolveReposRoot } = require('./paths');
 const { readJSON } = require('./safe-json');
 
-const CODICIL_PATH = resolveCodicilPath(__dirname);
-const NEURAL_PATH = path.join(CODICIL_PATH, '.neural');
+const ENGRAM_PATH = resolveEngramPath(__dirname);
+const NEURAL_PATH = path.join(ENGRAM_PATH, '.neural');
 const GIT_INDEX_PATH = path.join(NEURAL_PATH, 'git-index.msgpack');
 
 function buildProjectMap() {
-  if (process.env.CODICIL_PROJECTS_JSON) {
+  if (process.env.ENGRAM_PROJECTS_JSON) {
     try {
-      return JSON.parse(process.env.CODICIL_PROJECTS_JSON);
+      return JSON.parse(process.env.ENGRAM_PROJECTS_JSON);
     } catch (e) {
-      console.warn('⚠️  Invalid CODICIL_PROJECTS_JSON, falling back to discovery');
+      console.warn('⚠️  Invalid ENGRAM_PROJECTS_JSON, falling back to discovery');
     }
   }
 
-  const indexPath = path.join(CODICIL_PATH, 'index.json');
+  const indexPath = path.join(ENGRAM_PATH, 'index.json');
   const index = readJSON(indexPath);
   if (!index) return {};
 
-  const reposRoot = resolveReposRoot(CODICIL_PATH);
+  const reposRoot = resolveReposRoot(ENGRAM_PATH);
   const projects = Object.keys(index.p || {});
   const map = {};
 
@@ -501,7 +501,7 @@ const indexer = new GitIndexer();
         break;
 
       default:
-        console.log('Git-Native Indexing for Codicil\n');
+        console.log('Git-Native Indexing for Engram\n');
         console.log('Usage:');
         console.log('  node index-git.js build              Build index for all projects');
         console.log('  node index-git.js build --project X  Build index for single project');

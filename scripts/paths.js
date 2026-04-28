@@ -11,7 +11,7 @@ function hasIndexFiles(dir) {
   );
 }
 
-function findCodicilRoot(startDir) {
+function findEngramRoot(startDir) {
   let current = path.resolve(startDir);
   while (true) {
     if (hasIndexFiles(current)) {
@@ -24,30 +24,30 @@ function findCodicilRoot(startDir) {
   return null;
 }
 
-const USER_DATA_DIR = path.join(require('os').homedir(), '.codicil');
+const USER_DATA_DIR = path.join(require('os').homedir(), '.engram');
 
 function isGlobalInstall(dir) {
   return dir.includes(`${path.sep}node_modules${path.sep}`);
 }
 
-function resolveCodicilPath(fromDir = __dirname) {
-  if (process.env.CODICIL_PATH) {
-    return path.resolve(process.env.CODICIL_PATH);
+function resolveEngramPath(fromDir = __dirname) {
+  if (process.env.ENGRAM_PATH) {
+    return path.resolve(process.env.ENGRAM_PATH);
   }
-  const found = findCodicilRoot(fromDir);
+  const found = findEngramRoot(fromDir);
   if (found) return found;
-  // Global npm install: data lives in ~/.codicil, not inside the package dir
+  // Global npm install: data lives in ~/.engram, not inside the package dir
   if (isGlobalInstall(fromDir) || fs.existsSync(USER_DATA_DIR)) {
     return USER_DATA_DIR;
   }
   return path.resolve(fromDir, '..');
 }
 
-function resolveReposRoot(codicilPath) {
-  if (process.env.CODICIL_REPOS_ROOT) {
-    return path.resolve(process.env.CODICIL_REPOS_ROOT);
+function resolveReposRoot(engramPath) {
+  if (process.env.ENGRAM_REPOS_ROOT) {
+    return path.resolve(process.env.ENGRAM_REPOS_ROOT);
   }
-  return path.resolve(codicilPath, '..');
+  return path.resolve(engramPath, '..');
 }
 
 function normalizeProjectSlug(projectName) {
@@ -59,8 +59,8 @@ function normalizeProjectSlug(projectName) {
     .replace(/^-|-$/g, '');
 }
 
-function listProjectDirectories(codicilPath) {
-  const projectsDir = path.join(codicilPath, 'summaries', 'projects');
+function listProjectDirectories(engramPath) {
+  const projectsDir = path.join(engramPath, 'summaries', 'projects');
   if (!fs.existsSync(projectsDir)) return [];
 
   try {
@@ -72,10 +72,10 @@ function listProjectDirectories(codicilPath) {
   }
 }
 
-function resolveProjectDirName(codicilPath, projectName) {
+function resolveProjectDirName(engramPath, projectName) {
   const sanitized = String(projectName || '').replace(/[^a-zA-Z0-9._-]/g, '');
   const slug = normalizeProjectSlug(projectName);
-  const projectsDir = listProjectDirectories(codicilPath);
+  const projectsDir = listProjectDirectories(engramPath);
 
   // Prefer an existing exact directory name first.
   if (sanitized && projectsDir.includes(sanitized)) {
@@ -105,7 +105,7 @@ function resolveProjectDirName(codicilPath, projectName) {
 }
 
 module.exports = {
-  resolveCodicilPath,
+  resolveEngramPath,
   resolveReposRoot,
   normalizeProjectSlug,
   resolveProjectDirName,

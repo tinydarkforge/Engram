@@ -2,7 +2,7 @@
 /* eslint-disable */
 
 /**
- * Lazy Loader for Codicil (#22)
+ * Lazy Loader for Engram (#22)
  *
  * Implements lazy loading of session details to reduce index size by 90%
  * - Lightweight index: Only id, date, summary, topics (~100-200 bytes per session)
@@ -17,11 +17,11 @@
 const fs = require('fs');
 const path = require('path');
 const { glob } = require('glob');
-const { resolveCodicilPath } = require('./paths');
+const { resolveEngramPath } = require('./paths');
 const { readJSON } = require('./safe-json');
 
-const CODICIL_PATH = resolveCodicilPath(__dirname);
-const SILENT = process.env.CODICIL_SILENT === '1' || process.env.NODE_ENV === 'test';
+const ENGRAM_PATH = resolveEngramPath(__dirname);
+const SILENT = process.env.ENGRAM_SILENT === '1' || process.env.NODE_ENV === 'test';
 const log = (...args) => {
   if (!SILENT) {
     console.log(...args);
@@ -40,7 +40,7 @@ class LazyLoader {
     log('🔄 Converting to lazy-loading format...');
 
     const sessionIndexFiles = await glob('summaries/projects/*/sessions-index.json', {
-      cwd: CODICIL_PATH
+      cwd: ENGRAM_PATH
     });
 
     let totalSessions = 0;
@@ -48,7 +48,7 @@ class LazyLoader {
     let totalSizeAfter = 0;
 
     for (const indexFile of sessionIndexFiles) {
-      const fullPath = path.join(CODICIL_PATH, indexFile);
+      const fullPath = path.join(ENGRAM_PATH, indexFile);
       const fullIndex = readJSON(fullPath);
       if (!fullIndex) continue;
 
@@ -133,7 +133,7 @@ class LazyLoader {
    */
   loadSessionDetails(projectName, sessionId) {
     const detailsPath = path.join(
-      CODICIL_PATH,
+      ENGRAM_PATH,
       'summaries/projects',
       projectName,
       'sessions',
@@ -156,10 +156,10 @@ class LazyLoader {
     };
 
     // Calculate from existing detail files
-    const detailFiles = fs.readdirSync(path.join(CODICIL_PATH, 'summaries/projects'))
-      .filter(dir => fs.existsSync(path.join(CODICIL_PATH, 'summaries/projects', dir, 'sessions')))
+    const detailFiles = fs.readdirSync(path.join(ENGRAM_PATH, 'summaries/projects'))
+      .filter(dir => fs.existsSync(path.join(ENGRAM_PATH, 'summaries/projects', dir, 'sessions')))
       .flatMap(dir => {
-        const sessionsDir = path.join(CODICIL_PATH, 'summaries/projects', dir, 'sessions');
+        const sessionsDir = path.join(ENGRAM_PATH, 'summaries/projects', dir, 'sessions');
         return fs.readdirSync(sessionsDir)
           .filter(f => f.endsWith('.json'))
           .map(f => path.join(sessionsDir, f));
@@ -191,11 +191,11 @@ class LazyLoader {
     log('🔄 Reverting to full format...');
 
     const sessionIndexFiles = await glob('summaries/projects/*/sessions-index.json', {
-      cwd: CODICIL_PATH
+      cwd: ENGRAM_PATH
     });
 
     for (const indexFile of sessionIndexFiles) {
-      const fullPath = path.join(CODICIL_PATH, indexFile);
+      const fullPath = path.join(ENGRAM_PATH, indexFile);
       const lightIndex = readJSON(fullPath);
       if (!lightIndex) continue;
 

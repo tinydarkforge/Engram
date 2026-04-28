@@ -2,7 +2,7 @@
 /* eslint-disable */
 
 /**
- * Save Session - Save AI assistant session to Codicil
+ * Save Session - Save AI assistant session to Engram
  *
  * Usage:
  *   save-session "Implemented OAuth2 authentication" --topics auth,oauth,google
@@ -15,11 +15,11 @@ const fs = require('fs');
 const path = require('path');
 const { execFileSync } = require('child_process');
 const readline = require('readline');
-const { resolveCodicilPath, resolveProjectDirName, normalizeProjectSlug } = require('./paths');
+const { resolveEngramPath, resolveProjectDirName, normalizeProjectSlug } = require('./paths');
 const agentbridge = require('./agentbridge-client');
 const { readJSON } = require('./safe-json');
 
-const CODICIL_PATH = resolveCodicilPath(__dirname);
+const ENGRAM_PATH = resolveEngramPath(__dirname);
 const LOCK_TTL_MS = 30 * 1000;
 
 // ─────────────────────────────────────────────────────────────
@@ -135,8 +135,8 @@ async function withFileLock(targetPath, fn, { retries = 20, delayMs = 25 } = {})
 
 class SessionSaver {
   constructor(options = {}) {
-    this.codicil = require('./codicil-loader');
-    this.loader = new this.codicil();
+    this.engram = require('./engram-loader');
+    this.loader = new this.engram();
     this.loader.loadIndex();
     if (options.project) {
     this.currentProject = options.project;
@@ -247,8 +247,8 @@ class SessionSaver {
     }
 
     // Update sessions index
-    const projectDirName = resolveProjectDirName(CODICIL_PATH, this.currentProject);
-    const indexPath = path.join(CODICIL_PATH, 'summaries/projects', projectDirName, 'sessions-index.json');
+    const projectDirName = resolveProjectDirName(ENGRAM_PATH, this.currentProject);
+    const indexPath = path.join(ENGRAM_PATH, 'summaries/projects', projectDirName, 'sessions-index.json');
 
     await withFileLock(indexPath, async () => {
       let sessionsIndex = readJSON(indexPath);
@@ -290,7 +290,7 @@ class SessionSaver {
     // Save full content if provided
     if (fullContent) {
       const contentPath = path.join(
-        CODICIL_PATH,
+        ENGRAM_PATH,
         'content/projects',
         projectDirName,
         'sessions',
@@ -308,7 +308,7 @@ class SessionSaver {
     // Notify AgentBridge (fire-and-forget, never blocks)
     if (this._bridge) {
       this._bridge
-        .then(bridge => bridge.emit('codicil.session.saved', {
+        .then(bridge => bridge.emit('engram.session.saved', {
           session_id: sessionId,
           project: this.currentProject,
           summary,
@@ -333,18 +333,18 @@ class SessionSaver {
   }
 
   /**
-   * Update main Codicil index (v2.0 with abbreviated keys)
+   * Update main Engram index (v2.0 with abbreviated keys)
    */
   async updateMainIndex() {
-    const indexPath = path.join(CODICIL_PATH, 'index.json');
+    const indexPath = path.join(ENGRAM_PATH, 'index.json');
     await withFileLock(indexPath, async () => {
       const index = readJSON(indexPath);
       if (!index) return;
 
       // Update project session count
-    const projectDirName = resolveProjectDirName(CODICIL_PATH, this.currentProject);
+    const projectDirName = resolveProjectDirName(ENGRAM_PATH, this.currentProject);
     const sessionsIndexPath = path.join(
-      CODICIL_PATH,
+      ENGRAM_PATH,
       'summaries/projects',
       projectDirName,
       'sessions-index.json'
@@ -391,20 +391,20 @@ class SessionSaver {
     try {
       const pathsToAdd = ['index.json'];
       const projectSummariesPath = path.join('summaries', 'projects', this.currentProject);
-      if (fs.existsSync(path.join(CODICIL_PATH, projectSummariesPath))) {
+      if (fs.existsSync(path.join(ENGRAM_PATH, projectSummariesPath))) {
         pathsToAdd.push(projectSummariesPath);
       }
       const projectContentPath = path.join('content', 'projects', this.currentProject);
-      if (fs.existsSync(path.join(CODICIL_PATH, projectContentPath))) {
+      if (fs.existsSync(path.join(ENGRAM_PATH, projectContentPath))) {
         pathsToAdd.push(projectContentPath);
       }
 
-      execFileSync('git', ['add', ...pathsToAdd], { cwd: CODICIL_PATH });
-      execFileSync('git', ['commit', '-m', `chore(codicil): add session ${sessionId}`], { cwd: CODICIL_PATH });
-      console.log('✓ Changes committed to Codicil');
+      execFileSync('git', ['add', ...pathsToAdd], { cwd: ENGRAM_PATH });
+      execFileSync('git', ['commit', '-m', `chore(engram): add session ${sessionId}`], { cwd: ENGRAM_PATH });
+      console.log('✓ Changes committed to Engram');
 
       if (push) {
-        execFileSync('git', ['push', 'origin', 'main'], { cwd: CODICIL_PATH, stdio: 'inherit' });
+        execFileSync('git', ['push', 'origin', 'main'], { cwd: ENGRAM_PATH, stdio: 'inherit' });
         console.log('✓ Pushed to remote');
       }
     } catch (e) {

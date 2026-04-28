@@ -1,21 +1,21 @@
 #!/bin/bash
-# Generic assistant startup hook for Codicil
+# Generic assistant startup hook for Engram
 
-CODICIL_PATH="${CODICIL_PATH:-$HOME/code/Codicil}"
+ENGRAM_PATH="${ENGRAM_PATH:-$HOME/code/Engram}"
 
-if [ ! -d "$CODICIL_PATH" ]; then
+if [ ! -d "$ENGRAM_PATH" ]; then
   exit 0
 fi
 
 # Optional update from configured upstream
-if [ -n "$CODICIL_REPO_URL" ]; then
+if [ -n "$ENGRAM_REPO_URL" ]; then
   (
-    cd "$CODICIL_PATH" || exit
+    cd "$ENGRAM_PATH" || exit
     if ! git remote | grep -q "^upstream$"; then
-      git remote add upstream "$CODICIL_REPO_URL" 2>/dev/null || true
+      git remote add upstream "$ENGRAM_REPO_URL" 2>/dev/null || true
     fi
     git fetch upstream --quiet 2>/dev/null || true
   ) &
 fi
 
-node "$CODICIL_PATH/scripts/codicil-loader.js" startup >/dev/null 2>&1 || true
+node "$ENGRAM_PATH/scripts/engram-loader.js" startup >/dev/null 2>&1 || true

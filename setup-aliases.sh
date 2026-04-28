@@ -1,5 +1,5 @@
 #!/bin/bash
-# Setup Codicil aliases for easy access from any repo
+# Setup Engram aliases for easy access from any repo
 
 SHELL_RC="$HOME/.zshrc"
 
@@ -8,16 +8,16 @@ if [ -f "$HOME/.bashrc" ]; then
   SHELL_RC="$HOME/.bashrc"
 fi
 
-echo "Setting up Codicil aliases in $SHELL_RC..."
+echo "Setting up Engram aliases in $SHELL_RC..."
 
 # Add aliases if not already present
-if ! grep -q "CODICIL=" "$SHELL_RC"; then
+if ! grep -q "ENGRAM=" "$SHELL_RC"; then
   cat >> "$SHELL_RC" << 'EOF'
 
-# Codicil - AI assistant's Shared Memory
-export CODICIL="${CODICIL_PATH:-$HOME/code/Codicil}"
-alias codicil='node $CODICIL/scripts/codicil-loader.js'
-alias save-session='node $CODICIL/scripts/save-session.js'
+# Engram - AI assistant's Shared Memory
+export ENGRAM="${ENGRAM_PATH:-$HOME/code/Engram}"
+alias engram='node $ENGRAM/scripts/engram-loader.js'
+alias save-session='node $ENGRAM/scripts/save-session.js'
 EOF
   echo "✅ Aliases added to $SHELL_RC"
 else
@@ -31,8 +31,8 @@ echo ""
 echo "✅ Setup complete!"
 echo ""
 echo "Now you can use from any directory:"
-echo "  codicil startup"
-echo "  codicil quick 'commit format'"
+echo "  engram startup"
+echo "  engram quick 'commit format'"
 echo "  save-session 'Your summary' --topics tag1,tag2"
 echo ""
 echo "Restart your terminal or run: source $SHELL_RC"

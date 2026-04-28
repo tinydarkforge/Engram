@@ -2,8 +2,8 @@
 /* eslint-disable */
 
 /**
- * Codicil Loader v2.0
- * Efficiently loads Codicil knowledge for AI assistant
+ * Engram Loader v2.0
+ * Efficiently loads Engram knowledge for AI assistant
  * Optimized for token efficiency and speed with abbreviated keys
  */
 
@@ -16,13 +16,13 @@ const PersistentCache = require('./persistent-cache');
 const ManifestManager = require('./manifest-manager');
 const VectorSearch = require('./vector-search');
 const BloomFilter = require('./bloom-filter');
-const { resolveCodicilPath, resolveProjectDirName } = require('./paths');
+const { resolveEngramPath, resolveProjectDirName } = require('./paths');
 const agentbridge = require('./agentbridge-client');
 const { readJSON, validateIndex } = require('./safe-json');
 
-const CODICIL_PATH = resolveCodicilPath(__dirname);
+const ENGRAM_PATH = resolveEngramPath(__dirname);
 
-class Codicil {
+class Engram {
   constructor() {
     this.index = null;
     this.currentProject = null;
@@ -98,7 +98,7 @@ class Codicil {
     }
 
     // Cache miss - load from file
-    const basePath = path.join(CODICIL_PATH, 'index');
+    const basePath = path.join(ENGRAM_PATH, 'index');
     const msgpackPath = `${basePath}.msgpack`;
     const gzipPath = `${basePath}.json.gz`;
     const jsonPath = `${basePath}.json`;
@@ -137,7 +137,7 @@ class Codicil {
     }
 
     if (!this.index) {
-      throw new Error(`Codicil index not found at ${basePath}.[msgpack|json.gz|json]`);
+      throw new Error(`Engram index not found at ${basePath}.[msgpack|json.gz|json]`);
     }
 
     // Validate index shape
@@ -223,7 +223,7 @@ class Codicil {
     }
 
     const metadataFile = path.join(
-      CODICIL_PATH,
+      ENGRAM_PATH,
       this.index.p[projectName].mf
     );
 
@@ -280,7 +280,11 @@ class Codicil {
    * This is called ONLY if quick_answer isn't sufficient
    */
   loadContent(filePath) {
-    const fullPath = path.join(CODICIL_PATH, filePath);
+    const base = path.resolve(ENGRAM_PATH);
+    const fullPath = path.resolve(path.join(ENGRAM_PATH, filePath));
+    if (!fullPath.startsWith(base + path.sep) && fullPath !== base) {
+      return null;
+    }
 
     if (!fs.existsSync(fullPath)) {
       return null;
@@ -325,13 +329,13 @@ class Codicil {
 
     // #27: Bloom Filter pre-check for instant negative lookups
     if (this.shouldSkipSearch(query, queryTerms)) {
-      // Definitely not in Codicil, return immediately
+      // Definitely not in Engram, return immediately
       return {
         query,
         results: [],
         total: 0,
         bloom_filter_skip: true,
-        message: `"${query}" definitely not found in Codicil (bloom filter)`
+        message: `"${query}" definitely not found in Engram (bloom filter)`
       };
     }
 
@@ -490,9 +494,9 @@ class Codicil {
     }
 
     // Load from file
-    const projectDirName = resolveProjectDirName(CODICIL_PATH, projectName);
+    const projectDirName = resolveProjectDirName(ENGRAM_PATH, projectName);
     const detailsPath = path.join(
-      CODICIL_PATH,
+      ENGRAM_PATH,
       'summaries/projects',
       projectDirName,
       'sessions',
@@ -502,7 +506,7 @@ class Codicil {
     if (!fs.existsSync(detailsPath)) {
       // Fallback: Try loading from sessions-index.json (non-lazy format)
       const indexPath = path.join(
-        CODICIL_PATH,
+        ENGRAM_PATH,
         'summaries/projects',
         projectDirName,
         'sessions-index.json'
@@ -540,9 +544,9 @@ class Codicil {
    * Returns only id, date, summary, topics (no heavy details)
    */
   listSessions(projectName) {
-    const projectDirName = resolveProjectDirName(CODICIL_PATH, projectName);
+    const projectDirName = resolveProjectDirName(ENGRAM_PATH, projectName);
     const indexPath = path.join(
-      CODICIL_PATH,
+      ENGRAM_PATH,
       'summaries/projects',
       projectDirName,
       'sessions-index.json'
@@ -631,7 +635,7 @@ class Codicil {
     const result = this.startup();
 
     return `
-✅ Codicil v${result.version} Ready (${result.load_time_ms}ms)
+✅ Engram v${result.version} Ready (${result.load_time_ms}ms)
 
 📊 Context Loaded:
   • Index Size: ${result.index.size_kb}KB (60-70% smaller than v1)
@@ -654,10 +658,10 @@ ${result.current_project.name ? `
   • Abbreviated keys with _legend for human readability
 
 💡 Quick Commands:
-  • @codicil <query>     - Ask anything
-  • @codicil search <q>  - Search all projects
-  • @codicil load <proj> - Load project context
-  • @codicil list        - List all projects
+  • @engram <query>     - Ask anything
+  • @engram search <q>  - Search all projects
+  • @engram load <proj> - Load project context
+  • @engram list        - List all projects
 
 Token-efficient mode active. Most queries answered from ${result.index.size_kb}KB index.
 `.trim();
@@ -666,23 +670,23 @@ Token-efficient mode active. Most queries answered from ${result.index.size_kb}K
 
 // CLI Usage
 if (require.main === module) {
-  const codicil = new Codicil();
+  const engram = new Engram();
   const command = process.argv[2];
 
   try {
     switch (command) {
       case 'startup':
-        console.log(codicil.getStartupMessage());
+        console.log(engram.getStartupMessage());
         break;
 
       case 'search': {
         const query = process.argv.slice(3).join(' ');
-        codicil.loadIndex();
+        engram.loadIndex();
         const searchStart = Date.now();
-        const results = codicil.search(query);
+        const results = engram.search(query);
         const searchMs = Date.now() - searchStart;
         console.log(JSON.stringify(results, null, 2));
-        codicil._bridge.then(bridge => bridge.emit('codicil.query.result', {
+        engram._bridge.then(bridge => bridge.emit('engram.query.result', {
           query, source: 'keyword', results_count: results.total, latency_ms: searchMs,
         })).catch(() => {});
         break;
@@ -693,11 +697,11 @@ if (require.main === module) {
         (async () => {
           try {
             const semanticStart = Date.now();
-            const semanticResults = await codicil.semanticSearch(semanticQuery);
+            const semanticResults = await engram.semanticSearch(semanticQuery);
             const semanticMs = Date.now() - semanticStart;
             console.log(JSON.stringify(semanticResults, null, 2));
-            const bridge = await codicil._bridge;
-            bridge.emit('codicil.query.result', {
+            const bridge = await engram._bridge;
+            bridge.emit('engram.query.result', {
               query: semanticQuery, source: 'semantic', results_count: semanticResults.results?.length || 0, latency_ms: semanticMs,
             });
           } catch (e) {
@@ -708,31 +712,31 @@ if (require.main === module) {
       }
 
       case 'list':
-        codicil.loadIndex();
-        const projects = codicil.listProjects();
+        engram.loadIndex();
+        const projects = engram.listProjects();
         console.log(JSON.stringify(projects, null, 2));
         break;
 
       case 'quick':
         const question = process.argv.slice(3).join(' ');
-        codicil.loadIndex();
-        codicil.detectProject();
-        const answer = codicil.quickAnswer(question);
+        engram.loadIndex();
+        engram.detectProject();
+        const answer = engram.quickAnswer(question);
         console.log(JSON.stringify(answer, null, 2));
         break;
 
       case 'content':
         const filePath = process.argv[3];
-        codicil.loadIndex();
-        const content = codicil.loadContent(filePath);
+        engram.loadIndex();
+        const content = engram.loadContent(filePath);
         console.log(JSON.stringify(content, null, 2));
         break;
 
       case 'expand':
         // Expand abbreviated keys to full names
         const context = process.argv[3] || 'root';
-        codicil.loadIndex();
-        const legend = codicil.index._legend[context];
+        engram.loadIndex();
+        const legend = engram.index._legend[context];
         console.log(JSON.stringify(legend, null, 2));
         break;
 
@@ -740,38 +744,38 @@ if (require.main === module) {
         (async () => {
           const suppressIssues = process.argv.includes('--no-issues');
           const startTime = Date.now();
-          const indexPath = path.join(CODICIL_PATH, 'index.json');
-          const indexGzipPath = path.join(CODICIL_PATH, 'index.json.gz');
-          const indexMsgpackPath = path.join(CODICIL_PATH, 'index.msgpack');
+          const indexPath = path.join(ENGRAM_PATH, 'index.json');
+          const indexGzipPath = path.join(ENGRAM_PATH, 'index.json.gz');
+          const indexMsgpackPath = path.join(ENGRAM_PATH, 'index.msgpack');
           const hasIndex = fs.existsSync(indexPath) || fs.existsSync(indexGzipPath) || fs.existsSync(indexMsgpackPath);
 
           if (!hasIndex) {
-            console.log('Codicil Status');
+            console.log('Engram Status');
             console.log('='.repeat(40));
             console.log('');
             console.log('Index not found.');
             console.log('');
             console.log('Next steps:');
-            console.log('  1. Run: codicil setup');
-            console.log(`  2. Ensure CODICIL_PATH points to your Codicil directory (currently: ${CODICIL_PATH})`);
+            console.log('  1. Run: engram setup');
+            console.log(`  2. Ensure ENGRAM_PATH points to your Engram directory (currently: ${ENGRAM_PATH})`);
             return;
           }
 
           let indexResult;
           try {
-            indexResult = codicil.loadIndex();
+            indexResult = engram.loadIndex();
           } catch (e) {
-            console.log('Codicil Status');
+            console.log('Engram Status');
             console.log('='.repeat(40));
             console.log('');
             console.log(`Failed to load index: ${e.message}`);
             console.log('');
             console.log('Next steps:');
-            console.log('  1. Run: codicil setup');
-            console.log(`  2. Verify index files exist under ${CODICIL_PATH}`);
+            console.log('  1. Run: engram setup');
+            console.log(`  2. Verify index files exist under ${ENGRAM_PATH}`);
             return;
           }
-          codicil.detectProject();
+          engram.detectProject();
           const loadMs = Date.now() - startTime;
 
           const issues = [];
@@ -779,9 +783,9 @@ if (require.main === module) {
           // Schema version check
           try {
             const { CURRENT_SCHEMA_VERSION, getSchemaVersion } = require('./migrations');
-            const schemaVersion = getSchemaVersion(codicil.index);
+            const schemaVersion = getSchemaVersion(engram.index);
             if (schemaVersion < CURRENT_SCHEMA_VERSION) {
-              issues.push(`Schema version ${schemaVersion} is behind ${CURRENT_SCHEMA_VERSION}. Run: codicil mcp (then npm run ledger:migrate for source installs)`);
+              issues.push(`Schema version ${schemaVersion} is behind ${CURRENT_SCHEMA_VERSION}. Run: engram mcp (then npm run ledger:migrate for source installs)`);
             }
           } catch (e) {
             issues.push(`Schema version check failed: ${e.message}`);
@@ -789,13 +793,13 @@ if (require.main === module) {
 
           // Version consistency check
           const pkg = require('../package.json');
-          if (pkg.version !== codicil.index.v) {
-            issues.push(`Version mismatch: package.json=${pkg.version}, index=${codicil.index.v}`);
+          if (pkg.version !== engram.index.v) {
+            issues.push(`Version mismatch: package.json=${pkg.version}, index=${engram.index.v}`);
           }
 
           // Check for missing metadata files
-          for (const [name, proj] of Object.entries(codicil.index.p)) {
-            const mfPath = path.join(CODICIL_PATH, proj.mf);
+          for (const [name, proj] of Object.entries(engram.index.p)) {
+            const mfPath = path.join(ENGRAM_PATH, proj.mf);
             if (!fs.existsSync(mfPath)) {
               issues.push(`Missing metadata: ${proj.mf} (project: ${name})`);
             }
@@ -803,15 +807,15 @@ if (require.main === module) {
 
           // Cache stats
           let cacheStats = { total_entries: 0, database_size_kb: 0 };
-          try { cacheStats = codicil.persistentCache.getStats(); } catch (e) { /* no cache */ }
+          try { cacheStats = engram.persistentCache.getStats(); } catch (e) { /* no cache */ }
 
           // Bloom filter stats
           let bloomStats = null;
-          try { if (codicil.bloomFilter) bloomStats = codicil.bloomFilter.getStats(); } catch (e) { /* no bloom */ }
+          try { if (engram.bloomFilter) bloomStats = engram.bloomFilter.getStats(); } catch (e) { /* no bloom */ }
 
           // Vector search stats
           let vectorStats = { total_embeddings: 0, file_size_kb: 0 };
-          try { vectorStats = codicil.vectorSearch.getStats(); } catch (e) { /* no vectors */ }
+          try { vectorStats = engram.vectorSearch.getStats(); } catch (e) { /* no vectors */ }
 
           // Metrics
           let metrics = null;
@@ -823,12 +827,12 @@ if (require.main === module) {
           }
 
           // Per-project session counts
-          const projectStats = codicil.listProjects().map(p => `    ${p.name}: ${p.session_count} sessions (last: ${p.last_updated || 'unknown'})`);
+          const projectStats = engram.listProjects().map(p => `    ${p.name}: ${p.session_count} sessions (last: ${p.last_updated || 'unknown'})`);
 
           // Find last saved session across all projects
           let lastSession = null;
-          for (const [name] of Object.entries(codicil.index.p)) {
-            const sessions = codicil.listSessions(name);
+          for (const [name] of Object.entries(engram.index.p)) {
+            const sessions = engram.listSessions(name);
             if (sessions.length > 0 && (!lastSession || sessions[0].date > lastSession.date)) {
               lastSession = { ...sessions[0], project: name };
             }
@@ -837,7 +841,7 @@ if (require.main === module) {
           // AgentBridge status
           let bridgeStatus = 'disabled (AGENTBRIDGE_URL not set)';
           try {
-            const bridge = await codicil._bridge;
+            const bridge = await engram._bridge;
             if (bridge.isConnected()) {
               bridgeStatus = 'connected';
             }
@@ -845,10 +849,10 @@ if (require.main === module) {
             bridgeStatus = 'error';
           }
 
-          console.log(`Codicil v${codicil.index.v} Status`);
+          console.log(`Engram v${engram.index.v} Status`);
           console.log('='.repeat(40));
           console.log('');
-          console.log(`Version:        ${codicil.index.v}`);
+          console.log(`Version:        ${engram.index.v}`);
           console.log(`Load time:      ${loadMs}ms`);
           console.log(`Index format:   ${indexResult.format}`);
           console.log(`Index size:     ${indexResult.size_kb}KB`);
@@ -952,12 +956,12 @@ if (require.main === module) {
       }
 
       default:
-        console.log('Codicil v4.0.3 - Local memory and assertion ledger for AI coding agents');
+        console.log('Engram v4.0.3 - Local memory and assertion ledger for AI coding agents');
         console.log('');
-        console.log('Usage: codicil [command] [args]');
+        console.log('Usage: engram [command] [args]');
         console.log('');
         console.log('Commands:');
-        console.log('  setup              - Initialize data directory (~/.codicil)');
+        console.log('  setup              - Initialize data directory (~/.engram)');
         console.log('  remember [summary] - Save a session note');
         console.log('  start              - Start web dashboard (http://127.0.0.1:3000/)');
         console.log('  startup            - Load and display startup info');
@@ -976,4 +980,4 @@ if (require.main === module) {
   }
 }
 
-module.exports = Codicil;
+module.exports = Engram;

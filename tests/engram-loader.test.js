@@ -7,9 +7,9 @@ const path = require('path');
 const os = require('os');
 const BloomFilter = require('../scripts/bloom-filter');
 
-// Create a minimal test fixture that mimics the Codicil data structure
+// Create a minimal test fixture that mimics the Engram data structure
 function createTestFixture() {
-  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'codicil-test-'));
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'engram-test-'));
 
   const index = {
     v: '4.0.0',
@@ -106,32 +106,32 @@ function cleanupFixture(tmpDir) {
   fs.rmSync(tmpDir, { recursive: true, force: true });
 }
 
-// We need to override the path resolution so codicil-loader uses our fixture
-function loadCodicilWithFixture(fixturePath) {
+// We need to override the path resolution so engram-loader uses our fixture
+function loadEngramWithFixture(fixturePath) {
   // Clear module cache to get fresh instances
   const modulesToClear = Object.keys(require.cache).filter(
-    (k) => k.includes('codicil-loader') || k.includes('persistent-cache') || k.includes('manifest-manager') || k.includes('vector-search') || k.includes('bloom-filter') || k.includes('paths')
+    (k) => k.includes('engram-loader') || k.includes('persistent-cache') || k.includes('manifest-manager') || k.includes('vector-search') || k.includes('bloom-filter') || k.includes('paths')
   );
   modulesToClear.forEach((k) => delete require.cache[k]);
 
-  // Override resolveCodicilPath before requiring codicil-loader
+  // Override resolveEngramPath before requiring engram-loader
   const pathsModule = require('../scripts/paths');
-  const originalResolve = pathsModule.resolveCodicilPath;
-  pathsModule.resolveCodicilPath = () => fixturePath;
+  const originalResolve = pathsModule.resolveEngramPath;
+  pathsModule.resolveEngramPath = () => fixturePath;
 
-  const Codicil = require('../scripts/codicil-loader');
-  return { Codicil, restore: () => { pathsModule.resolveCodicilPath = originalResolve; } };
+  const Engram = require('../scripts/engram-loader');
+  return { Engram, restore: () => { pathsModule.resolveEngramPath = originalResolve; } };
 }
 
-describe('Codicil Loader', () => {
+describe('Engram Loader', () => {
   let fixturePath;
-  let Codicil;
+  let Engram;
   let restore;
 
   before(() => {
     fixturePath = createTestFixture();
-    const loaded = loadCodicilWithFixture(fixturePath);
-    Codicil = loaded.Codicil;
+    const loaded = loadEngramWithFixture(fixturePath);
+    Engram = loaded.Engram;
     restore = loaded.restore;
   });
 
@@ -142,8 +142,8 @@ describe('Codicil Loader', () => {
 
   describe('loadIndex()', () => {
     it('loads index from JSON', () => {
-      const codicil = new Codicil();
-      const result = codicil.loadIndex();
+      const engram = new Engram();
+      const result = engram.loadIndex();
 
       assert.equal(result.loaded, true);
       assert.equal(result.format, 'json');
@@ -153,60 +153,60 @@ describe('Codicil Loader', () => {
     });
 
     it('returns correct project count', () => {
-      const codicil = new Codicil();
-      const result = codicil.loadIndex();
+      const engram = new Engram();
+      const result = engram.loadIndex();
       assert.equal(result.projects.length, 2);
     });
 
     it('returns correct global standards count', () => {
-      const codicil = new Codicil();
-      const result = codicil.loadIndex();
+      const engram = new Engram();
+      const result = engram.loadIndex();
       assert.equal(result.global_standards.length, 5);
     });
   });
 
   describe('quickAnswer()', () => {
     it('answers commit questions from index', () => {
-      const codicil = new Codicil();
-      codicil.loadIndex();
-      const answer = codicil.quickAnswer('what is our commit format?');
+      const engram = new Engram();
+      engram.loadIndex();
+      const answer = engram.quickAnswer('what is our commit format?');
       assert.deepEqual(answer, { format: '<type>(<scope>): <desc>' });
     });
 
     it('answers PR questions from index', () => {
-      const codicil = new Codicil();
-      codicil.loadIndex();
-      const answer = codicil.quickAnswer('pull request guidelines');
+      const engram = new Engram();
+      engram.loadIndex();
+      const answer = engram.quickAnswer('pull request guidelines');
       assert.deepEqual(answer, { rule: '1 approval' });
     });
 
     it('answers branch questions from index', () => {
-      const codicil = new Codicil();
-      codicil.loadIndex();
-      const answer = codicil.quickAnswer('branching strategy');
+      const engram = new Engram();
+      engram.loadIndex();
+      const answer = engram.quickAnswer('branching strategy');
       assert.deepEqual(answer, { prefixes: ['feature/', 'fix/'] });
     });
 
     it('answers security questions from index', () => {
-      const codicil = new Codicil();
-      codicil.loadIndex();
-      const answer = codicil.quickAnswer('security policy');
+      const engram = new Engram();
+      engram.loadIndex();
+      const answer = engram.quickAnswer('security policy');
       assert.deepEqual(answer, { rule: 'No secrets in code' });
     });
 
     it('returns null for unknown queries', () => {
-      const codicil = new Codicil();
-      codicil.loadIndex();
-      const answer = codicil.quickAnswer('favorite pizza topping');
+      const engram = new Engram();
+      engram.loadIndex();
+      const answer = engram.quickAnswer('favorite pizza topping');
       assert.equal(answer, null);
     });
   });
 
   describe('search()', () => {
     it('finds topics by keyword', () => {
-      const codicil = new Codicil();
-      codicil.loadIndex();
-      const results = codicil.search('auth');
+      const engram = new Engram();
+      engram.loadIndex();
+      const results = engram.search('auth');
 
       assert.ok(results.total > 0);
       const topicResult = results.results.find((r) => r.type === 'topic');
@@ -215,9 +215,9 @@ describe('Codicil Loader', () => {
     });
 
     it('finds projects by name', () => {
-      const codicil = new Codicil();
-      codicil.loadIndex();
-      const results = codicil.search('TestProject');
+      const engram = new Engram();
+      engram.loadIndex();
+      const results = engram.search('TestProject');
 
       const projectResult = results.results.find((r) => r.type === 'project');
       assert.ok(projectResult);
@@ -225,9 +225,9 @@ describe('Codicil Loader', () => {
     });
 
     it('finds projects by description', () => {
-      const codicil = new Codicil();
-      codicil.loadIndex();
-      const results = codicil.search('unit tests');
+      const engram = new Engram();
+      engram.loadIndex();
+      const results = engram.search('unit tests');
 
       const projectResult = results.results.find((r) => r.type === 'project');
       assert.ok(projectResult);
@@ -235,9 +235,9 @@ describe('Codicil Loader', () => {
     });
 
     it('finds sessions by summary text', () => {
-      const codicil = new Codicil();
-      codicil.loadIndex();
-      const results = codicil.search('project setup');
+      const engram = new Engram();
+      engram.loadIndex();
+      const results = engram.search('project setup');
 
       const sessionResult = results.results.find((r) => r.type === 'session');
       assert.ok(sessionResult);
@@ -245,27 +245,27 @@ describe('Codicil Loader', () => {
     });
 
     it('does not bloom-skip multi-word queries when one term exists', () => {
-      const codicil = new Codicil();
-      codicil.loadIndex();
-      const results = codicil.search('auth workflow');
+      const engram = new Engram();
+      engram.loadIndex();
+      const results = engram.search('auth workflow');
 
       assert.equal(results.bloom_filter_skip, false);
       assert.equal(Array.isArray(results.results), true);
     });
 
     it('returns empty for nonexistent terms', () => {
-      const codicil = new Codicil();
-      codicil.loadIndex();
-      const results = codicil.search('xyznonexistent');
+      const engram = new Engram();
+      engram.loadIndex();
+      const results = engram.search('xyznonexistent');
       assert.equal(results.total, 0);
     });
   });
 
   describe('listProjects()', () => {
     it('lists all projects with metadata', () => {
-      const codicil = new Codicil();
-      codicil.loadIndex();
-      const projects = codicil.listProjects();
+      const engram = new Engram();
+      engram.loadIndex();
+      const projects = engram.listProjects();
 
       assert.equal(projects.length, 2);
       const tp = projects.find((p) => p.name === 'TestProject');
@@ -277,9 +277,9 @@ describe('Codicil Loader', () => {
 
   describe('listSessions()', () => {
     it('lists sessions for a project', () => {
-      const codicil = new Codicil();
-      codicil.loadIndex();
-      const sessions = codicil.listSessions('TestProject');
+      const engram = new Engram();
+      engram.loadIndex();
+      const sessions = engram.listSessions('TestProject');
 
       assert.equal(sessions.length, 2);
       assert.equal(sessions[0].id, 'tp-2025-12-01-auth-abc1');
@@ -287,18 +287,18 @@ describe('Codicil Loader', () => {
     });
 
     it('returns empty array for nonexistent project', () => {
-      const codicil = new Codicil();
-      codicil.loadIndex();
-      const sessions = codicil.listSessions('NonExistent');
+      const engram = new Engram();
+      engram.loadIndex();
+      const sessions = engram.listSessions('NonExistent');
       assert.deepEqual(sessions, []);
     });
   });
 
   describe('loadSessionDetails()', () => {
     it('loads session details from file', () => {
-      const codicil = new Codicil();
-      codicil.loadIndex();
-      const details = codicil.loadSessionDetails('TestProject', 'tp-2025-12-01-auth-abc1');
+      const engram = new Engram();
+      engram.loadIndex();
+      const details = engram.loadSessionDetails('TestProject', 'tp-2025-12-01-auth-abc1');
 
       assert.ok(details);
       assert.equal(details.id, 'tp-2025-12-01-auth-abc1');
@@ -307,10 +307,10 @@ describe('Codicil Loader', () => {
     });
 
     it('falls back to sessions-index for non-lazy sessions', () => {
-      const codicil = new Codicil();
-      codicil.loadIndex();
+      const engram = new Engram();
+      engram.loadIndex();
       // This session has no detail file, should fall back to sessions-index
-      const details = codicil.loadSessionDetails('TestProject', 'tp-2025-11-15-setup-xyz2');
+      const details = engram.loadSessionDetails('TestProject', 'tp-2025-11-15-setup-xyz2');
 
       assert.ok(details);
       assert.equal(details.id, 'tp-2025-11-15-setup-xyz2');
@@ -318,54 +318,54 @@ describe('Codicil Loader', () => {
     });
 
     it('returns null for nonexistent session', () => {
-      const codicil = new Codicil();
-      codicil.loadIndex();
-      const details = codicil.loadSessionDetails('TestProject', 'nonexistent-session');
+      const engram = new Engram();
+      engram.loadIndex();
+      const details = engram.loadSessionDetails('TestProject', 'nonexistent-session');
       assert.equal(details, null);
     });
   });
 
   describe('loadProjectMetadata()', () => {
     it('loads metadata from file', () => {
-      const codicil = new Codicil();
-      codicil.loadIndex();
-      const metadata = codicil.loadProjectMetadata('TestProject');
+      const engram = new Engram();
+      engram.loadIndex();
+      const metadata = engram.loadProjectMetadata('TestProject');
 
       assert.ok(metadata);
       assert.deepEqual(metadata.ts, ['Node.js', 'JavaScript']);
     });
 
     it('returns null for nonexistent project', () => {
-      const codicil = new Codicil();
-      codicil.loadIndex();
-      const metadata = codicil.loadProjectMetadata('NonExistent');
+      const engram = new Engram();
+      engram.loadIndex();
+      const metadata = engram.loadProjectMetadata('NonExistent');
       assert.equal(metadata, null);
     });
   });
 
   describe('expand()', () => {
     it('expands abbreviated keys using legend', () => {
-      const codicil = new Codicil();
-      codicil.loadIndex();
-      const expanded = codicil.expand({ v: '4.0.0', m: 'test' }, 'root');
+      const engram = new Engram();
+      engram.loadIndex();
+      const expanded = engram.expand({ v: '4.0.0', m: 'test' }, 'root');
 
       assert.equal(expanded.version, '4.0.0');
       assert.equal(expanded.metadata, 'test');
     });
 
     it('returns data as-is when no legend exists for context', () => {
-      const codicil = new Codicil();
-      codicil.loadIndex();
+      const engram = new Engram();
+      engram.loadIndex();
       const data = { foo: 'bar' };
-      const expanded = codicil.expand(data, 'nonexistent');
+      const expanded = engram.expand(data, 'nonexistent');
       assert.deepEqual(expanded, data);
     });
   });
 
   describe('startup()', () => {
     it('returns complete startup payload', () => {
-      const codicil = new Codicil();
-      const result = codicil.startup();
+      const engram = new Engram();
+      const result = engram.startup();
 
       assert.equal(result.status, 'ready');
       assert.equal(result.version, '4.0.0');

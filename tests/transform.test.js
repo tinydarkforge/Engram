@@ -36,7 +36,7 @@ function makeAssertion(ledger, overrides = {}) {
 describe('transform: parseArgs defaults', () => {
   it('returns defaults with no args', () => {
     const args = parseArgs([]);
-    assert.equal(args.plane, 'project:Codicil');
+    assert.equal(args.plane, 'project:Engram');
     assert.equal(args.action, 'all');
     assert.equal(args.dryRun, true);
     assert.equal(args.confidenceThreshold, 0.7);

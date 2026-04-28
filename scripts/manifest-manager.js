@@ -2,7 +2,7 @@
 /* eslint-disable */
 
 /**
- * Manifest Manager for Codicil
+ * Manifest Manager for Engram
  *
  * Tracks file changes for incremental updates (100x faster)
  * - Generate manifest with mtimes and hashes
@@ -14,10 +14,10 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const { glob } = require('glob');
-const { resolveCodicilPath } = require('./paths');
+const { resolveEngramPath } = require('./paths');
 
-const CODICIL_PATH = resolveCodicilPath(__dirname);
-const MANIFEST_PATH = path.join(CODICIL_PATH, '.codicil-manifest.json');
+const ENGRAM_PATH = resolveEngramPath(__dirname);
+const MANIFEST_PATH = path.join(ENGRAM_PATH, '.engram-manifest.json');
 
 class ManifestManager {
   constructor() {
@@ -64,7 +64,7 @@ class ManifestManager {
   }
 
   /**
-   * Scan all Codicil files and generate manifest
+   * Scan all Engram files and generate manifest
    */
   async generate() {
     const startTime = Date.now();
@@ -84,10 +84,10 @@ class ManifestManager {
     let fileCount = 0;
 
     for (const pattern of patterns) {
-      const matches = await glob(pattern, { cwd: CODICIL_PATH });
+      const matches = await glob(pattern, { cwd: ENGRAM_PATH });
 
       for (const file of matches) {
-        const fullPath = path.join(CODICIL_PATH, file);
+        const fullPath = path.join(ENGRAM_PATH, file);
         const metadata = this.getFileMetadata(fullPath);
 
         files[file] = metadata;
@@ -97,8 +97,8 @@ class ManifestManager {
     }
 
     // Count projects and sessions
-    const projectFiles = await glob('metadata/projects/*.json', { cwd: CODICIL_PATH });
-    const sessionFiles = await glob('summaries/projects/*/sessions-index.json', { cwd: CODICIL_PATH });
+    const projectFiles = await glob('metadata/projects/*.json', { cwd: ENGRAM_PATH });
+    const sessionFiles = await glob('summaries/projects/*/sessions-index.json', { cwd: ENGRAM_PATH });
 
     this.manifest = {
       version: '4.0.0',
@@ -213,7 +213,7 @@ class ManifestManager {
     for (const file of indexFiles) {
       if (!oldManifest.files[file]) continue;
 
-      const fullPath = path.join(CODICIL_PATH, file);
+      const fullPath = path.join(ENGRAM_PATH, file);
       if (!fs.existsSync(fullPath)) continue;
 
       const currentMeta = this.getFileMetadata(fullPath);
@@ -260,7 +260,7 @@ if (require.main === module) {
     try {
       switch (command) {
         case 'generate':
-          console.log('🔍 Scanning Codicil files...');
+          console.log('🔍 Scanning Engram files...');
           await manager.generate();
           manager.save();
           console.log('✅ Manifest generated');

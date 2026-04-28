@@ -2,7 +2,7 @@
 // Citation parser — layer B signal
 // parseCitations(replyText) => string[]
 
-const RE_CODICIL = /\[\[A:([^\]]+)\]\]/g;
+const RE_ENGRAM = /\[\[A:([^\]]+)\]\]/g;
 const RE_CITE_SELF_CLOSE = /<cite\s+id="([^"]+)"\s*\/>/g;
 const RE_CITE_CLOSE = /<cite\s+id="([^"]+)"\s*>[^<]*<\/cite>/g;
 
@@ -11,7 +11,7 @@ function parseCitations(replyText) {
 
   const ids = new Set();
 
-  for (const re of [RE_CODICIL, RE_CITE_SELF_CLOSE, RE_CITE_CLOSE]) {
+  for (const re of [RE_ENGRAM, RE_CITE_SELF_CLOSE, RE_CITE_CLOSE]) {
     re.lastIndex = 0;
     let m;
     while ((m = re.exec(replyText)) !== null) {

@@ -16,14 +16,14 @@ function clearRequireCache(...fragments) {
 }
 
 function makeTestEnv() {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'codicil-ro-'));
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'engram-ro-'));
   const cacheDir = path.join(dir, '.cache');
   fs.mkdirSync(cacheDir);
-  const db = new Database(path.join(cacheDir, 'codicil.db'));
+  const db = new Database(path.join(cacheDir, 'engram.db'));
   db.pragma('foreign_keys = ON');
   runSqlMigrations(db);
   db.close();
-  return { dir, dbPath: path.join(cacheDir, 'codicil.db') };
+  return { dir, dbPath: path.join(cacheDir, 'engram.db') };
 }
 
 // ── Validation tests (no DB needed) ──────────────────────────────────────────
@@ -52,9 +52,9 @@ test('returns error for invalid mode', async () => {
 // ── DB-not-initialized path ───────────────────────────────────────────────────
 
 test('returns ok with message when DB not found', async () => {
-  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'codicil-empty-'));
-  const savedPath = process.env.CODICIL_PATH;
-  process.env.CODICIL_PATH = tmpDir;
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'engram-empty-'));
+  const savedPath = process.env.ENGRAM_PATH;
+  process.env.ENGRAM_PATH = tmpDir;
   clearRequireCache('mcp-tools', 'capture', 'feedback/post-hoc', 'feedback/score-citations');
 
   try {
@@ -63,7 +63,7 @@ test('returns ok with message when DB not found', async () => {
     assert.equal(result.ok, true);
     assert.ok(result.message, 'expected message field');
   } finally {
-    process.env.CODICIL_PATH = savedPath;
+    process.env.ENGRAM_PATH = savedPath;
     clearRequireCache('mcp-tools', 'capture', 'feedback/post-hoc', 'feedback/score-citations');
     fs.rmSync(tmpDir, { recursive: true, force: true });
   }
@@ -95,8 +95,8 @@ test('post_hoc mode scores a session', async () => {
   const sessionId = 'sess:ph1';
   seedSession(dbPath, sessionId);
 
-  const savedPath = process.env.CODICIL_PATH;
-  process.env.CODICIL_PATH = dir;
+  const savedPath = process.env.ENGRAM_PATH;
+  process.env.ENGRAM_PATH = dir;
   clearRequireCache('mcp-tools', 'capture', 'feedback/post-hoc', 'feedback/score-citations');
 
   try {
@@ -111,7 +111,7 @@ test('post_hoc mode scores a session', async () => {
     assert.equal(typeof result.post_hoc.scored, 'number');
     assert.equal(result.citation, null);
   } finally {
-    process.env.CODICIL_PATH = savedPath;
+    process.env.ENGRAM_PATH = savedPath;
     clearRequireCache('mcp-tools', 'capture', 'feedback/post-hoc', 'feedback/score-citations');
     fs.rmSync(dir, { recursive: true, force: true });
   }
@@ -122,8 +122,8 @@ test('citation mode scores a session', async () => {
   const sessionId = 'sess:cit1';
   const aid = seedSession(dbPath, sessionId);
 
-  const savedPath = process.env.CODICIL_PATH;
-  process.env.CODICIL_PATH = dir;
+  const savedPath = process.env.ENGRAM_PATH;
+  process.env.ENGRAM_PATH = dir;
   clearRequireCache('mcp-tools', 'capture', 'feedback/post-hoc', 'feedback/score-citations');
 
   try {
@@ -138,7 +138,7 @@ test('citation mode scores a session', async () => {
     assert.ok(result.citation, 'expected citation result');
     assert.equal(typeof result.citation.scored, 'number');
   } finally {
-    process.env.CODICIL_PATH = savedPath;
+    process.env.ENGRAM_PATH = savedPath;
     clearRequireCache('mcp-tools', 'capture', 'feedback/post-hoc', 'feedback/score-citations');
     fs.rmSync(dir, { recursive: true, force: true });
   }
@@ -149,8 +149,8 @@ test('both mode runs both scorers', async () => {
   const sessionId = 'sess:both1';
   const aid = seedSession(dbPath, sessionId);
 
-  const savedPath = process.env.CODICIL_PATH;
-  process.env.CODICIL_PATH = dir;
+  const savedPath = process.env.ENGRAM_PATH;
+  process.env.ENGRAM_PATH = dir;
   clearRequireCache('mcp-tools', 'capture', 'feedback/post-hoc', 'feedback/score-citations');
 
   try {
@@ -166,7 +166,7 @@ test('both mode runs both scorers', async () => {
     assert.equal(typeof result.post_hoc.scored, 'number');
     assert.equal(typeof result.citation.scored, 'number');
   } finally {
-    process.env.CODICIL_PATH = savedPath;
+    process.env.ENGRAM_PATH = savedPath;
     clearRequireCache('mcp-tools', 'capture', 'feedback/post-hoc', 'feedback/score-citations');
     fs.rmSync(dir, { recursive: true, force: true });
   }

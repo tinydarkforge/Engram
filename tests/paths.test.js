@@ -7,77 +7,77 @@ const fs = require('fs');
 const os = require('os');
 
 describe('paths', () => {
-  let originalCodicilPath;
+  let originalEngramPath;
   let originalReposRoot;
-  let resolveCodicilPath;
+  let resolveEngramPath;
   let resolveReposRoot;
   let resolveProjectDirName;
   let normalizeProjectSlug;
   let tmpDir;
 
   before(() => {
-    originalCodicilPath = process.env.CODICIL_PATH;
-    originalReposRoot = process.env.CODICIL_REPOS_ROOT;
+    originalEngramPath = process.env.ENGRAM_PATH;
+    originalReposRoot = process.env.ENGRAM_REPOS_ROOT;
 
     // Clear module cache
     Object.keys(require.cache)
       .filter(k => k.includes('paths'))
       .forEach(k => delete require.cache[k]);
 
-    ({ resolveCodicilPath, resolveReposRoot, resolveProjectDirName, normalizeProjectSlug } = require('../scripts/paths'));
-    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'codicil-paths-'));
+    ({ resolveEngramPath, resolveReposRoot, resolveProjectDirName, normalizeProjectSlug } = require('../scripts/paths'));
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'engram-paths-'));
     fs.mkdirSync(path.join(tmpDir, 'summaries', 'projects'), { recursive: true });
   });
 
   after(() => {
-    if (originalCodicilPath !== undefined) {
-      process.env.CODICIL_PATH = originalCodicilPath;
+    if (originalEngramPath !== undefined) {
+      process.env.ENGRAM_PATH = originalEngramPath;
     } else {
-      delete process.env.CODICIL_PATH;
+      delete process.env.ENGRAM_PATH;
     }
     if (originalReposRoot !== undefined) {
-      process.env.CODICIL_REPOS_ROOT = originalReposRoot;
+      process.env.ENGRAM_REPOS_ROOT = originalReposRoot;
     } else {
-      delete process.env.CODICIL_REPOS_ROOT;
+      delete process.env.ENGRAM_REPOS_ROOT;
     }
     if (tmpDir) {
       fs.rmSync(tmpDir, { recursive: true, force: true });
     }
   });
 
-  describe('resolveCodicilPath()', () => {
-    it('uses CODICIL_PATH env var when set', () => {
-      process.env.CODICIL_PATH = '/custom/codicil';
-      const result = resolveCodicilPath('/some/dir');
-      assert.equal(result, path.resolve('/custom/codicil'));
+  describe('resolveEngramPath()', () => {
+    it('uses ENGRAM_PATH env var when set', () => {
+      process.env.ENGRAM_PATH = '/custom/engram';
+      const result = resolveEngramPath('/some/dir');
+      assert.equal(result, path.resolve('/custom/engram'));
     });
 
     it('defaults to parent of fromDir (or user data dir when it exists)', () => {
-      delete process.env.CODICIL_PATH;
-      const result = resolveCodicilPath('/a/b/scripts');
-      const userDataDir = path.join(os.homedir(), '.codicil');
+      delete process.env.ENGRAM_PATH;
+      const result = resolveEngramPath('/a/b/scripts');
+      const userDataDir = path.join(os.homedir(), '.engram');
       const expected = fs.existsSync(userDataDir) ? userDataDir : path.resolve('/a/b');
       assert.equal(result, expected);
     });
 
     it('defaults to parent of __dirname when no arg', () => {
-      delete process.env.CODICIL_PATH;
-      const result = resolveCodicilPath();
+      delete process.env.ENGRAM_PATH;
+      const result = resolveEngramPath();
       // Should resolve relative to current working directory's parent
       assert.ok(path.isAbsolute(result));
     });
   });
 
   describe('resolveReposRoot()', () => {
-    it('uses CODICIL_REPOS_ROOT env var when set', () => {
-      process.env.CODICIL_REPOS_ROOT = '/custom/repos';
-      const result = resolveReposRoot('/some/codicil');
+    it('uses ENGRAM_REPOS_ROOT env var when set', () => {
+      process.env.ENGRAM_REPOS_ROOT = '/custom/repos';
+      const result = resolveReposRoot('/some/engram');
       assert.equal(result, path.resolve('/custom/repos'));
     });
 
-    it('defaults to parent of codicilPath', () => {
-      delete process.env.CODICIL_REPOS_ROOT;
-      const result = resolveReposRoot('/code/org/Codicil');
+    it('defaults to parent of engramPath', () => {
+      delete process.env.ENGRAM_REPOS_ROOT;
+      const result = resolveReposRoot('/code/org/Engram');
       assert.equal(result, path.resolve('/code/org'));
     });
   });
@@ -89,8 +89,8 @@ describe('paths', () => {
     });
 
     it('resolveProjectDirName() returns slug when exact dir not present', () => {
-      const codicilPath = '/tmp/codicil';
-      const result = resolveProjectDirName(codicilPath, 'MyProject');
+      const engramPath = '/tmp/engram';
+      const result = resolveProjectDirName(engramPath, 'MyProject');
       assert.equal(result, 'myproject');
     });
 

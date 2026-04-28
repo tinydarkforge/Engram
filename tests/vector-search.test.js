@@ -8,7 +8,7 @@ const os = require('os');
 
 // Override paths before requiring VectorSearch
 function createTestFixture() {
-  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'codicil-vector-test-'));
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'engram-vector-test-'));
   fs.mkdirSync(path.join(tmpDir, '.cache'), { recursive: true });
   return tmpDir;
 }
@@ -24,11 +24,11 @@ function loadVectorSearchWithFixture(fixturePath) {
   modulesToClear.forEach((k) => delete require.cache[k]);
 
   const pathsModule = require('../scripts/paths');
-  const originalResolve = pathsModule.resolveCodicilPath;
-  pathsModule.resolveCodicilPath = () => fixturePath;
+  const originalResolve = pathsModule.resolveEngramPath;
+  pathsModule.resolveEngramPath = () => fixturePath;
 
   const VectorSearch = require('../scripts/vector-search');
-  return { VectorSearch, restore: () => { pathsModule.resolveCodicilPath = originalResolve; } };
+  return { VectorSearch, restore: () => { pathsModule.resolveEngramPath = originalResolve; } };
 }
 
 describe('VectorSearch', () => {

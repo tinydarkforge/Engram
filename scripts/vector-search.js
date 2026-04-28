@@ -2,7 +2,7 @@
 /* eslint-disable */
 
 /**
- * Vector Search for Codicil
+ * Vector Search for Engram
  *
  * Semantic search using sentence embeddings (all-MiniLM-L6-v2)
  * - 384-dimensional embeddings
@@ -12,11 +12,11 @@
 
 const fs = require('fs');
 const path = require('path');
-const { resolveCodicilPath } = require('./paths');
+const { resolveEngramPath } = require('./paths');
 const { readJSON } = require('./safe-json');
 
-const CODICIL_PATH = resolveCodicilPath(__dirname);
-const EMBEDDINGS_PATH = path.join(CODICIL_PATH, '.cache', 'embeddings.json');
+const ENGRAM_PATH = resolveEngramPath(__dirname);
+const EMBEDDINGS_PATH = path.join(ENGRAM_PATH, '.cache', 'embeddings.json');
 const DEFAULT_DUPLICATE_THRESHOLD = 0.85;
 const DEFAULT_DUPLICATE_LIMIT = 20;
 
@@ -124,6 +124,11 @@ class VectorSearch {
   async initialize() {
     if (!this.embedder) {
       const { pipeline } = require('@huggingface/transformers');
+      const modelCacheDir = path.join(require('os').homedir(), '.cache', 'huggingface', 'hub');
+      const modelCached = fs.existsSync(path.join(modelCacheDir, 'models--Xenova--all-MiniLM-L6-v2'));
+      if (!modelCached) {
+        console.warn('[engram] Downloading embedding model (~100MB), first search will be slow...');
+      }
       console.log('🧠 Loading embedding model (all-MiniLM-L6-v2)...');
       this.embedder = await pipeline(
         'feature-extraction',
@@ -450,7 +455,7 @@ class VectorSearch {
   }
 
   /**
-   * Generate embeddings for all sessions in Codicil
+   * Generate embeddings for all sessions in Engram
    * Uses parallel processing for 10x speed improvement
    */
   async generateAllEmbeddings() {
@@ -458,7 +463,7 @@ class VectorSearch {
 
     const { glob } = require('glob');
     const sessionFiles = await glob('summaries/projects/*/sessions-index.json', {
-      cwd: CODICIL_PATH
+      cwd: ENGRAM_PATH
     });
 
     // Collect all sessions that need embedding
@@ -466,7 +471,7 @@ class VectorSearch {
     let totalSessions = 0;
 
     for (const file of sessionFiles) {
-      const fullPath = path.join(CODICIL_PATH, file);
+      const fullPath = path.join(ENGRAM_PATH, file);
       const sessionsIndex = readJSON(fullPath);
 
       if (!sessionsIndex || !sessionsIndex.sessions) continue;
@@ -799,7 +804,7 @@ if (require.main === module) {
         }
 
         default:
-          console.log('Vector Search - Semantic search for Codicil');
+          console.log('Vector Search - Semantic search for Engram');
           console.log('');
           console.log('Usage: vector-search.js [command]');
           console.log('');

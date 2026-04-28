@@ -2,7 +2,7 @@
 /* eslint-disable */
 
 /**
- * Bloom Filter for Codicil (#27)
+ * Bloom Filter for Engram (#27)
  *
  * Provides instant negative lookups - "Does this term NOT exist?"
  * - Space-efficient: 200-500 bytes for 1000+ sessions
@@ -23,11 +23,11 @@
 const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
-const { resolveCodicilPath } = require('./paths');
+const { resolveEngramPath } = require('./paths');
 const { readJSON } = require('./safe-json');
 
-const CODICIL_PATH = resolveCodicilPath(__dirname);
-const BLOOM_FILTER_PATH = path.join(CODICIL_PATH, '.cache', 'bloom-filter.json');
+const ENGRAM_PATH = resolveEngramPath(__dirname);
+const BLOOM_FILTER_PATH = path.join(ENGRAM_PATH, '.cache', 'bloom-filter.json');
 
 class BloomFilter {
   constructor(expectedItems = 1000, falsePositiveRate = 0.01) {
@@ -209,14 +209,14 @@ class BloomFilter {
 }
 
 /**
- * Build bloom filter from all Codicil sessions
+ * Build bloom filter from all Engram sessions
  */
-async function buildCodicilBloomFilter() {
-  console.log('🔨 Building Bloom Filter for Codicil...');
+async function buildEngramBloomFilter() {
+  console.log('🔨 Building Bloom Filter for Engram...');
 
   const { glob } = require('glob');
   const sessionFiles = await glob('summaries/projects/*/sessions-index.json', {
-    cwd: CODICIL_PATH
+    cwd: ENGRAM_PATH
   });
 
   // Collect all unique terms (topics, keywords from summaries)
@@ -224,7 +224,7 @@ async function buildCodicilBloomFilter() {
   let totalSessions = 0;
 
   for (const file of sessionFiles) {
-    const fullPath = path.join(CODICIL_PATH, file);
+    const fullPath = path.join(ENGRAM_PATH, file);
     const index = readJSON(fullPath);
 
     if (!index || !index.sessions) continue;
@@ -292,7 +292,7 @@ async function testBloomFilter() {
 
   // Test with known terms
   const testTerms = [
-    { term: 'codicil', shouldExist: true },
+    { term: 'engram', shouldExist: true },
     { term: 'docker', shouldExist: true },
     { term: 'authentication', shouldExist: false },
     { term: 'optimization', shouldExist: true },
@@ -323,7 +323,7 @@ if (require.main === module) {
     try {
       switch (command) {
         case 'build':
-          await buildCodicilBloomFilter();
+          await buildEngramBloomFilter();
           break;
 
         case 'test':
@@ -363,7 +363,7 @@ if (require.main === module) {
           break;
 
         default:
-          console.log('Bloom Filter - Instant negative lookups for Codicil');
+          console.log('Bloom Filter - Instant negative lookups for Engram');
           console.log('');
           console.log('Usage: bloom-filter.js [command]');
           console.log('');

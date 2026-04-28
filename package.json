@@ -1,24 +1,24 @@
 {
-  "name": "@tinydarkforge/codicil",
+  "name": "@tinydarkforge/engram",
   "version": "4.0.3",
   "description": "Local-first memory and assertion ledger for AI coding agents. Confidence-weighted, contradiction-aware, token-budgeted context over MCP.",
-  "main": "scripts/codicil-loader.js",
+  "main": "scripts/engram-loader.js",
   "bin": {
-    "codicil": "scripts/codicil-loader.js"
+    "engram": "scripts/engram-loader.js"
   },
   "scripts": {
     "start": "node scripts/server.js",
-    "startup": "node scripts/codicil-loader.js startup",
+    "startup": "node scripts/engram-loader.js startup",
     "test": "node --test tests/*.test.js",
     "coverage": "c8 --reporter=text --reporter=lcov node --test tests/*.test.js",
     "lint": "eslint scripts/ tests/ --max-warnings=50",
-    "status": "node scripts/codicil-loader.js status",
+    "status": "node scripts/engram-loader.js status",
     "setup": "node scripts/setup.js",
     "migrate": "node scripts/migrate.js",
     "metrics:backfill": "node scripts/metrics-backfill.js",
     "mcp:http": "node scripts/mcp-server-http.mjs",
-    "search": "node scripts/codicil-loader.js search",
-    "semantic": "node scripts/codicil-loader.js semantic",
+    "search": "node scripts/engram-loader.js search",
+    "semantic": "node scripts/engram-loader.js semantic",
     "manifest": "node scripts/manifest-manager.js generate",
     "bloom:build": "node scripts/bloom-filter.js build",
     "bloom:stats": "node scripts/bloom-filter.js stats",
@@ -40,7 +40,7 @@
     "setup-aliases.sh"
   ],
   "keywords": [
-    "codicil",
+    "engram",
     "memory",
     "knowledge-base",
     "mcp",
@@ -53,7 +53,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/tinydarkforge/codicil.git"
+    "url": "git+https://github.com/tinydarkforge/engram.git"
   },
   "engines": {
     "node": ">=20.0.0"

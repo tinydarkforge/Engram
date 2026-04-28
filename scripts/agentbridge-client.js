@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
 /**
- * AgentBridge Client for Codicil
+ * AgentBridge Client for Engram
  *
- * Thin HTTP client that connects Codicil to AgentBridge for inter-agent
+ * Thin HTTP client that connects Engram to AgentBridge for inter-agent
  * communication. Opt-in via AGENTBRIDGE_URL env var — when unset,
  * everything degrades to no-ops.
  *
@@ -13,24 +13,24 @@
 const http = require('http');
 const https = require('https');
 
-const AGENT_ID = 'codicil';
-const AGENT_NAME = 'Codicil Knowledge Base';
+const AGENT_ID = 'engram';
+const AGENT_NAME = 'Engram Knowledge Base';
 const HTTP_TIMEOUT = 3000; // 3s fire-and-forget
 
 const EVENT_SCHEMAS = [
   {
-    event_type: 'codicil.session.saved',
-    description: 'A session was saved to Codicil',
+    event_type: 'engram.session.saved',
+    description: 'A session was saved to Engram',
     required_fields: ['session_id', 'project', 'summary'],
   },
   {
-    event_type: 'codicil.query.requested',
-    description: 'A query was made against Codicil',
+    event_type: 'engram.query.requested',
+    description: 'A query was made against Engram',
     required_fields: ['query', 'requester'],
   },
   {
-    event_type: 'codicil.query.result',
-    description: 'A query returned results from Codicil',
+    event_type: 'engram.query.result',
+    description: 'A query returned results from Engram',
     required_fields: ['query', 'source'],
   },
 ];

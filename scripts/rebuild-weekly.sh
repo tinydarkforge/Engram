@@ -15,8 +15,8 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-CODICIL_PATH="${CODICIL_PATH:-$(cd "$SCRIPT_DIR/.." && pwd)}"
-PLIST_PATH="$HOME/Library/LaunchAgents/com.codicil.neural-rebuild.plist"
+ENGRAM_PATH="${ENGRAM_PATH:-$(cd "$SCRIPT_DIR/.." && pwd)}"
+PLIST_PATH="$HOME/Library/LaunchAgents/com.engram.neural-rebuild.plist"
 LOG_FILE="/tmp/neural-rebuild.log"
 
 # Colors for output
@@ -41,7 +41,7 @@ install_schedule() {
 <plist version="1.0">
 <dict>
     <key>Label</key>
-    <string>com.codicil.neural-rebuild</string>
+    <string>com.engram.neural-rebuild</string>
     <key>ProgramArguments</key>
     <array>
         <string>$SCRIPT_DIR/rebuild-weekly.sh</string>
@@ -63,8 +63,8 @@ install_schedule() {
     <dict>
         <key>PATH</key>
         <string>/usr/local/bin:/usr/bin:/bin</string>
-        <key>CODICIL_PATH</key>
-        <string>$CODICIL_PATH</string>
+        <key>ENGRAM_PATH</key>
+        <string>$ENGRAM_PATH</string>
     </dict>
 </dict>
 </plist>
@@ -94,7 +94,7 @@ run_rebuild() {
     # Memory limit (prevent runaway)
     ulimit -v 524288 2>/dev/null || true  # 512MB
 
-    cd "$CODICIL_PATH"
+    cd "$ENGRAM_PATH"
 
     # Run the build
     log "Building neural structures..."
@@ -104,10 +104,10 @@ run_rebuild() {
 
     # Show stats
     log "Index sizes:"
-    ls -lh "$CODICIL_PATH/.neural/"*.msgpack 2>/dev/null | awk '{print "  " $9 ": " $5}'
+    ls -lh "$ENGRAM_PATH/.neural/"*.msgpack 2>/dev/null | awk '{print "  " $9 ": " $5}'
 
-    if [ -f "$CODICIL_PATH/.neural/git-index.msgpack" ]; then
-        log "Git index: $(ls -lh "$CODICIL_PATH/.neural/git-index.msgpack" | awk '{print $5}')"
+    if [ -f "$ENGRAM_PATH/.neural/git-index.msgpack" ]; then
+        log "Git index: $(ls -lh "$ENGRAM_PATH/.neural/git-index.msgpack" | awk '{print $5}')"
     fi
 }
 

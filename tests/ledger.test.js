@@ -107,7 +107,7 @@ describe('Ledger CRUD', () => {
     const { ledger } = makeTestLedger();
 
     const id = ledger.createAssertion({
-      plane: 'project:Codicil',
+      plane: 'project:Engram',
       class_: 'episodic',
       claim: 'Reinforcement works',
       source_spans: ['session:r1'],
@@ -163,14 +163,14 @@ describe('Ledger CRUD', () => {
     const { ledger } = makeTestLedger();
 
     const parentId = ledger.createAssertion({
-      plane: 'project:Codicil',
+      plane: 'project:Engram',
       class_: 'monotonic',
       claim: 'Old claim',
       source_spans: ['session:s1'],
     });
 
     const childId = ledger.createAssertion({
-      plane: 'project:Codicil',
+      plane: 'project:Engram',
       class_: 'monotonic',
       claim: 'New claim supersedes old',
       source_spans: ['session:s2'],
@@ -189,7 +189,7 @@ describe('Ledger CRUD', () => {
     assert.equal(parent.superseded_by[0].id, childId);
 
     // active query must include child but exclude parent
-    const active = ledger.queryActiveByPlane('project:Codicil');
+    const active = ledger.queryActiveByPlane('project:Engram');
     const ids = active.map(a => a.id);
     assert.ok(ids.includes(childId), 'child should be active');
     assert.ok(!ids.includes(parentId), 'dominated parent should be excluded');
@@ -398,7 +398,7 @@ describe('Ledger ingest', () => {
   it('creates new assertion when no duplicate exists', () => {
     const { ledger } = makeTestLedger();
     const result = ledger.ingest({
-      plane: 'project:Codicil',
+      plane: 'project:Engram',
       class_: 'monotonic',
       claim: 'The sky is blue',
       source_spans: ['session:s1'],
@@ -411,14 +411,14 @@ describe('Ledger ingest', () => {
   it('reinforces when a duplicate claim exists', () => {
     const { ledger } = makeTestLedger();
     const existingId = ledger.createAssertion({
-      plane: 'project:Codicil',
+      plane: 'project:Engram',
       class_: 'monotonic',
       claim: 'the sky is blue',
       source_spans: ['session:s1'],
     });
 
     const result = ledger.ingest({
-      plane: 'project:Codicil',
+      plane: 'project:Engram',
       class_: 'monotonic',
       claim: 'sky is blue',
       source_spans: ['session:s2'],
@@ -431,14 +431,14 @@ describe('Ledger ingest', () => {
   it('creates assertion and auto-links contradiction when negation detected', () => {
     const { ledger } = makeTestLedger();
     const existingId = ledger.createAssertion({
-      plane: 'project:Codicil',
+      plane: 'project:Engram',
       class_: 'monotonic',
       claim: 'the sky is blue',
       source_spans: ['session:s1'],
     });
 
     const result = ledger.ingest({
-      plane: 'project:Codicil',
+      plane: 'project:Engram',
       class_: 'monotonic',
       claim: 'the sky is not blue',
       source_spans: ['session:s2'],
@@ -454,20 +454,20 @@ describe('Ledger ingest', () => {
   it('near-duplicate does NOT create a new row', () => {
     const { ledger, db } = makeTestLedger();
     ledger.createAssertion({
-      plane: 'project:Codicil',
+      plane: 'project:Engram',
       class_: 'monotonic',
       claim: 'the sky is blue',
       source_spans: ['session:s1'],
     });
 
     ledger.ingest({
-      plane: 'project:Codicil',
+      plane: 'project:Engram',
       class_: 'monotonic',
       claim: 'sky is blue',
       source_spans: ['session:s2'],
     });
 
-    const count = db.prepare("SELECT COUNT(*) AS n FROM assertions WHERE plane = 'project:Codicil'").get().n;
+    const count = db.prepare("SELECT COUNT(*) AS n FROM assertions WHERE plane = 'project:Engram'").get().n;
     assert.equal(count, 1);
   });
 });

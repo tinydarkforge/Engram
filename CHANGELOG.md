@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to Codicil will be documented in this file.
+All notable changes to Engram will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
@@ -48,7 +48,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Changed
 
-- **Codicil Loader** - Already had MessagePack support (lines 86-99)
+- **Engram Loader** - Already had MessagePack support (lines 86-99)
   - Confirmed working with new MessagePack files
   - Load time: 53ms with MessagePack format
   - Format preference: MessagePack > Gzip > JSON
@@ -76,7 +76,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 | Data integrity | 100% | 100% | ✅ Perfect |
 | Migration safety | Zero data loss | Zero data loss | ✅ Confirmed |
 
-*Note: For small files (<50KB), JSON parsing may be faster due to V8 optimization, but the 44% size reduction provides significant benefits for disk I/O, network transfer, and memory caching. Absolute parsing difference (0.11ms) is negligible for Codicil's use case.
+*Note: For small files (<50KB), JSON parsing may be faster due to V8 optimization, but the 44% size reduction provides significant benefits for disk I/O, network transfer, and memory caching. Absolute parsing difference (0.11ms) is negligible for Engram's use case.
 
 ### Migration
 
@@ -108,7 +108,7 @@ None - Fully backward compatible. JSON files preserved as fallback.
 ### Fixed
 - **Project Detection Bug** - Fixed `remember` command project detection
   - Updated cache version from 3.1.0 to 3.3.0
-  - Regenerated MessagePack index with Codicil project
+  - Regenerated MessagePack index with Engram project
   - Fixed sessions-index.json structure (added `topics_index`)
   - All projects now detected correctly
 
@@ -163,14 +163,14 @@ None - Fully backward compatible. JSON files preserved as fallback.
 ### Added
 - **#22: Lazy Loading** - 64% smaller index
   - `scripts/lazy-loader.js` - Convert, revert, stats, load commands
-  - `loadSessionDetails()` and `listSessions()` methods in codicil-loader
+  - `loadSessionDetails()` and `listSessions()` methods in engram-loader
   - Session details split: lightweight index (213 bytes) + full details (586 bytes)
 
 - **#27: Bloom Filters** - 500-1000x faster negative queries
   - `scripts/bloom-filter.js` - Build, test, check, stats commands
   - Instant "does not exist" answers (0.1ms vs 50-100ms)
   - 243 bytes for 101 terms, 0.03% false positive rate
-  - Integrated into `codicil.search()` for automatic optimization
+  - Integrated into `engram.search()` for automatic optimization
 
 - **#36: Git Hook Integration** - Zero-effort session capture
   - `scripts/git-hook-capture.sh` - Install/uninstall git hooks
@@ -180,7 +180,7 @@ None - Fully backward compatible. JSON files preserved as fallback.
   - `--auto` mode in remember script
 
 - **Documentation**
-  - `HOW-CODICIL-SAVES-TOKENS.md` - Simple token savings guide (195 lines)
+  - `HOW-ENGRAM-SAVES-TOKENS.md` - Simple token savings guide (195 lines)
   - `OVERVIEW.md` - One-page overview (150 lines)
   - `PHASE-1-OPTIMIZATIONS.md` - Phase 1 technical details (207 lines)
 
@@ -335,9 +335,9 @@ scripts/git-hook-capture.sh install    # Install git hooks (optional)
   - Directory-based fallback
 
 - **Core Scripts**
-  - `codicil-loader.js` - Main loader
+  - `engram-loader.js` - Main loader
   - `save-session.js` - Session recording
-  - `remember`, `learn`, `codicil` - Command aliases
+  - `remember`, `learn`, `engram` - Command aliases
 
 ### Architecture
 ```
@@ -400,8 +400,8 @@ npm run convert-msgpack
 
 ## Links
 
-- **Repository:** https://github.com/tinydarkforge/codicil
-- **Releases:** https://github.com/tinydarkforge/codicil/releases
+- **Repository:** https://github.com/tinydarkforge/engram
+- **Releases:** https://github.com/tinydarkforge/engram/releases
 - **Roadmap:** [ROADMAP-V4.md](ROADMAP-V4.md)
 - **Documentation:** [README.md](README.md)
 

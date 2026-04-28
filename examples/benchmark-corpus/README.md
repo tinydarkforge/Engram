@@ -29,13 +29,13 @@ Three queries covering the main retrieval scenarios:
 
 ## Baseline construction
 
-The benchmark script simulates what an AI assistant would receive *without* Codicil:
+The benchmark script simulates what an AI assistant would receive *without* Engram:
 - All 5 sessions serialized as raw JSON (no filtering)
 - A synthetic git log (150 one-line entries representing 6 months of project history)
 - A synthetic file tree (200 entries across both projects)
 
-## Codicil-assisted construction
+## Engram-assisted construction
 
 For each query the benchmark selects only sessions whose `topics` overlap the query's
 `relevant_topics`, then serializes only those sessions. The synthetic git log and file
-tree are omitted — Codicil provides a structured answer, not a raw dump.
+tree are omitted — Engram provides a structured answer, not a raw dump.

@@ -2,7 +2,7 @@
 /* eslint-disable */
 
 /**
- * Provider-agnostic AI summarizer for Codicil session auto-summarization.
+ * Provider-agnostic AI summarizer for Engram session auto-summarization.
  *
  * Provider detection order (env vars):
  *   1. ANTHROPIC_API_KEY  → Claude (claude-haiku-3-5 by default)
@@ -10,7 +10,7 @@
  *   3. OLLAMA_HOST        → Ollama local (llama3.2 by default)
  *   4. (none)             → heuristic fallback (no API call)
  *
- * Override with CODICIL_SUMMARIZER_PROVIDER and CODICIL_SUMMARIZER_MODEL.
+ * Override with ENGRAM_SUMMARIZER_PROVIDER and ENGRAM_SUMMARIZER_MODEL.
  *
  * Usage:
  *   const Summarizer = require('./summarizer');
@@ -29,8 +29,8 @@ const DEFAULT_MODELS = {
 
 class Summarizer {
   constructor(options = {}) {
-    this.provider = options.provider || process.env.CODICIL_SUMMARIZER_PROVIDER || this._detectProvider();
-    this.model = options.model || process.env.CODICIL_SUMMARIZER_MODEL || DEFAULT_MODELS[this.provider] || null;
+    this.provider = options.provider || process.env.ENGRAM_SUMMARIZER_PROVIDER || this._detectProvider();
+    this.model = options.model || process.env.ENGRAM_SUMMARIZER_MODEL || DEFAULT_MODELS[this.provider] || null;
     this.timeout = options.timeout || 15000;
   }
 
@@ -155,7 +155,11 @@ class Summarizer {
         const text = await res.text().catch(() => '');
         throw new Error(`HTTP ${res.status}: ${text.slice(0, 200)}`);
       }
-      return res.json();
+      try {
+        return await res.json();
+      } catch (e) {
+        throw new Error(`Failed to parse response: ${e.message}`);
+      }
     } finally {
       clearTimeout(timer);
     }

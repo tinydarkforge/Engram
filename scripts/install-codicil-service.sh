@@ -2,12 +2,12 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-CODICIL_PATH_DEFAULT="$(cd "$SCRIPT_DIR/.." && pwd)"
+ENGRAM_PATH_DEFAULT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 usage() {
-  echo "Usage: install-codicil-service.sh [--codicil-path PATH] [--user USER] [--port PORT] [--bind ADDR]"
-  echo "  --codicil-path PATH   Codicil install path (default: $CODICIL_PATH_DEFAULT)"
-  echo "  --user USER         Service user (default: codicil)"
+  echo "Usage: install-engram-service.sh [--engram-path PATH] [--user USER] [--port PORT] [--bind ADDR]"
+  echo "  --engram-path PATH   Engram install path (default: $ENGRAM_PATH_DEFAULT)"
+  echo "  --user USER         Service user (default: engram)"
   echo "  --port PORT         MCP port (default: 3000)"
   echo "  --bind ADDR         Bind address (default: 127.0.0.1)"
   echo "  --api-key KEY       MCP API key (required)"
@@ -21,8 +21,8 @@ usage() {
   echo "  --all               Run setup-ufw + setup-nginx + setup-certbot"
 }
 
-CODICIL_PATH="$CODICIL_PATH_DEFAULT"
-SERVICE_USER="codicil"
+ENGRAM_PATH="$ENGRAM_PATH_DEFAULT"
+SERVICE_USER="engram"
 MCP_PORT="3000"
 MCP_BIND_ADDR="127.0.0.1"
 MCP_API_KEY=""
@@ -36,8 +36,8 @@ CERTBOT_EMAIL=""
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --codicil-path)
-      CODICIL_PATH="$2"
+    --engram-path)
+      ENGRAM_PATH="$2"
       shift 2
       ;;
     --user)
@@ -131,29 +131,29 @@ if ! id -u "$SERVICE_USER" >/dev/null 2>&1; then
   useradd -r -s /bin/false "$SERVICE_USER"
 fi
 
-mkdir -p /etc/codicil
-cat > /etc/codicil/codicil.env <<EOF
+mkdir -p /etc/engram
+cat > /etc/engram/engram.env <<EOF
 NODE_ENV=production
-CODICIL_PATH=$CODICIL_PATH
+ENGRAM_PATH=$ENGRAM_PATH
 MCP_API_KEY=$MCP_API_KEY
 MCP_BIND_ADDR=$MCP_BIND_ADDR
 MCP_PORT=$MCP_PORT
 EOF
 
-install -d -o "$SERVICE_USER" -g "$SERVICE_USER" "$CODICIL_PATH"
-chown -R "$SERVICE_USER:$SERVICE_USER" "$CODICIL_PATH"
+install -d -o "$SERVICE_USER" -g "$SERVICE_USER" "$ENGRAM_PATH"
+chown -R "$SERVICE_USER:$SERVICE_USER" "$ENGRAM_PATH"
 
-cp "$SCRIPT_DIR/codicil-mcp.service.template" /etc/systemd/system/codicil-mcp.service
-sed -i "s|/opt/codicil|$CODICIL_PATH|g" /etc/systemd/system/codicil-mcp.service
-sed -i "s|User=codicil|User=$SERVICE_USER|g" /etc/systemd/system/codicil-mcp.service
-sed -i "s|Group=codicil|Group=$SERVICE_USER|g" /etc/systemd/system/codicil-mcp.service
+cp "$SCRIPT_DIR/engram-mcp.service.template" /etc/systemd/system/engram-mcp.service
+sed -i "s|/opt/engram|$ENGRAM_PATH|g" /etc/systemd/system/engram-mcp.service
+sed -i "s|User=engram|User=$SERVICE_USER|g" /etc/systemd/system/engram-mcp.service
+sed -i "s|Group=engram|Group=$SERVICE_USER|g" /etc/systemd/system/engram-mcp.service
 
 systemctl daemon-reload
-systemctl enable codicil-mcp
-systemctl restart codicil-mcp
+systemctl enable engram-mcp
+systemctl restart engram-mcp
 
-echo "Codicil MCP service installed and started."
-systemctl status codicil-mcp --no-pager
+echo "Engram MCP service installed and started."
+systemctl status engram-mcp --no-pager
 
 if [[ "$SETUP_UFW" == "true" ]]; then
   if command -v ufw >/dev/null 2>&1; then
@@ -180,7 +180,7 @@ if [[ "$SETUP_NGINX" == "true" ]]; then
     exit 1
   fi
 
-  NGINX_SITE_PATH="/etc/nginx/sites-available/codicil-mcp"
+  NGINX_SITE_PATH="/etc/nginx/sites-available/engram-mcp"
   cat > "$NGINX_SITE_PATH" <<EOF
 server {
   listen 443 ssl;
@@ -201,7 +201,7 @@ server {
 EOF
 
   if [[ -d /etc/nginx/sites-enabled ]]; then
-    ln -sf "$NGINX_SITE_PATH" /etc/nginx/sites-enabled/codicil-mcp
+    ln -sf "$NGINX_SITE_PATH" /etc/nginx/sites-enabled/engram-mcp
   fi
 
   nginx -t

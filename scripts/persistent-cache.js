@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
 /**
- * Persistent Cache for Codicil
+ * Persistent Cache for Engram
  *
- * Uses SQLite to cache Codicil index and data for instant cold starts.
+ * Uses SQLite to cache Engram index and data for instant cold starts.
  * - 30ms → 5ms load time (6x faster)
  * - Cache survives restarts
  * - TTL-based invalidation (default: 60 minutes)
@@ -14,10 +14,10 @@ const Database = require('better-sqlite3');
 const path = require('path');
 const fs = require('fs');
 const { encode: msgpackEncode, decode: msgpackDecode } = require('@msgpack/msgpack');
-const { resolveCodicilPath } = require('./paths');
+const { resolveEngramPath } = require('./paths');
 
-const CODICIL_PATH = resolveCodicilPath(__dirname);
-const CACHE_DB_PATH = path.join(CODICIL_PATH, '.cache', 'codicil.db');
+const ENGRAM_PATH = resolveEngramPath(__dirname);
+const CACHE_DB_PATH = path.join(ENGRAM_PATH, '.cache', 'engram.db');
 const DEFAULT_TTL = 60 * 60 * 1000; // 60 minutes in milliseconds
 const DEFAULT_MAX_ENTRIES = 1000; // Maximum number of cache entries (LRU eviction)
 
@@ -82,35 +82,27 @@ class PersistentCache {
    * Updates last_accessed_at on successful read (LRU tracking)
    */
   get(key) {
-    const stmt = this.db.prepare(`
-      SELECT value, version, expires_at
-      FROM cache
-      WHERE key = ?
-    `);
+    const row = this.db.transaction((k) => {
+      const r = this.db.prepare(
+        'SELECT value, version, expires_at FROM cache WHERE key = ?'
+      ).get(k);
+      if (!r) return null;
 
-    const row = stmt.get(key);
+      const now = Date.now();
+      if (r.expires_at < now || r.version !== this.version) {
+        this.db.prepare('DELETE FROM cache WHERE key = ?').run(k);
+        return null;
+      }
+
+      this.db.prepare('UPDATE cache SET last_accessed_at = ? WHERE key = ?').run(now, k);
+      return r;
+    })(key);
 
     if (!row) {
       this.misses++;
       return null;
     }
 
-    // Check expiration
-    const now = Date.now();
-    if (row.expires_at < now) {
-      this.misses++;
-      this.delete(key);
-      return null;
-    }
-
-    // Check version
-    if (row.version !== this.version) {
-      this.misses++;
-      this.delete(key);
-      return null;
-    }
-
-    // Decode msgpack
     let value;
     try {
       value = msgpackDecode(row.value);
@@ -119,12 +111,6 @@ class PersistentCache {
       this.delete(key);
       return null;
     }
-
-    // Update last accessed time (LRU tracking)
-    const updateStmt = this.db.prepare(`
-      UPDATE cache SET last_accessed_at = ? WHERE key = ?
-    `);
-    updateStmt.run(now, key);
 
     this.hits++;
     return value;

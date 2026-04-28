@@ -1,5 +1,5 @@
 /**
- * Codicil Web UI - Frontend Application
+ * Engram Web UI - Frontend Application
  */
 
 // ─────────────────────────────────────────────────────────────

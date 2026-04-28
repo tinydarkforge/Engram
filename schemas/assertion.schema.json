@@ -6,7 +6,7 @@
   "required": ["id", "plane", "class", "claim", "confidence", "status", "created_at", "staleness_model"],
   "properties": {
     "id": { "type": "string", "pattern": "^a_[0-9]+_[a-f0-9]{6}$" },
-    "plane": { "type": "string", "description": "e.g. user:daniel, project:Codicil, session:<id>" },
+    "plane": { "type": "string", "description": "e.g. user:daniel, project:Engram, session:<id>" },
     "class": { "type": "string", "enum": ["monotonic", "episodic", "state_bound", "contextual"] },
     "claim": { "type": "string", "minLength": 1, "maxLength": 500 },
     "body": { "type": "string" },

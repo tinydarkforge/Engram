@@ -1,10 +1,10 @@
 const fs = require('fs');
 const path = require('path');
-const { resolveCodicilPath } = require('./paths');
+const { resolveEngramPath } = require('./paths');
 const { readJSON } = require('./safe-json');
 
-const CODICIL_PATH = resolveCodicilPath(__dirname);
-const INDEX_PATH = path.join(CODICIL_PATH, 'index.json');
+const ENGRAM_PATH = resolveEngramPath(__dirname);
+const INDEX_PATH = path.join(ENGRAM_PATH, 'index.json');
 const CURRENT_SCHEMA_VERSION = 1;
 
 function atomicWriteFileSync(targetPath, content) {
@@ -115,14 +115,14 @@ function runSqlMigrations(db) {
       continue;
     }
 
-    // Read and execute migration
+    // Read and execute migration inside a transaction
     const filePath = path.join(migrationsDir, filename);
     const content = fs.readFileSync(filePath, 'utf8');
-    db.exec(content);
-
-    // Record migration as applied
-    const now = new Date().toISOString();
-    db.prepare('INSERT INTO schema_migrations (version, applied_at) VALUES (?, ?)').run(filename, now);
+    db.transaction(() => {
+      db.exec(content);
+      const now = new Date().toISOString();
+      db.prepare('INSERT INTO schema_migrations (version, applied_at) VALUES (?, ?)').run(filename, now);
+    })();
 
     applied.push(filename);
   }
@@ -140,8 +140,8 @@ module.exports = {
 if (require.main === module) {
   const Database = require('better-sqlite3');
   const path = require('path');
-  const CODICIL_PATH = resolveCodicilPath(__dirname);
-  const DB_PATH = path.join(CODICIL_PATH, '.cache', 'codicil.db');
+  const ENGRAM_PATH = resolveEngramPath(__dirname);
+  const DB_PATH = path.join(ENGRAM_PATH, '.cache', 'engram.db');
   const cacheDir = path.dirname(DB_PATH);
   if (!require('fs').existsSync(cacheDir)) require('fs').mkdirSync(cacheDir, { recursive: true });
   const db = new Database(DB_PATH);

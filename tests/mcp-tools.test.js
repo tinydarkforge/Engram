@@ -9,7 +9,7 @@
  *   - getBundle, queryConcept, getGraphSummary
  *   - neuralSearch (error path), crossProjectSearch (error path)
  *
- * Uses temp directories with mock data to avoid touching real Codicil data.
+ * Uses temp directories with mock data to avoid touching real Engram data.
  */
 
 const { describe, it, before, after } = require('node:test');
@@ -24,8 +24,8 @@ let tools;
 
 describe('MCP Tools', () => {
   before(() => {
-    // Create temp Codicil structure
-    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'codicil-mcp-test-'));
+    // Create temp Engram structure
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'engram-mcp-test-'));
 
     // Create index.json
     const index = {
@@ -110,10 +110,10 @@ describe('MCP Tools', () => {
     };
     fs.writeFileSync(path.join(bundlesDir, 'TestProject.msgpack'), msgpackEncode(bundle));
 
-    // Override CODICIL_PATH by setting env var before requiring the module
-    process.env.CODICIL_PATH = tmpDir;
+    // Override ENGRAM_PATH by setting env var before requiring the module
+    process.env.ENGRAM_PATH = tmpDir;
 
-    // Clear module cache to pick up new CODICIL_PATH
+    // Clear module cache to pick up new ENGRAM_PATH
     Object.keys(require.cache)
       .filter(k => k.includes('mcp-tools') || k.includes('paths'))
       .forEach(k => delete require.cache[k]);
@@ -124,7 +124,7 @@ describe('MCP Tools', () => {
   after(() => {
     // Cleanup
     fs.rmSync(tmpDir, { recursive: true, force: true });
-    delete process.env.CODICIL_PATH;
+    delete process.env.ENGRAM_PATH;
   });
 
   describe('loadIndex()', () => {
@@ -315,7 +315,7 @@ describe('MCP Tools', () => {
     it('returns structured error when session is missing', () => {
       const result = tools.getSession('TestProject', 'tp-999');
       assert.equal(result.error, true);
-      assert.equal(result.code, 'CODICIL_ERR_SESSION_NOT_FOUND');
+      assert.equal(result.code, 'ENGRAM_ERR_SESSION_NOT_FOUND');
     });
   });
 

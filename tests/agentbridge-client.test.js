@@ -16,7 +16,7 @@ describe('AgentBridge Client', () => {
 
     it('emit returns { sent: false }', async () => {
       const stub = createStub();
-      const result = await stub.emit('codicil.session.saved', { session_id: 'test' });
+      const result = await stub.emit('engram.session.saved', { session_id: 'test' });
       assert.deepEqual(result, { sent: false });
     });
 
@@ -110,7 +110,7 @@ describe('AgentBridge Client', () => {
       // Agent registration
       assert.equal(receivedRequests[1].method, 'POST');
       assert.equal(receivedRequests[1].url, '/agents');
-      assert.equal(receivedRequests[1].body.agent_id, 'codicil');
+      assert.equal(receivedRequests[1].body.agent_id, 'engram');
 
       // Schema registrations
       const schemas = receivedRequests.slice(2);
@@ -118,7 +118,7 @@ describe('AgentBridge Client', () => {
       schemas.forEach((req) => {
         assert.equal(req.method, 'POST');
         assert.equal(req.url, '/bus/schemas');
-        assert.ok(req.body.event_type.startsWith('codicil.'));
+        assert.ok(req.body.event_type.startsWith('engram.'));
       });
     });
 
@@ -127,7 +127,7 @@ describe('AgentBridge Client', () => {
       const client = await connect({ url: serverUrl });
 
       receivedRequests = []; // reset after connect
-      await client.emit('codicil.session.saved', {
+      await client.emit('engram.session.saved', {
         session_id: 'test-123',
         project: 'TestProject',
         summary: 'Test session',
@@ -137,8 +137,8 @@ describe('AgentBridge Client', () => {
       const req = receivedRequests[0];
       assert.equal(req.method, 'POST');
       assert.equal(req.url, '/bus/events');
-      assert.equal(req.body.event_type, 'codicil.session.saved');
-      assert.equal(req.body.agent_id, 'codicil');
+      assert.equal(req.body.event_type, 'engram.session.saved');
+      assert.equal(req.body.agent_id, 'engram');
       assert.ok(req.body.timestamp);
       assert.equal(req.body.metadata.session_id, 'test-123');
       assert.equal(req.body.metadata.project, 'TestProject');
@@ -164,7 +164,7 @@ describe('AgentBridge Client', () => {
       assert.equal(receivedRequests.length, 1);
       const req = receivedRequests[0];
       assert.equal(req.method, 'POST');
-      assert.equal(req.url, '/agents/codicil/heartbeat');
+      assert.equal(req.url, '/agents/engram/heartbeat');
       assert.equal(req.body.status, 'healthy');
       assert.ok(req.body.timestamp);
     });

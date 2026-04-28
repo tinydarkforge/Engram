@@ -7,7 +7,7 @@ const ledger = require('./ledger');
 const { scanPlane } = require('./contradiction-sentinel');
 const { runPending: runVerifications } = require('./verification-hooks');
 
-const DEFAULT_PLANE = 'project:Codicil';
+const DEFAULT_PLANE = 'project:Engram';
 const DEFAULT_CONFIDENCE_THRESHOLD = 0.7;
 const DEFAULT_STALE_DAYS = 14;
 const DEFAULT_MAX_AGE_DAYS = 90;

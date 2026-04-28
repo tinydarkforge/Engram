@@ -4,7 +4,7 @@
  * Remember - Smart wrapper for save-session.js
  *
  * Usage:
- *   codicil                          # Auto-capture from git changes
+ *   engram                           # Auto-capture from git changes
  *   remember "what you did"        # Quick with auto-topics
  *   learn "summary" --topics a,b   # Full control
  *   remember --interactive         # Prompts for everything
@@ -13,10 +13,10 @@
 const { execFileSync } = require('child_process');
 const path = require('path');
 const fs = require('fs');
-const { resolveCodicilPath } = require('./paths');
+const { resolveEngramPath } = require('./paths');
 const { readJSON } = require('./safe-json');
 
-const CODICIL_PATH = resolveCodicilPath(__dirname);
+const ENGRAM_PATH = resolveEngramPath(__dirname);
 const SAVE_SESSION = path.join(__dirname, 'save-session.js');
 
 /**
@@ -25,15 +25,15 @@ const SAVE_SESSION = path.join(__dirname, 'save-session.js');
 function shouldUpdateRecent(topics, files) {
   try {
     // Detect current project
-    const Codicil = require(path.join(CODICIL_PATH, 'scripts', 'codicil-loader.js'));
-    const codicil = new Codicil();
-    codicil.loadIndex();
-    const detection = codicil.detectProject();
+    const Engram = require(path.join(ENGRAM_PATH, 'scripts', 'engram-loader.js'));
+    const engram = new Engram();
+    engram.loadIndex();
+    const detection = engram.detectProject();
 
     if (!detection.project) return null;
 
     // Load sessions index
-    const sessionsPath = path.join(CODICIL_PATH, 'summaries', 'projects', detection.project, 'sessions-index.json');
+    const sessionsPath = path.join(ENGRAM_PATH, 'summaries', 'projects', detection.project, 'sessions-index.json');
     if (!fs.existsSync(sessionsPath)) return null;
 
     const sessionsData = readJSON(sessionsPath);
@@ -77,7 +77,7 @@ function autoCapture() {
 
     if (!status) {
       console.log('📭 No changes detected to capture.');
-      console.log('💡 Make some changes first, or use: codicil --interactive');
+      console.log('💡 Make some changes first, or use: engram --interactive');
       process.exit(0);
     }
 
@@ -126,8 +126,8 @@ function autoCapture() {
       console.log(`   Similarity: ${recentSession.similarity}%`);
       console.log('');
       console.log('✅ Skipping - already captured similar work today');
-      console.log('💡 To force new session: codicil "your summary"');
-      console.log('💡 To add more: codicil --interactive');
+      console.log('💡 To force new session: engram "your summary"');
+      console.log('💡 To add more: engram --interactive');
       process.exit(0);
     }
 
@@ -152,7 +152,7 @@ function autoCapture() {
 
   } catch (error) {
     console.error('❌ Auto-capture failed:', error.message);
-    console.log('💡 Try: codicil --interactive');
+    console.log('💡 Try: engram --interactive');
     process.exit(1);
   }
 }
@@ -228,14 +228,14 @@ function smartCapture(summary) {
  * Called from post-commit hook with environment variables
  */
 function gitHookAutoCapture() {
-  const summary = process.env.CODICIL_SUMMARY;
-  const topics = process.env.CODICIL_TOPICS;
-  const commit = process.env.CODICIL_COMMIT;
-  const linesAdded = process.env.CODICIL_LINES_ADDED || '0';
-  const linesRemoved = process.env.CODICIL_LINES_REMOVED || '0';
+  const summary = process.env.ENGRAM_SUMMARY;
+  const topics = process.env.ENGRAM_TOPICS;
+  const commit = process.env.ENGRAM_COMMIT;
+  const linesAdded = process.env.ENGRAM_LINES_ADDED || '0';
+  const linesRemoved = process.env.ENGRAM_LINES_REMOVED || '0';
 
   if (!summary) {
-    console.log('⚠️  No summary provided in CODICIL_SUMMARY');
+    console.log('⚠️  No summary provided in ENGRAM_SUMMARY');
     return;
   }
 
@@ -268,7 +268,7 @@ const args = process.argv.slice(2);
 
 try {
   // #36: Check for git hook auto-capture mode
-  if (args[0] === '--auto' || process.env.CODICIL_AUTO_CAPTURE) {
+  if (args[0] === '--auto' || process.env.ENGRAM_AUTO_CAPTURE) {
     gitHookAutoCapture();
   } else if (args.length === 0) {
     // Zero parameters: auto-capture everything

@@ -3,10 +3,10 @@
 /**
  * benchmark-tokens.js
  *
- * Measures token savings of Codicil-assisted context retrieval vs. naive baseline.
+ * Measures token savings of Engram-assisted context retrieval vs. naive baseline.
  *
  * Baseline: all sessions + simulated git log + simulated file tree (raw dump)
- * Codicil:    only topic-matched sessions (structured retrieval, no raw dump)
+ * Engram:    only topic-matched sessions (structured retrieval, no raw dump)
  *
  * Reads exclusively from examples/benchmark-corpus/ — no live DB access.
  * Output is deterministic (no timestamps, no randomness).
@@ -58,7 +58,7 @@ const QUERIES_DIR = path.join(CORPUS_DIR, 'queries');
 
 // ---------------------------------------------------------------------------
 // Synthetic baseline fixtures
-// These represent the content an AI assistant would receive without Codicil.
+// These represent the content an AI assistant would receive without Engram.
 // Fixed strings — never generated at runtime — to keep output deterministic.
 // ---------------------------------------------------------------------------
 
@@ -233,7 +233,7 @@ function loadQueries() {
 // ---------------------------------------------------------------------------
 
 /**
- * Baseline: everything an AI assistant might receive without Codicil.
+ * Baseline: everything an AI assistant might receive without Engram.
  * - All sessions as raw JSON dump
  * - Full git log
  * - Full file tree
@@ -254,10 +254,10 @@ function buildBaselineContext(sessions, query) {
 }
 
 /**
- * Codicil-assisted: only topic-matched sessions, no raw git log or file tree.
- * Simulates what Codicil would retrieve and surface to the assistant.
+ * Engram-assisted: only topic-matched sessions, no raw git log or file tree.
+ * Simulates what Engram would retrieve and surface to the assistant.
  */
-function buildCodicilContext(sessions, query) {
+function buildEngramContext(sessions, query) {
   const relevantTopics = new Set(query.relevant_topics);
   const relevantProjects = new Set(query.relevant_projects);
 
@@ -267,7 +267,7 @@ function buildCodicilContext(sessions, query) {
     return topicOverlap && projectMatch;
   });
 
-  // Render matched sessions as a structured summary (what Codicil would emit)
+  // Render matched sessions as a structured summary (what Engram would emit)
   const summaries = matched.map(s => {
     const lines = [
       `### ${s.id} (${s.date})`,
@@ -325,10 +325,10 @@ function run() {
   const sessions = loadSessions();
   const queries = loadQueries();
 
-  const colWidths = { type: 18, base: 16, codicil: 14, savings: 10 };
+  const colWidths = { type: 18, base: 16, engram: 14, savings: 10 };
   const divider = '-'.repeat(66);
 
-  console.log('\nCodicil Token Savings Benchmark');
+  console.log('\nEngram Token Savings Benchmark');
   console.log(`Tokenizer : ${tokenizerLabel}`);
   console.log(`Sessions  : ${sessions.length}`);
   console.log(`Queries   : ${queries.length}`);
@@ -336,7 +336,7 @@ function run() {
   console.log(
     'Query Type'.padEnd(colWidths.type) +
     'Baseline Tokens'.padStart(colWidths.base) +
-    'Codicil Tokens'.padStart(colWidths.codicil) +
+    'Engram Tokens'.padStart(colWidths.engram) +
     'Savings %'.padStart(colWidths.savings)
   );
   console.log(divider);
@@ -346,14 +346,14 @@ function run() {
 
   for (const query of queries) {
     const baselineCtx = buildBaselineContext(sessions, query);
-    const codicilCtx = buildCodicilContext(sessions, query);
+    const engramCtx = buildEngramContext(sessions, query);
 
     const baselineTokens = countTokens(baselineCtx);
-    const codicilTokens = countTokens(codicilCtx);
-    const savingsPct = ((1 - codicilTokens / baselineTokens) * 100).toFixed(1);
+    const engramTokens = countTokens(engramCtx);
+    const savingsPct = ((1 - engramTokens / baselineTokens) * 100).toFixed(1);
     const savingsNum = parseFloat(savingsPct);
 
-    results.push({ query, baselineTokens, codicilTokens, savingsPct });
+    results.push({ query, baselineTokens, engramTokens, savingsPct });
 
     if (savingsNum < 50) {
       failed = true;
@@ -362,7 +362,7 @@ function run() {
     console.log(
       query.type.padEnd(colWidths.type) +
       baselineTokens.toString().padStart(colWidths.base) +
-      codicilTokens.toString().padStart(colWidths.codicil) +
+      engramTokens.toString().padStart(colWidths.engram) +
       `${savingsPct}%`.padStart(colWidths.savings)
     );
   }
@@ -371,13 +371,13 @@ function run() {
 
   // Summary row
   const totalBase = results.reduce((s, r) => s + r.baselineTokens, 0);
-  const totalCodicil = results.reduce((s, r) => s + r.codicilTokens, 0);
-  const avgSavings = ((1 - totalCodicil / totalBase) * 100).toFixed(1);
+  const totalEngram = results.reduce((s, r) => s + r.engramTokens, 0);
+  const avgSavings = ((1 - totalEngram / totalBase) * 100).toFixed(1);
 
   console.log(
     'AVERAGE'.padEnd(colWidths.type) +
     totalBase.toString().padStart(colWidths.base) +
-    totalCodicil.toString().padStart(colWidths.codicil) +
+    totalEngram.toString().padStart(colWidths.engram) +
     `${avgSavings}%`.padStart(colWidths.savings)
   );
   console.log(divider);

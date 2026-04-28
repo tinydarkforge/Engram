@@ -11,7 +11,7 @@ describe('safe-json', () => {
   let tmpDir;
 
   before(() => {
-    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'codicil-safe-json-'));
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'engram-safe-json-'));
   });
 
   after(() => {

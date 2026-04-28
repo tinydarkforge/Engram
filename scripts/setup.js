@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * Codicil Setup
+ * Engram Setup
  *
  * Idempotent initializer that prepares directory structure and a minimal index.
  */
@@ -9,11 +9,11 @@
 const fs = require('fs');
 const path = require('path');
 const { execFileSync } = require('child_process');
-const { resolveCodicilPath } = require('./paths');
+const { resolveEngramPath } = require('./paths');
 const { runMigrations } = require('./migrations');
 const { readJSON } = require('./safe-json');
 
-const CODICIL_PATH = resolveCodicilPath(__dirname);
+const ENGRAM_PATH = resolveEngramPath(__dirname);
 const pkg = require('../package.json');
 
 function hasIndexFiles(dir) {
@@ -29,7 +29,7 @@ function ensureDir(dirPath) {
 }
 
 function writeIndexIfMissing() {
-  if (hasIndexFiles(CODICIL_PATH)) {
+  if (hasIndexFiles(ENGRAM_PATH)) {
     return false;
   }
 
@@ -50,35 +50,35 @@ function writeIndexIfMissing() {
     _legend: {}
   };
 
-  ensureDir(CODICIL_PATH);
-  fs.writeFileSync(path.join(CODICIL_PATH, 'index.json'), JSON.stringify(index, null, 2));
+  ensureDir(ENGRAM_PATH);
+  fs.writeFileSync(path.join(ENGRAM_PATH, 'index.json'), JSON.stringify(index, null, 2));
   return true;
 }
 
 function runNodeScript(scriptPath, args = []) {
   execFileSync(process.execPath, [scriptPath, ...args], {
-    cwd: CODICIL_PATH,
+    cwd: ENGRAM_PATH,
     stdio: 'inherit'
   });
 }
 
 function main() {
-  ensureDir(CODICIL_PATH);
-  ensureDir(path.join(CODICIL_PATH, '.cache'));
-  ensureDir(path.join(CODICIL_PATH, '.neural'));
-  ensureDir(path.join(CODICIL_PATH, '.neural', 'bundles'));
-  ensureDir(path.join(CODICIL_PATH, 'summaries', 'projects'));
-  ensureDir(path.join(CODICIL_PATH, 'content', 'projects'));
-  ensureDir(path.join(CODICIL_PATH, 'metadata', 'projects'));
+  ensureDir(ENGRAM_PATH);
+  ensureDir(path.join(ENGRAM_PATH, '.cache'));
+  ensureDir(path.join(ENGRAM_PATH, '.neural'));
+  ensureDir(path.join(ENGRAM_PATH, '.neural', 'bundles'));
+  ensureDir(path.join(ENGRAM_PATH, 'summaries', 'projects'));
+  ensureDir(path.join(ENGRAM_PATH, 'content', 'projects'));
+  ensureDir(path.join(ENGRAM_PATH, 'metadata', 'projects'));
 
   const createdIndex = writeIndexIfMissing();
   runMigrations();
 
   // Ensure metadata files exist for known projects
-  const index = readJSON(path.join(CODICIL_PATH, 'index.json'));
+  const index = readJSON(path.join(ENGRAM_PATH, 'index.json'));
   if (index && index.p) {
     for (const projectName of Object.keys(index.p)) {
-      const metadataPath = path.join(CODICIL_PATH, 'metadata', 'projects', `${projectName}.json`);
+      const metadataPath = path.join(ENGRAM_PATH, 'metadata', 'projects', `${projectName}.json`);
       if (!fs.existsSync(metadataPath)) {
         const minimal = { ts: [], d: '' };
         fs.writeFileSync(metadataPath, JSON.stringify(minimal, null, 2));
@@ -98,7 +98,7 @@ function main() {
     console.warn(`Warning: bloom filter build failed: ${e.message}`);
   }
 
-  console.log(`Codicil setup complete at ${CODICIL_PATH}`);
+  console.log(`Engram setup complete at ${ENGRAM_PATH}`);
   if (createdIndex) {
     console.log('Created new index.json');
   } else {

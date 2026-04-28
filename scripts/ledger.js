@@ -8,13 +8,13 @@ const Database = require('better-sqlite3');
 const crypto = require('crypto');
 const path = require('path');
 const fs = require('fs');
-const { resolveCodicilPath } = require('./paths');
+const { resolveEngramPath } = require('./paths');
 const { findNearDuplicate, findNegations } = require('./dedup');
 const { rankAssertions, selectForContext: _selectForContext } = require('./rank');
 const { computeOutcomePriors } = require('./feedback/outcome-prior');
 
-const CODICIL_PATH = resolveCodicilPath(__dirname);
-const DB_PATH = path.join(CODICIL_PATH, '.cache', 'codicil.db');
+const ENGRAM_PATH = resolveEngramPath(__dirname);
+const DB_PATH = path.join(ENGRAM_PATH, '.cache', 'engram.db');
 
 let _db = null;
 

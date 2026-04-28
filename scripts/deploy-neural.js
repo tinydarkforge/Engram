@@ -15,14 +15,14 @@
 
 const fs = require('fs');
 const path = require('path');
-const { resolveCodicilPath, resolveReposRoot } = require('./paths');
+const { resolveEngramPath, resolveReposRoot } = require('./paths');
 const { readJSON } = require('./safe-json');
 
-const CODICIL_PATH = resolveCodicilPath(__dirname);
-const REPOS_ROOT = resolveReposRoot(CODICIL_PATH);
+const ENGRAM_PATH = resolveEngramPath(__dirname);
+const REPOS_ROOT = resolveReposRoot(ENGRAM_PATH);
 
 function discoverRepos() {
-  const indexPath = path.join(CODICIL_PATH, 'index.json');
+  const indexPath = path.join(ENGRAM_PATH, 'index.json');
   const index = readJSON(indexPath);
   if (!index) return {};
   const repos = {};
@@ -62,10 +62,10 @@ function generateAgentsMd(projectName) {
 ## Commands
 \`\`\`bash
 # Search git history (semantic)
-node ${CODICIL_PATH}/scripts/neural-memory.js search "your question"
+node ${ENGRAM_PATH}/scripts/neural-memory.js search "your question"
 
 # Save session note
-${CODICIL_PATH}/scripts/remember "what you did" --topics tag1,tag2
+${ENGRAM_PATH}/scripts/remember "what you did" --topics tag1,tag2
 \`\`\`
 
 ---

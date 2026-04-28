@@ -75,7 +75,7 @@ describe('EventConsumer', () => {
             res.end(JSON.stringify([
               {
                 id: 'evt-001',
-                event_type: 'codicil.query.requested',
+                event_type: 'engram.query.requested',
                 timestamp: new Date().toISOString(),
                 metadata: {
                   query: 'test search',
@@ -120,8 +120,8 @@ describe('EventConsumer', () => {
     });
 
     it('polls for events and processes them', async () => {
-      // Create a mock codicil with search method
-      const mockCodicil = {
+      // Create a mock engram with search method
+      const mockEngram = {
         search: (query) => ({
           query,
           results: [{ type: 'topic', topic: 'test' }],
@@ -141,7 +141,7 @@ describe('EventConsumer', () => {
       const consumer = new EventConsumer({
         url: `http://127.0.0.1:${mockPort}`,
         pollInterval: 60000,
-        codicil: mockCodicil,
+        engram: mockEngram,
         bridge: mockBridge,
       });
 
@@ -160,21 +160,21 @@ describe('EventConsumer', () => {
 
       // Should have emitted a result
       assert.equal(emittedEvents.length, 1);
-      assert.equal(emittedEvents[0].type, 'codicil.query.result');
+      assert.equal(emittedEvents[0].type, 'engram.query.result');
       assert.equal(emittedEvents[0].meta.query, 'test search');
       assert.equal(emittedEvents[0].meta.source, 'keyword');
       assert.equal(emittedEvents[0].meta.requester, 'test-agent');
     });
 
     it('deduplicates events by id', async () => {
-      const mockCodicil = {
+      const mockEngram = {
         search: () => ({ results: [], total: 0 }),
       };
 
       const consumer = new EventConsumer({
         url: `http://127.0.0.1:${mockPort}`,
         pollInterval: 60000,
-        codicil: mockCodicil,
+        engram: mockEngram,
         bridge: { emit: () => Promise.resolve({ sent: true }) },
       });
 
@@ -198,7 +198,7 @@ describe('EventConsumer', () => {
       const consumer = new EventConsumer({
         url: `http://127.0.0.1:${mockPort}`,
         pollInterval: 60000,
-        codicil: { search: () => ({ results: [], total: 0 }) },
+        engram: { search: () => ({ results: [], total: 0 }) },
         bridge: bridgePromise,
       });
 
@@ -208,11 +208,11 @@ describe('EventConsumer', () => {
       assert.equal(emittedEvents.length, 1);
     });
 
-    it('increments error count on missing codicil', async () => {
+    it('increments error count on missing engram', async () => {
       const consumer = new EventConsumer({
         url: `http://127.0.0.1:${mockPort}`,
         pollInterval: 60000,
-        codicil: null, // no codicil instance
+        engram: null, // no engram instance
       });
 
       await consumer._poll();
@@ -225,7 +225,7 @@ describe('EventConsumer', () => {
       const consumer = new EventConsumer({
         url: `http://127.0.0.1:${mockPort}`,
         pollInterval: 60000,
-        codicil: { search: () => ({ results: [], total: 0 }) },
+        engram: { search: () => ({ results: [], total: 0 }) },
         bridge: { emit: () => Promise.resolve({ sent: true }) },
       });
 

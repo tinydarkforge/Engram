@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
 /**
- * Codicil MCP Server
+ * Engram MCP Server
  *
- * Exposes Codicil memory and assertion ledger as tools via Model Context Protocol.
+ * Exposes Engram memory and assertion ledger as tools via Model Context Protocol.
  *
  * Tools:
  *   - neural_search: Semantic search across all sessions
@@ -17,9 +17,9 @@
  *
  * Configure in AI assistant Code settings:
  *   "mcpServers": {
- *     "codicil": {
+ *     "engram": {
  *       "command": "node",
- *       "args": ["/path/to/Codicil/scripts/mcp-server.js"]
+ *       "args": ["/path/to/Engram/scripts/mcp-server.js"]
  *     }
  *   }
  */
@@ -72,7 +72,7 @@ const { listPrompts, renderPrompt } = require('./mcp-prompts.js');
 
 const server = new Server(
   {
-    name: 'codicil',
+    name: 'engram',
     version: '1.0.0',
   },
   {
@@ -90,7 +90,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
     tools: [
       {
         name: 'remember',
-        description: 'Save a memory or session to Codicil. Call at end of session, after completing a feature, or when recording a decision.',
+        description: 'Save a memory or session to Engram. Call at end of session, after completing a feature, or when recording a decision.',
         inputSchema: {
           type: 'object',
           properties: {
@@ -129,7 +129,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       },
       {
         name: 'neural_search',
-        description: 'Semantic search across all Codicil sessions. Finds sessions by meaning, not just keywords. Use this to find relevant past work, learnings, and context.',
+        description: 'Semantic search across all Engram sessions. Finds sessions by meaning, not just keywords. Use this to find relevant past work, learnings, and context.',
         inputSchema: {
           type: 'object',
           properties: {
@@ -159,7 +159,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           properties: {
             project: {
               type: 'string',
-              description: 'Project name (e.g., "Codicil", "ProjectA", "ProjectB")'
+              description: 'Project name (e.g., "Engram", "ProjectA", "ProjectB")'
             }
           },
           required: ['project']
@@ -173,7 +173,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           properties: {
             project: {
               type: 'string',
-              description: 'Project name (e.g., "Codicil", "ProjectA", "ProjectB")'
+              description: 'Project name (e.g., "Engram", "ProjectA", "ProjectB")'
             },
             session_id: {
               type: 'string',
@@ -208,7 +208,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       },
       {
         name: 'list_projects',
-        description: 'List all projects indexed in Codicil with session counts.',
+        description: 'List all projects indexed in Engram with session counts.',
         inputSchema: {
           type: 'object',
           properties: {}
@@ -230,7 +230,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       },
       {
         name: 'get_topics',
-        description: 'Get top topics/tags from Codicil with session counts.',
+        description: 'Get top topics/tags from Engram with session counts.',
         inputSchema: {
           type: 'object',
           properties: {
@@ -277,7 +277,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       },
       {
         name: 'rebuild_index',
-        description: 'Rebuild Codicil indexes (bloom, git, embeddings).',
+        description: 'Rebuild Engram indexes (bloom, git, embeddings).',
         inputSchema: {
           type: 'object',
           properties: {
@@ -326,7 +326,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           properties: {
             plane: {
               type: 'string',
-              description: 'Plane identifier (e.g., user:alice, project:Codicil, session:id123)'
+              description: 'Plane identifier (e.g., user:alice, project:Engram, session:id123)'
             },
             class_: {
               type: 'string',
@@ -371,7 +371,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           properties: {
             plane: {
               type: 'string',
-              description: 'Plane identifier (e.g., user:alice, project:Codicil)'
+              description: 'Plane identifier (e.g., user:alice, project:Engram)'
             }
           },
           required: ['plane']
@@ -514,13 +514,13 @@ server.setRequestHandler(ListResourcesRequestSchema, async () => {
   return {
     resources: [
       {
-        uri: 'codicil://stats',
-        name: 'Codicil Stats',
-        description: 'Overview statistics of the Codicil memory and ledger',
+        uri: 'engram://stats',
+        name: 'Engram Stats',
+        description: 'Overview statistics of the Engram memory and ledger',
         mimeType: 'application/json'
       },
       {
-        uri: 'codicil://graph',
+        uri: 'engram://graph',
         name: 'Concept Graph',
         description: 'The full concept relationship graph',
         mimeType: 'application/json'
@@ -533,14 +533,14 @@ server.setRequestHandler(ListResourcesRequestSchema, async () => {
 server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
   const { uri } = request.params;
 
-  if (uri === 'codicil://stats') {
+  if (uri === 'engram://stats') {
     const stats = getStats();
     return {
       contents: [{ uri, mimeType: 'application/json', text: JSON.stringify(stats, null, 2) }]
     };
   }
 
-  if (uri === 'codicil://graph') {
+  if (uri === 'engram://graph') {
     const summary = getGraphSummary();
     return {
       contents: [{ uri, mimeType: 'application/json', text: JSON.stringify(summary, null, 2) }]
@@ -557,7 +557,7 @@ server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
 async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  console.error('Codicil MCP Server started');
+  console.error('Engram MCP Server started');
 }
 
 main().catch((error) => {

@@ -16,12 +16,12 @@ describe('Summarizer', () => {
       ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY,
       OPENAI_API_KEY: process.env.OPENAI_API_KEY,
       OLLAMA_HOST: process.env.OLLAMA_HOST,
-      CODICIL_SUMMARIZER_PROVIDER: process.env.CODICIL_SUMMARIZER_PROVIDER,
+      ENGRAM_SUMMARIZER_PROVIDER: process.env.ENGRAM_SUMMARIZER_PROVIDER,
     };
     delete process.env.ANTHROPIC_API_KEY;
     delete process.env.OPENAI_API_KEY;
     delete process.env.OLLAMA_HOST;
-    delete process.env.CODICIL_SUMMARIZER_PROVIDER;
+    delete process.env.ENGRAM_SUMMARIZER_PROVIDER;
 
     const s = new Summarizer();
     assert.equal(s.provider, 'heuristic');
@@ -69,11 +69,11 @@ describe('Summarizer', () => {
     assert.equal(result.provider, 'heuristic');
   });
 
-  it('CODICIL_SUMMARIZER_MODEL overrides default model', () => {
-    process.env.CODICIL_SUMMARIZER_MODEL = 'claude-opus-4-7';
+  it('ENGRAM_SUMMARIZER_MODEL overrides default model', () => {
+    process.env.ENGRAM_SUMMARIZER_MODEL = 'claude-opus-4-7';
     const s = new Summarizer({ provider: 'anthropic' });
     assert.equal(s.model, 'claude-opus-4-7');
-    delete process.env.CODICIL_SUMMARIZER_MODEL;
+    delete process.env.ENGRAM_SUMMARIZER_MODEL;
   });
 });
 

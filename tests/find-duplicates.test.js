@@ -38,7 +38,7 @@ function loadTools(fixturePath) {
     .filter(k => k.includes('mcp-tools') || k.includes('vector-search') || k.includes('paths'))
     .forEach(k => delete require.cache[k]);
 
-  process.env.CODICIL_PATH = fixturePath;
+  process.env.ENGRAM_PATH = fixturePath;
   // mcp-tools also needs index.json to not crash on load
   if (!fs.existsSync(path.join(fixturePath, 'index.json'))) {
     fs.writeFileSync(path.join(fixturePath, 'index.json'), JSON.stringify({
@@ -54,13 +54,13 @@ function loadVS(fixturePath) {
   Object.keys(require.cache)
     .filter(k => k.includes('vector-search') || k.includes('paths'))
     .forEach(k => delete require.cache[k]);
-  process.env.CODICIL_PATH = fixturePath;
+  process.env.ENGRAM_PATH = fixturePath;
   return require('../scripts/vector-search');
 }
 
 describe('findDuplicates (MCP tool)', () => {
   before(() => {
-    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'codicil-dedup-test-'));
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'engram-dedup-test-'));
 
     // Two nearly-identical sessions (cosine similarity ~1.0) + one orthogonal
     writeEmbeddings(tmpDir, {
@@ -75,7 +75,7 @@ describe('findDuplicates (MCP tool)', () => {
 
   after(() => {
     fs.rmSync(tmpDir, { recursive: true, force: true });
-    delete process.env.CODICIL_PATH;
+    delete process.env.ENGRAM_PATH;
     Object.keys(require.cache)
       .filter(k => k.includes('mcp-tools') || k.includes('vector-search') || k.includes('paths'))
       .forEach(k => delete require.cache[k]);
@@ -116,7 +116,7 @@ describe('findDuplicates (MCP tool)', () => {
   });
 
   it('returns structured error on failure (no embeddings)', async () => {
-    const emptyDir = fs.mkdtempSync(path.join(os.tmpdir(), 'codicil-dedup-empty-'));
+    const emptyDir = fs.mkdtempSync(path.join(os.tmpdir(), 'engram-dedup-empty-'));
     fs.writeFileSync(path.join(emptyDir, 'index.json'), JSON.stringify({
       v: '4.0.0', u: new Date().toISOString(), m: {}, p: {}, t: {}
     }));
@@ -124,7 +124,7 @@ describe('findDuplicates (MCP tool)', () => {
     Object.keys(require.cache)
       .filter(k => k.includes('mcp-tools') || k.includes('vector-search') || k.includes('paths'))
       .forEach(k => delete require.cache[k]);
-    process.env.CODICIL_PATH = emptyDir;
+    process.env.ENGRAM_PATH = emptyDir;
     const tools2 = require('../scripts/mcp-tools');
 
     const result = await tools2.findDuplicates();
@@ -156,7 +156,7 @@ describe('VectorSearch.findDuplicates()', () => {
   let vs;
 
   before(() => {
-    vsDir = fs.mkdtempSync(path.join(os.tmpdir(), 'codicil-vs-dedup-'));
+    vsDir = fs.mkdtempSync(path.join(os.tmpdir(), 'engram-vs-dedup-'));
     writeEmbeddings(vsDir, {
       'x-1': [1, 0, 0, 0],
       'x-2': [1, 0, 0, 0],
@@ -166,7 +166,7 @@ describe('VectorSearch.findDuplicates()', () => {
     Object.keys(require.cache)
       .filter(k => k.includes('vector-search') || k.includes('paths'))
       .forEach(k => delete require.cache[k]);
-    process.env.CODICIL_PATH = vsDir;
+    process.env.ENGRAM_PATH = vsDir;
     const VS = require('../scripts/vector-search');
     vs = new VS();
     vs.loadEmbeddings();

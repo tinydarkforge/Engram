@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Codicil Project Scaffold
+# Engram Project Scaffold
 # Usage: ./scaffold-project.sh <project-name> [--public]
 #
 # Creates a new project with a standard structure:
@@ -7,7 +7,7 @@
 # - SPEC.md template
 # - .claude/CLAUDE.md template
 # - .github/workflows/ci.yml
-# - .mcp.json (Codicil integration)
+# - .mcp.json (Engram integration)
 # - README.md template
 # - Standard .gitignore
 # - GitHub labels
@@ -15,8 +15,8 @@
 set -euo pipefail
 
 TEMPLATE_DIR="$(dirname "$0")/../docs/templates"
-ORG="${CODICIL_ORG:-${GITHUB_USER:-$(git config --global user.name | tr ' ' '-')}}"
-BASE_DIR="${CODICIL_BASE_DIR:-$HOME/code/$ORG}"
+ORG="${ENGRAM_ORG:-${GITHUB_USER:-$(git config --global user.name | tr ' ' '-')}}"
+BASE_DIR="${ENGRAM_BASE_DIR:-$HOME/code/$ORG}"
 
 # Parse arguments
 PROJECT_NAME="${1:-}"
@@ -25,8 +25,8 @@ VISIBILITY="--private"
 if [ -z "$PROJECT_NAME" ]; then
   echo "Usage: $0 <project-name> [--public]"
   echo ""
-  echo "Creates a new project with the Codicil standard scaffold."
-  echo "Override org/base dir via CODICIL_ORG and CODICIL_BASE_DIR env vars."
+  echo "Creates a new project with the Engram standard scaffold."
+  echo "Override org/base dir via ENGRAM_ORG and ENGRAM_BASE_DIR env vars."
   exit 1
 fi
 
@@ -36,7 +36,7 @@ fi
 
 PROJECT_DIR="$BASE_DIR/$PROJECT_NAME"
 
-echo "=== Codicil Project Scaffold ==="
+echo "=== Engram Project Scaffold ==="
 echo "Project: $PROJECT_NAME"
 echo "Directory: $PROJECT_DIR"
 echo "Visibility: ${VISIBILITY#--}"
@@ -110,7 +110,7 @@ Standard structure with:
 - SPEC template (12 questions)
 - CLAUDE.md for AI assistant context
 - CI pipeline (GitHub Actions)
-- Codicil MCP integration
+- Engram MCP integration
 - Standard README, .gitignore, .env.example"
 git push -u origin main
 

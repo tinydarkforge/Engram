@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * Codicil MCP Server (Streamable HTTP)
+ * Engram MCP Server (Streamable HTTP)
  *
  * Exposes MCP tools over HTTP for remote agents.
  * Auth (optional): set MCP_API_KEY and use Authorization: Bearer <key> or X-API-Key.
@@ -44,7 +44,7 @@ const {
 } = require('./mcp-tools.js');
 const { listPrompts, renderPrompt } = require('./mcp-prompts.js');
 
-const MCP_PORT = process.env.MCP_PORT ? parseInt(process.env.MCP_PORT, 10) : 3000;
+const MCP_PORT = process.env.MCP_PORT ? parseInt(process.env.MCP_PORT, 10) : 3001;
 const MCP_BIND_ADDR = process.env.MCP_BIND_ADDR || '127.0.0.1';
 const MCP_API_KEY = process.env.MCP_API_KEY || '';
 const MCP_ALLOWED_HOSTS = process.env.MCP_ALLOWED_HOSTS || '';
@@ -52,7 +52,7 @@ const MCP_ALLOWED_HOSTS = process.env.MCP_ALLOWED_HOSTS || '';
 function createServer() {
   const server = new Server(
     {
-      name: 'codicil',
+      name: 'engram',
       version: '1.0.0',
     },
     {
@@ -69,7 +69,7 @@ function createServer() {
       tools: [
         {
           name: 'remember',
-          description: 'Save a memory or session to Codicil. Call at end of session, after completing a feature, or when recording a decision.',
+          description: 'Save a memory or session to Engram. Call at end of session, after completing a feature, or when recording a decision.',
           inputSchema: {
             type: 'object',
             properties: {
@@ -108,7 +108,7 @@ function createServer() {
         },
         {
           name: 'neural_search',
-          description: 'Semantic search across all Codicil sessions. Finds sessions by meaning, not just keywords. Use this to find relevant past work, learnings, and context.',
+          description: 'Semantic search across all Engram sessions. Finds sessions by meaning, not just keywords. Use this to find relevant past work, learnings, and context.',
           inputSchema: {
             type: 'object',
             properties: {
@@ -138,7 +138,7 @@ function createServer() {
             properties: {
               project: {
                 type: 'string',
-                description: 'Project name (e.g., "Codicil", "ProjectA", "ProjectB")',
+                description: 'Project name (e.g., "Engram", "ProjectA", "ProjectB")',
               },
             },
             required: ['project'],
@@ -152,7 +152,7 @@ function createServer() {
             properties: {
               project: {
                 type: 'string',
-                description: 'Project name (e.g., "Codicil", "ProjectA", "ProjectB")',
+                description: 'Project name (e.g., "Engram", "ProjectA", "ProjectB")',
               },
               session_id: {
                 type: 'string',
@@ -187,7 +187,7 @@ function createServer() {
         },
         {
           name: 'list_projects',
-          description: 'List all projects indexed in Codicil with session counts.',
+          description: 'List all projects indexed in Engram with session counts.',
           inputSchema: {
             type: 'object',
             properties: {},
@@ -209,7 +209,7 @@ function createServer() {
         },
         {
           name: 'get_topics',
-          description: 'Get top topics/tags from Codicil with session counts.',
+          description: 'Get top topics/tags from Engram with session counts.',
           inputSchema: {
             type: 'object',
             properties: {
@@ -256,7 +256,7 @@ function createServer() {
         },
         {
           name: 'rebuild_index',
-          description: 'Rebuild Codicil indexes (bloom, git, embeddings).',
+          description: 'Rebuild Engram indexes (bloom, git, embeddings).',
           inputSchema: {
             type: 'object',
             properties: {
@@ -361,13 +361,13 @@ function createServer() {
     return {
       resources: [
         {
-          uri: 'codicil://stats',
-          name: 'Codicil Stats',
-          description: 'Overview statistics of the Codicil memory and ledger',
+          uri: 'engram://stats',
+          name: 'Engram Stats',
+          description: 'Overview statistics of the Engram memory and ledger',
           mimeType: 'application/json',
         },
         {
-          uri: 'codicil://graph',
+          uri: 'engram://graph',
           name: 'Concept Graph',
           description: 'The full concept relationship graph',
           mimeType: 'application/json',
@@ -379,14 +379,14 @@ function createServer() {
   server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
     const { uri } = request.params;
 
-    if (uri === 'codicil://stats') {
+    if (uri === 'engram://stats') {
       const stats = getStats();
       return {
         contents: [{ uri, mimeType: 'application/json', text: JSON.stringify(stats, null, 2) }],
       };
     }
 
-    if (uri === 'codicil://graph') {
+    if (uri === 'engram://graph') {
       const summary = getGraphSummary();
       return {
         contents: [{ uri, mimeType: 'application/json', text: JSON.stringify(summary, null, 2) }],

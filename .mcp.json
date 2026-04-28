@@ -1,6 +1,6 @@
 {
   "mcpServers": {
-    "codicil": {
+    "engram": {
       "command": "node",
       "args": ["./scripts/mcp-server.mjs"]
     }
