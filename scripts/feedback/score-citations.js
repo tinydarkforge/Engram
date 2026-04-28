@@ -17,7 +17,7 @@ function scoreCitations({ sessionId, replyText, db }) {
   const citedIds = parseCitations(replyText);
   if (citedIds.length === 0) return { scored: 0, skipped: 0 };
 
-  const replyHash = crypto.createHash('sha1').update(replyText).digest('hex').slice(0, 16);
+  const replyHash = crypto.createHash('sha256').update(replyText).digest('hex').slice(0, 32);
   const scoredAt = new Date().toISOString();
 
   // Fetch selection_log rows for this session that match cited IDs

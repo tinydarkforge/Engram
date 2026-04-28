@@ -44,7 +44,7 @@ app.use(express.json());
 app.use((_req, res, next) => {
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('X-Frame-Options', 'DENY');
-  res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'");
+  res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self' https://unpkg.com; style-src 'self' 'unsafe-inline'");
   next();
 });
 
@@ -52,12 +52,24 @@ app.use((_req, res, next) => {
 app.use(express.static(path.join(__dirname, '..', 'web')));
 
 // ─────────────────────────────────────────────────────────────
+// Optional API key auth (set AGENTBRIDGE_API_KEY env var to enable)
+// ─────────────────────────────────────────────────────────────
+const AGENTBRIDGE_API_KEY = process.env.AGENTBRIDGE_API_KEY || '';
+
+function requireApiKey(req, res, next) {
+  if (!AGENTBRIDGE_API_KEY) return next();
+  const auth = req.headers['authorization'] || '';
+  if (auth === `Bearer ${AGENTBRIDGE_API_KEY}`) return next();
+  res.status(401).json({ error: 'Unauthorized' });
+}
+
+// ─────────────────────────────────────────────────────────────
 // Rate limiter (in-memory, no deps)
 // ─────────────────────────────────────────────────────────────
 const _rateLimitWindows = new Map();
 function rateLimit(windowMs, max) {
   return (req, res, next) => {
-    const key = req.ip || 'local';
+    const key = req.socket?.remoteAddress || 'local';
     const now = Date.now();
     let entry = _rateLimitWindows.get(key);
     if (!entry || now - entry.start > windowMs) {
@@ -518,7 +530,7 @@ app.get('/api/sessions/:project/:sessionId', (req, res) => {
  * Layer C user feedback signal.
  * Body: { sessionId, assertionId, signal: 'helpful'|'unhelpful'|'wrong', note? }
  */
-app.post('/api/feedback', (req, res) => {
+app.post('/api/feedback', requireApiKey, (req, res) => {
   try {
     const { sessionId, assertionId, signal, note } = req.body || {};
 
@@ -596,7 +608,7 @@ app.get('/api/agentbridge/status', async (req, res) => {
  * POST /api/agentbridge/start
  * Start event polling
  */
-app.post('/api/agentbridge/start', (req, res) => {
+app.post('/api/agentbridge/start', requireApiKey, (req, res) => {
   const started = consumer.start();
   res.json({ started, status: consumer.getStatus() });
 });
@@ -605,7 +617,7 @@ app.post('/api/agentbridge/start', (req, res) => {
  * POST /api/agentbridge/stop
  * Stop event polling
  */
-app.post('/api/agentbridge/stop', (req, res) => {
+app.post('/api/agentbridge/stop', requireApiKey, (req, res) => {
   consumer.stop();
   res.json({ stopped: true, status: consumer.getStatus() });
 });

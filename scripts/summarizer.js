@@ -187,12 +187,6 @@ class Summarizer {
     return first ? `${first}${topicStr}`.slice(0, 300) : '';
   }
 
-  /**
-   * Returns which provider will be used (useful for logging/debugging).
-   */
-  get providerInfo() {
-    return { provider: this.provider, model: this.model };
-  }
 }
 
 module.exports = Summarizer;

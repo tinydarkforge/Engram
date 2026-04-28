@@ -32,14 +32,6 @@
     </div>
   </main>
   <script src="graph-shell.js"></script>
-  <script>
-    (async () => {
-      const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      const { network, nodes } = await GraphShell.init('graph-canvas', '/api/graph', { reducedMotion: reduced });
-      GraphShell.setupSearch(network, nodes, 'graph-search');
-      GraphShell.restoreState('concepts', network);
-      GraphShell.setupStateAutoSave('concepts', network);
-    })();
-  </script>
+  <script src="graph-init-concepts.js"></script>
 </body>
 </html>

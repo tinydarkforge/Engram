@@ -2,7 +2,12 @@
 // Decay Models — registry of pure functions: (assertion, now, context?) => effectiveConfidence
 // Keeps all decay math out of selection and projection.
 
-const { daysBetween } = require('./vector-search');
+function daysBetween(dateStringOrDate, now = new Date()) {
+  if (!dateStringOrDate) return 0;
+  const d = dateStringOrDate instanceof Date ? dateStringOrDate : new Date(dateStringOrDate);
+  if (isNaN(d.getTime())) return 0;
+  return Math.max(0, Math.floor((now - d) / (1000 * 60 * 60 * 24)));
+}
 
 const EXPONENTIAL_RATE = 0.98; // 2% decay per day
 const STATE_BOUND_VERIFY_DAYS = 14; // confidence halves if not verified in this window

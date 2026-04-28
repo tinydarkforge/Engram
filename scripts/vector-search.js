@@ -677,18 +677,6 @@ class VectorSearch {
   }
 }
 
-/**
- * Returns the number of whole days between an ISO8601 date string (or Date) and now.
- * Returns 0 if date is today or in the future.
- */
-function daysBetween(dateStringOrDate, now = new Date()) {
-  if (!dateStringOrDate) return 0;
-  const d = dateStringOrDate instanceof Date ? dateStringOrDate : new Date(dateStringOrDate);
-  if (isNaN(d.getTime())) return 0;
-  const ms = now - d;
-  return Math.max(0, Math.floor(ms / (1000 * 60 * 60 * 24)));
-}
-
 // CLI Usage
 if (require.main === module) {
   const vectorSearch = new VectorSearch();
@@ -829,4 +817,3 @@ if (require.main === module) {
 module.exports = VectorSearch;
 module.exports.parseDuplicateArgs = parseDuplicateArgs;
 module.exports.formatDuplicatesReport = formatDuplicatesReport;
-module.exports.daysBetween = daysBetween;

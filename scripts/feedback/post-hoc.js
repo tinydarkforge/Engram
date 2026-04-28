@@ -44,7 +44,7 @@ async function scoreSession({ sessionId, replyText, db, embedFn }) {
 
   // Phase 1: async embeddings
   const replyVec = await embedFn(replyText);
-  const replyHash = crypto.createHash('sha1').update(replyText).digest('hex').slice(0, 16);
+  const replyHash = crypto.createHash('sha256').update(replyText).digest('hex').slice(0, 32);
   const scoredAt = new Date().toISOString();
 
   const rows = [];

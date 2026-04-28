@@ -48,7 +48,7 @@ class ManifestManager {
    */
   hashFile(filePath) {
     const content = fs.readFileSync(filePath);
-    return crypto.createHash('sha256').update(content).digest('hex').substring(0, 16);
+    return crypto.createHash('sha256').update(content).digest('hex').substring(0, 32);
   }
 
   /**
