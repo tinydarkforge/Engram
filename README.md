@@ -1,17 +1,17 @@
 <!-- markdownlint-disable MD033 MD041 -->
 
 ```text
-                           █████ █   █ █████ ████   ███  █   █
-    ╔═══════════╗          █     ██  █ █     █   █ █   █ ██ ██
-    ║   ╓─╥─╖   ║          ████  █ █ █ █  ██ ████  █████ █ █ █
-    ║  ╔═════╗  ║          █     █  ██ █   █ █  █  █   █ █   █
-    ║  ║● · ●║  ║          █████ █   █ █████ █   █ █   █ █   █
-    ║  ║  ▬  ║  ║
-    ║  ╚══╤══╝  ║          ━━━━━━━━━━ MEMORY LEDGER ━━━━━━━━━━━━━
-    ║  ███████  ║          Sessions · Facts · Confidence · MCP
-    ║   ▀▀ ▀▀   ║          · Local-first — one ledger, one
-    ║  Engram_  ║            confidence model, one context
-    ╚═══════════╝            budget. MIT · No account · No tel.
+    █▀▀▀▀▜▜▜▜▜▀▀█       █████ █   █ █████ ████   ███  █   █
+    █           █       █     ██  █ █     █   █ █   █ ██ ██
+    █    ◓  ◓   █       ████  █ █ █ █  ██ ████  █████ █ █ █
+    █       ◞   █       █     █  ██ █   █ █  █  █   █ █   █
+    ▜██▄▄▄▄▄▄▄██▛       █████ █   █ █████ █   █ █   █ █   █   
+        ⬛ ⬛ 
+                        ━━━━━━━━━━ MEMORY LEDGER ━━━━━━━━━━━━━
+                        Sessions · Facts · Confidence · MCP
+                            Local-first — one ledger, one
+                            confidence model, one context
+                            budget. MIT · No account · No tel.
 ```
 
 <p align="center">
