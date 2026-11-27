@@ -439,7 +439,7 @@ main {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: var(--space-10) var(--space-6);
+  padding: var(--space-6) var(--space-4);
   text-align: center;
   color: var(--text-muted);
   gap: var(--space-3);
@@ -472,17 +472,27 @@ main {
 
 .dashboard-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(12, minmax(0, 1fr));
   gap: var(--space-4);
 }
 
-.radar-card, .activity-card {
-  grid-column: span 2;
+.stats-card,
+.dashboard-grid > :nth-child(2) {
+  grid-column: span 6;
+}
+
+.radar-card,
+.activity-card {
+  grid-column: span 8;
 }
 
 .projects-card {
-  grid-column: span 1;
+  grid-column: span 4;
   grid-row: span 2;
+}
+
+.dashboard-grid > :last-child {
+  grid-column: span 8;
 }
 
 .stats-grid {
@@ -525,7 +535,7 @@ main {
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
-  height: 200px;
+  height: 140px;
   overflow-y: auto;
   font-family: var(--font-mono);
   font-size: var(--font-2xs);
@@ -554,7 +564,8 @@ main {
 
 /* Radar */
 .radar-container {
-  height: 200px;
+  min-height: 140px;
+  height: 140px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1711,7 +1722,28 @@ main {
   }
 
   .dashboard-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .dashboard-grid > * {
+    grid-column: 1 / -1 !important;
+    grid-row: auto !important;
+  }
+
+  .card {
+    padding: var(--space-4);
+  }
+
+  .radar-container {
+    height: 120px;
+  }
+
+  .activity-feed {
+    height: 120px;
+  }
+
+  .stats-grid {
+    gap: var(--space-3);
   }
 
   .detail-panel {

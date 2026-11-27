@@ -145,7 +145,7 @@ async function loadDashboard() {
       </div>
     `).join('');
 
-  document.getElementById('projects-list').innerHTML = projectsHtml || '<div class="empty-state">No projects</div>';
+  document.getElementById('projects-list').innerHTML = projectsHtml || '<div class="empty-state"><p>No projects yet</p><code>engram remember</code></div>';
 
   // Load topics
   const topicsData = await api.get('/topics');
@@ -158,7 +158,7 @@ async function loadDashboard() {
       return `<span class="topic-tag ${cls}" onclick="searchTopic('${esc(t.name)}')">${esc(t.name)}</span>`;
     }).join('');
 
-  document.getElementById('topics-cloud').innerHTML = topicsHtml || '<div class="empty-state">No topics</div>';
+  document.getElementById('topics-cloud').innerHTML = topicsHtml || '<div class="empty-state"><p>No knowledge topics yet</p></div>';
 
   // Load recent activity
   await loadActivityFeed();
@@ -226,14 +226,15 @@ async function loadActivityFeed() {
 
     allSessions.sort((a, b) => new Date(b.date) - new Date(a.date));
 
-    feed.innerHTML = allSessions.slice(0, 10).map(s => `
+    const activityHtml = allSessions.slice(0, 10).map(s => `
       <div class="activity-item">
         <span class="activity-time">${esc(s.date)}</span>
         <span class="activity-text">Agent captured session in <strong>${esc(s.project)}</strong>: ${esc(s.summary)}</span>
       </div>
     `).join('');
+    feed.innerHTML = activityHtml || '<div class="empty-state"><p>No sessions captured</p><code>engram remember</code></div>';
   } catch {
-    feed.innerHTML = '<div class="empty-state">No activity found</div>';
+    feed.innerHTML = '<div class="empty-state"><p>Activity unavailable</p></div>';
   }
 }
 
