@@ -84,6 +84,8 @@ function runMigrations() {
 
 function runSqlMigrations(db) {
   const fs = require('fs');
+  const sqliteVec = require('sqlite-vec');
+  sqliteVec.load(db);
   const path = require('path');
 
   // Ensure schema_migrations table exists
