@@ -104,6 +104,20 @@ describe('VectorSearch', () => {
     });
   });
 
+  describe('embedSession()', () => {
+    it('preserves the source project in the embedding record', async () => {
+      const vs = new VectorSearch();
+      vs.embed = async () => Array(384).fill(0);
+      const record = await vs.embedSession({
+        id: 'session-project',
+        project: 'TinyDarkForge',
+        summary: 'OAuth callback',
+        topics: ['auth'],
+      });
+      assert.equal(record.project, 'TinyDarkForge');
+    });
+  });
+
   describe('keywordScore()', () => {
     it('returns 1 for exact match', () => {
       const vs = new VectorSearch();

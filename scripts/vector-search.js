@@ -339,10 +339,12 @@ class VectorSearch {
         const start = i * dim;
         const vector = embedding.slice(start, start + dim);
 
-        this.embeddings.sessions[sessionMeta.id] = {
-          ...sessionMeta,
-          embedding: vector
-        };
+        if (!this.embeddings.sessions[sessionMeta.id]) {
+          this.embeddings.sessions[sessionMeta.id] = {
+            ...sessionMeta,
+            embedding: vector
+          };
+        }
       }
     } catch (e) {
       console.warn(`⚠️  Failed to load binary project ${filename}:`, e.message);
@@ -417,7 +419,6 @@ class VectorSearch {
       for (const [sessionId, data] of Object.entries(sessions)) {
         if (!Array.isArray(data.embedding) || data.embedding.length !== 384) continue;
         const db = this.ensureVectorStore();
-        if (vectorStore.hasEntity(db, 'session', sessionId)) continue;
         vectorStore.upsert(db, {
           entityType: 'session',
           entityId: sessionId,
@@ -464,6 +465,7 @@ class VectorSearch {
     return {
       id: sessionData.id,
       embedding,
+      project: sessionData.project || sessionData.project_name || null,
       text_preview: text.substring(0, 100)
     };
   }
@@ -687,7 +689,10 @@ class VectorSearch {
 
         // Skip if already embedded (unless force regenerate)
         if (!this.embeddings.sessions[session.id]) {
-          sessionsToEmbed.push(session);
+          sessionsToEmbed.push({
+            ...session,
+            project: sessionsIndex.project || sessionsIndex.project_display || sessionsIndex.project_slug || path.basename(path.dirname(file))
+          });
         }
       }
     }
