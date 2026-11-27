@@ -221,9 +221,10 @@ describe('transform: analyzeChanges action=all combines all types', () => {
     // Weightable (low confidence)
     makeAssertion(ledger, { claim: 'weight me', confidence: 0.2 });
 
-    const assertions = ledger.queryActiveByPlane('project:test').map((a, i) => {
-      if (i === 1) {
-        return { ...a, created_at: new Date(Date.now() - 25 * 24 * 60 * 60 * 1000).toISOString() };
+    const staleDate = new Date(Date.now() - 25 * 24 * 60 * 60 * 1000).toISOString();
+    const assertions = ledger.queryActiveByPlane('project:test').map((a) => {
+      if (a.claim === 'verify me') {
+        return { ...a, created_at: staleDate };
       }
       return a;
     });

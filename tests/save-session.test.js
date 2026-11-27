@@ -42,7 +42,7 @@ function createTestFixture() {
     JSON.stringify({ ts: ['Node.js'] })
   );
   fs.mkdirSync(path.join(tmpDir, '.cache'), { recursive: true });
-  fs.mkdirSync(path.join(tmpDir, 'summaries', 'projects'), { recursive: true });
+  fs.mkdirSync(path.join(tmpDir, 'summaries', 'projects', 'TestSaveProject'), { recursive: true });
 
   return tmpDir;
 }
