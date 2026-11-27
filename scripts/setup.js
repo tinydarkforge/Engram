@@ -9,8 +9,9 @@
 const fs = require('fs');
 const path = require('path');
 const { execFileSync } = require('child_process');
+const Database = require('better-sqlite3');
 const { resolveEngramPath } = require('./paths');
-const { runMigrations } = require('./migrations');
+const { runMigrations, runSqlMigrations } = require('./migrations');
 const { readJSON } = require('./safe-json');
 
 const ENGRAM_PATH = resolveEngramPath(__dirname);
@@ -62,6 +63,17 @@ function runNodeScript(scriptPath, args = []) {
   });
 }
 
+function initializeLedger() {
+  const db = new Database(path.join(ENGRAM_PATH, '.cache', 'engram.db'));
+  try {
+    db.pragma('journal_mode = WAL');
+    db.pragma('busy_timeout = 5000');
+    runSqlMigrations(db);
+  } finally {
+    db.close();
+  }
+}
+
 function main() {
   ensureDir(ENGRAM_PATH);
   ensureDir(path.join(ENGRAM_PATH, '.cache'));
@@ -73,6 +85,7 @@ function main() {
 
   const createdIndex = writeIndexIfMissing();
   runMigrations();
+  initializeLedger();
 
   // Ensure metadata files exist for known projects
   const index = readJSON(path.join(ENGRAM_PATH, 'index.json'));

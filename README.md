@@ -38,6 +38,8 @@ flowchart LR
 
 No cloud database is required. The default data directory is `~/.engram`.
 
+**For whom:** developers and small teams running AI coding agents across multiple repos who want decisions and lessons to survive session boundaries — without sending code or notes to a hosted service.
+
 ---
 
 ## Quick start
@@ -48,7 +50,7 @@ engram setup
 claude mcp add engram -s user -- engram mcp
 ```
 
-Engram is now available as a tool in every Claude Code session. It remembers what you did across every repository, ranks what it knows, and injects a budget-capped slice of context on demand.
+Engram is now available as a tool in every Claude Code session. It remembers what you did across every repository, ranks what it knows, and injects a budget-capped slice of context on demand. `setup` also creates the SQLite ledger schema, so ledger tools work on the first run. Check the install with `engram status`.
 
 ---
 
@@ -172,7 +174,7 @@ node scripts/consolidate.js --all
 
 ### MCP tools (available in Claude Code, OpenCode, Cursor, Aider, and Windsurf)
 
-Engram exposes tools via MCP for session search, ledger ingestion, context selection, semantic recall, cross-project search, and agent handoff. Run `engram mcp` to start the MCP server, or configure any agent:
+Engram exposes tools via MCP for session search, ledger ingestion, context selection, semantic recall, cross-project search, and agent handoff. Run `engram mcp` for stdio transport, `npm run mcp:http` for streamable HTTP on `127.0.0.1:3001`, or configure any agent:
 
 ```bash
 engram setup --agent claude       # Claude Code
@@ -221,7 +223,7 @@ Engram uses SQLite as the source of truth. Semantic embeddings are indexed by `s
 ```
 scripts/     Runtime, CLI, MCP servers, ledger, consolidation
 web/         Dashboard UI (Express + static files)
-tests/       29 test files (node:test)
+tests/       31 test files (node:test)
 schemas/     JSON schemas for sessions and ledger
 migrations/  SQLite schema migrations, including the vector index
 examples/    Curated session records

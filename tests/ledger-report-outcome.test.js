@@ -15,6 +15,26 @@ function clearRequireCache(...fragments) {
   }
 }
 
+// Assigning undefined to process.env stores the string "undefined", which makes
+// resolveEngramPath() resolve to <cwd>/undefined and create a stray cache dir.
+function restoreEngramPath(savedPath) {
+  if (savedPath === undefined) delete process.env.ENGRAM_PATH;
+  else process.env.ENGRAM_PATH = savedPath;
+}
+
+test('restoring an unset ENGRAM_PATH leaves it unset', () => {
+  const savedPath = process.env.ENGRAM_PATH;
+  process.env.ENGRAM_PATH = path.join(os.tmpdir(), 'engram-env-regression');
+  try {
+    restoreEngramPath(undefined);
+    assert.equal(process.env.ENGRAM_PATH, undefined);
+    const { resolveEngramPath } = require('../scripts/paths');
+    assert.ok(!resolveEngramPath(__dirname).split(path.sep).includes('undefined'));
+  } finally {
+    restoreEngramPath(savedPath);
+  }
+});
+
 function makeTestEnv() {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'engram-ro-'));
   const cacheDir = path.join(dir, '.cache');
@@ -63,7 +83,7 @@ test('returns ok with message when DB not found', async () => {
     assert.equal(result.ok, true);
     assert.ok(result.message, 'expected message field');
   } finally {
-    process.env.ENGRAM_PATH = savedPath;
+    restoreEngramPath(savedPath);
     clearRequireCache('mcp-tools', 'capture', 'feedback/post-hoc', 'feedback/score-citations');
     fs.rmSync(tmpDir, { recursive: true, force: true });
   }
@@ -111,7 +131,7 @@ test('post_hoc mode scores a session', async () => {
     assert.equal(typeof result.post_hoc.scored, 'number');
     assert.equal(result.citation, null);
   } finally {
-    process.env.ENGRAM_PATH = savedPath;
+    restoreEngramPath(savedPath);
     clearRequireCache('mcp-tools', 'capture', 'feedback/post-hoc', 'feedback/score-citations');
     fs.rmSync(dir, { recursive: true, force: true });
   }
@@ -138,7 +158,7 @@ test('citation mode scores a session', async () => {
     assert.ok(result.citation, 'expected citation result');
     assert.equal(typeof result.citation.scored, 'number');
   } finally {
-    process.env.ENGRAM_PATH = savedPath;
+    restoreEngramPath(savedPath);
     clearRequireCache('mcp-tools', 'capture', 'feedback/post-hoc', 'feedback/score-citations');
     fs.rmSync(dir, { recursive: true, force: true });
   }
@@ -166,7 +186,7 @@ test('both mode runs both scorers', async () => {
     assert.equal(typeof result.post_hoc.scored, 'number');
     assert.equal(typeof result.citation.scored, 'number');
   } finally {
-    process.env.ENGRAM_PATH = savedPath;
+    restoreEngramPath(savedPath);
     clearRequireCache('mcp-tools', 'capture', 'feedback/post-hoc', 'feedback/score-citations');
     fs.rmSync(dir, { recursive: true, force: true });
   }
