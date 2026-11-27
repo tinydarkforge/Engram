@@ -75,6 +75,7 @@ class Engram {
    */
   loadIndex() {
     const cacheKey = 'index';
+    this.index = null;
     let format = 'none';
     let fromCache = false;
 

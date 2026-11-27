@@ -487,10 +487,8 @@ function initGraphToggle() {
 // ─────────────────────────────────────────────────────────────
 
 async function updateSidebarProjects() {
-  if (state.projects.length === 0) {
-    const projectsData = await api.get('/projects');
-    state.projects = projectsData.projects;
-  }
+  const projectsData = await api.get('/projects');
+  state.projects = projectsData.projects;
 
   const html = state.projects
     .sort((a, b) => b.sessions - a.sessions)
