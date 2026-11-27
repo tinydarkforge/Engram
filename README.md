@@ -158,12 +158,15 @@ ledger_verify  →  Re-verify stale state_bound facts
 counterfactual →  Recompute importance weights
 post_hoc       →  Score assertion outcomes from sessions
 auto_resolve   →  Auto-resolve tensions older than 30 days
-ledger_transform → Promote/fossilize/weight assertions
 ```
 
-Run a full cycle manually:
+Refresh the manifest and embeddings manually:
 ```bash
-npm run consolidate:full   # --all including manifest + embeddings
+npm run consolidate:full
+```
+
+Run the all-task consolidation cycle:
+```bash
 node scripts/consolidate.js --all
 ```
 
