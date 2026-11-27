@@ -3,7 +3,6 @@
 const { describe, it } = require('node:test');
 const assert = require('node:assert/strict');
 const Database = require('better-sqlite3');
-const path = require('path');
 const { runSqlMigrations } = require('../scripts/migrations');
 
 describe('SQL Migrations', () => {
@@ -23,7 +22,7 @@ describe('SQL Migrations', () => {
 
   it('is idempotent — running twice does not error', () => {
     const db = new Database(':memory:');
-    const r1 = runSqlMigrations(db);
+    runSqlMigrations(db);
     const r2 = runSqlMigrations(db);
     assert.equal(r2.applied.length, 0, 'second run should apply nothing');
     assert.ok(r2.skipped.includes('0001_ledger.sql'), 'second run should skip already-applied');
@@ -321,8 +320,6 @@ describe('Ledger CRUD', () => {
 const {
   tokenize,
   jaccardSimilarity,
-  removeNegations,
-  hasNegation,
   detectNegation,
   findNearDuplicate,
   findNegations,

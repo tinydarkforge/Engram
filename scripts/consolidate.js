@@ -239,7 +239,7 @@ async function consolidate(tasks, options = {}) {
   persistConsolidationStats({ tasks, onUpdate });
 }
 
-function persistConsolidationStats({ tasks, onUpdate } = {}) {
+function persistConsolidationStats({ tasks } = {}) {
   try {
     const fs = require('fs');
     const statsPath = path.join(ENGRAM_PATH, '.cache', 'consolidation.json');

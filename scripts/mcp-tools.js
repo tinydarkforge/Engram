@@ -820,7 +820,7 @@ function receiveHandoff(contextBlob) {
               staleness_model: 'flat',
             });
             stats.facts_loaded++;
-          } catch (e) {
+          } catch {
             // skip assertions that already exist (dedup handles it)
           }
         }
@@ -842,7 +842,7 @@ function receiveHandoff(contextBlob) {
                 staleness_model: 'flat',
               });
               stats.facts_loaded++;
-            } catch (e) { /* dedup handles */ }
+            } catch { /* dedup handles */ }
           }
         }
       }

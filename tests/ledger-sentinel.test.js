@@ -65,7 +65,7 @@ describe('contradiction-sentinel: scanPlane seeds tension for negation pair', as
   });
 });
 
-describe('contradiction-sentinel: scanPlane is idempotent — second scan finds no new tensions', async () => {
+describe('contradiction-sentinel: repeated scan counts stored tensions for its plane', async () => {
   it('second scan returns tensions_found based on pairs found (idempotent link storage)', async () => {
     const { ledger, getDb } = makeTestLedger();
     makeAssertion(ledger, { claim: 'The sky is blue' });

@@ -15,12 +15,6 @@ const os = require('os');
 
 let tmpDir;
 let findDuplicates;
-let VectorSearch;
-
-function makeEmbedding(values) {
-  // Pad/trim to 4 dims for test speed
-  return values;
-}
 
 function writeEmbeddings(dir, sessions) {
   const cacheDir = path.join(dir, '.cache');
@@ -48,14 +42,6 @@ function loadTools(fixturePath) {
 
   const tools = require('../scripts/mcp-tools');
   return tools;
-}
-
-function loadVS(fixturePath) {
-  Object.keys(require.cache)
-    .filter(k => k.includes('vector-search') || k.includes('paths'))
-    .forEach(k => delete require.cache[k]);
-  process.env.ENGRAM_PATH = fixturePath;
-  return require('../scripts/vector-search');
 }
 
 describe('findDuplicates (MCP tool)', () => {
@@ -185,6 +171,13 @@ describe('VectorSearch.findDuplicates()', () => {
   it('finds no duplicates when threshold exceeds all similarities', () => {
     const result = vs.findDuplicates({ threshold: 1.01 });
     assert.equal(result.duplicates_found, 0);
+  });
+
+  it('skips mismatched dimensions instead of throwing', () => {
+    vs.embeddings.sessions['x-mixed'] = { embedding: [1, 0], text_preview: 'mixed' };
+    const result = vs.findDuplicates({ threshold: 0.0 });
+    assert.ok(Array.isArray(result.duplicates));
+    delete vs.embeddings.sessions['x-mixed'];
   });
 
   it('sorts results by similarity descending', () => {

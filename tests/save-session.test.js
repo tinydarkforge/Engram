@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const { describe, it, before, after, beforeEach } = require('node:test');
+const { describe, it, before, after } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('fs');
 const path = require('path');
@@ -42,7 +42,7 @@ function createTestFixture() {
     JSON.stringify({ ts: ['Node.js'] })
   );
   fs.mkdirSync(path.join(tmpDir, '.cache'), { recursive: true });
-  fs.mkdirSync(path.join(tmpDir, 'summaries', 'projects'), { recursive: true });
+  fs.mkdirSync(path.join(tmpDir, 'summaries', 'projects', 'TestSaveProject'), { recursive: true });
 
   return tmpDir;
 }
@@ -68,8 +68,15 @@ function loadSessionSaverWithFixture(fixturePath) {
   const originalResolve = pathsModule.resolveEngramPath;
   pathsModule.resolveEngramPath = () => fixturePath;
 
+  process.env.ENGRAM_PATH = fixturePath;
   const SessionSaver = require('../scripts/save-session');
-  return { SessionSaver, restore: () => { pathsModule.resolveEngramPath = originalResolve; } };
+  return {
+    SessionSaver,
+    restore: () => {
+      pathsModule.resolveEngramPath = originalResolve;
+      delete process.env.ENGRAM_PATH;
+    }
+  };
 }
 
 describe('SessionSaver', () => {
@@ -93,6 +100,7 @@ describe('SessionSaver', () => {
 
   after(() => {
     restore();
+    delete process.env.ENGRAM_PATH;
     cleanupFixture(fixturePath);
   });
 
@@ -130,7 +138,6 @@ describe('SessionSaver', () => {
       const id = saver.generateSessionId([longTopic]);
 
       // Topic slug is limited to 24 chars
-      const parts = id.split('-');
       // The topic part is after date and time components
       // Format: te-2025-12-01-1234-this-is-a-very-long-topic-nonce
       assert.ok(id.length < 100, 'ID should not be excessively long');

@@ -25,7 +25,7 @@ function createSentinel(getLedgerFn, getDb) {
       ).get(plane);
       return row ? row.last_scanned_at : null;
     } catch {
-      try { ensureTables(); } catch (e) { /* table may already exist */ }
+      try { ensureTables(); } catch { /* table may already exist */ }
       return null;
     }
   }
@@ -62,14 +62,24 @@ function createSentinel(getLedgerFn, getDb) {
 
     if (rows.length === 0) {
       setWatermark(plane, now);
-      return { tensions_found: 0, skipped: true, reason: 'no new assertions since last scan' };
+      const storedTensions = ledger.queryTensions({ plane });
+      return {
+        tensions_found: storedTensions.length,
+        skipped: true,
+        reason: 'no new assertions since last scan'
+      };
     }
 
     // Filter to only un-checked assertions
     const unChecked = rows.filter((r) => !isChecked(r.id));
     if (unChecked.length === 0) {
       setWatermark(plane, now);
-      return { tensions_found: 0, skipped: true, reason: 'all new assertions already checked' };
+      const storedTensions = ledger.queryTensions({ plane });
+      return {
+        tensions_found: storedTensions.length,
+        skipped: true,
+        reason: 'all new assertions already checked'
+      };
     }
 
     let sample = unChecked;

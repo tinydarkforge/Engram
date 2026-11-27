@@ -81,7 +81,7 @@ describe('scoreSession', () => {
   it('writes one outcome row per selected assertion', async () => {
     const db = makeTestDb();
     const ledger = makeTestLedger(db);
-    const { id1, id2 } = seedAndSelect(db, ledger, 'sess:smoke');
+    seedAndSelect(db, ledger, 'sess:smoke');
 
     const result = await scoreSession({
       sessionId: 'sess:smoke',

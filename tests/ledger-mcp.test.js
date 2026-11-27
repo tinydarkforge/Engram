@@ -8,58 +8,6 @@ const {
   ledgerStats,
 } = require('../scripts/mcp-tools.js');
 
-// Helper: inject in-memory DB for testing
-function createTestLedger() {
-  const Database = require('better-sqlite3');
-  const db = new Database(':memory:');
-  const { _createForTesting } = require('../scripts/ledger.js');
-  const ledger = _createForTesting(() => db);
-  // Run migrations
-  db.exec(`
-    CREATE TABLE assertions (
-      id TEXT PRIMARY KEY,
-      plane TEXT NOT NULL,
-      class TEXT NOT NULL,
-      claim TEXT NOT NULL,
-      body TEXT,
-      confidence REAL DEFAULT 0.5,
-      quorum_count INTEGER DEFAULT 1,
-      status TEXT DEFAULT 'tentative',
-      created_at TEXT,
-      last_reinforced TEXT,
-      last_verified TEXT,
-      staleness_model TEXT DEFAULT 'flat',
-      cache_stable INTEGER DEFAULT 0,
-      density_hint TEXT DEFAULT 'terse'
-    );
-    CREATE TABLE assertion_lineage (
-      assertion_id TEXT,
-      source_span TEXT,
-      FOREIGN KEY(assertion_id) REFERENCES assertions(id)
-    );
-    CREATE TABLE supersession_edges (
-      child_id TEXT,
-      parent_id TEXT,
-      kind TEXT,
-      FOREIGN KEY(child_id) REFERENCES assertions(id),
-      FOREIGN KEY(parent_id) REFERENCES assertions(id)
-    );
-    CREATE TABLE tension_pairs (
-      assertion_id_a TEXT,
-      assertion_id_b TEXT,
-      is_resolved INTEGER DEFAULT 0,
-      FOREIGN KEY(assertion_id_a) REFERENCES assertions(id),
-      FOREIGN KEY(assertion_id_b) REFERENCES assertions(id)
-    );
-    CREATE TABLE counterfactual_weights (
-      assertion_id TEXT PRIMARY KEY,
-      weight REAL,
-      FOREIGN KEY(assertion_id) REFERENCES assertions(id)
-    );
-  `);
-  return ledger;
-}
-
 test('ledger-mcp: ledgerIngest creates an assertion', () => {
   // Mock: inject test ledger via module-level require intercept
   // For now, just test error handling

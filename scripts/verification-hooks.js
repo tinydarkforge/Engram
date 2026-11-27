@@ -127,6 +127,7 @@ function registerBuiltinHooks(registry) {
 
   // config: verify configuration assertions against current settings
   registry.register('config', async (assertion) => {
+    void assertion;
     try {
       const fs = require('fs');
       const configPath = require('path').join(require('./paths').resolveEngramPath(__dirname), 'index.json');
