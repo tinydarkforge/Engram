@@ -335,6 +335,12 @@ class SessionSaver {
         .reduce((sum, p) => sum + (p.sc || 0), 0);
 
       atomicWriteFileSync(indexPath, JSON.stringify(index, null, 2));
+      if (this.loader?.persistentCache) {
+        this.loader.persistentCache.delete('index');
+      }
+      if (this.loader) {
+        this.loader.index = index;
+      }
     });
   }
 

@@ -281,6 +281,13 @@ describe('SessionSaver', () => {
   });
 
   describe('updateMainIndex()', () => {
+    it('does not require a persistent cache instance', async () => {
+      const saver = Object.create(SessionSaver.prototype);
+      saver.currentProject = 'TestSaveProject';
+      saver.loader = {};
+      await saver.updateMainIndex();
+      assert.ok(true);
+    });
     it('updates session count in main index', async () => {
       const saver = Object.create(SessionSaver.prototype);
       saver.currentProject = 'TestSaveProject';
