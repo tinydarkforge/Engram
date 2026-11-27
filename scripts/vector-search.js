@@ -11,7 +11,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { encode: msgpackEncode, decode: msgpackDecode } = require('@msgpack/msgpack');
+const { decode: msgpackDecode } = require('@msgpack/msgpack');
 const { resolveEngramPath } = require('./paths');
 const { readJSON } = require('./safe-json');
 
@@ -166,7 +166,7 @@ class VectorSearch {
    */
   cosineSimilarity(a, b) {
     if (!a || !b || a.length !== b.length) {
-      return 0;
+      throw new Error('Cosine similarity requires vectors of the same length');
     }
 
     let dotProduct = 0;
@@ -192,7 +192,7 @@ class VectorSearch {
    * Load cached embeddings from disk (Binary preferred, then msgpack, then JSON)
    */
   loadEmbeddings() {
-    this.embeddings = { sessions: {}, version: '2.0.0' };
+    this.embeddings = { sessions: {}, version: '1.0.0' };
 
     // 1. Try migration if legacy exists and binary doesn't
     if (!fs.existsSync(EMBEDDINGS_BINARY_DIR) && (fs.existsSync(EMBEDDINGS_MSGPACK_PATH) || fs.existsSync(EMBEDDINGS_PATH))) {
@@ -271,17 +271,19 @@ class VectorSearch {
       
       // Followed by raw Float32 data
       const dataOffset = 15 + metaLen;
-      const floatData = new Float32Array(buffer.buffer, buffer.byteOffset + dataOffset, count * dim);
+      const embedding = new Float32Array(count * dim);
+      for (let i = 0; i < count * dim; i++) {
+        embedding[i] = buffer.readFloatLE(dataOffset + i * 4);
+      }
 
       for (let i = 0; i < count; i++) {
         const sessionMeta = meta[i];
         const start = i * dim;
-        const end = start + dim;
-        const embedding = floatData.slice(start, end);
-        
+        const vector = embedding.slice(start, start + dim);
+
         this.embeddings.sessions[sessionMeta.id] = {
           ...sessionMeta,
-          embedding
+          embedding: vector
         };
       }
     } catch (e) {
@@ -300,7 +302,11 @@ class VectorSearch {
     const sessionEntries = Object.entries(sessions);
     if (sessionEntries.length === 0) return;
 
-    const dim = 384;
+    const dim = sessionEntries.reduce((largest, [, data]) => {
+      const length = Array.isArray(data.embedding) ? data.embedding.length : 0;
+      return Math.max(largest, length);
+    }, 0);
+    if (dim === 0) return;
     const count = sessionEntries.length;
     const meta = sessionEntries.map(([id, data]) => ({
       id,
@@ -314,7 +320,7 @@ class VectorSearch {
     const floatData = new Float32Array(count * dim);
 
     for (let i = 0; i < count; i++) {
-      const [id, data] = sessionEntries[i];
+      const [, data] = sessionEntries[i];
       floatData.set(data.embedding, i * dim);
     }
 
@@ -539,7 +545,7 @@ class VectorSearch {
     // Calculate similarity with filtered sessions
     const results = [];
     const sessionsToSearch = project 
-      ? Object.entries(this.embeddings.sessions).filter(([_, s]) => s.project === project)
+      ? Object.entries(this.embeddings.sessions).filter(([, s]) => s.project === project)
       : Object.entries(this.embeddings.sessions);
 
     for (const [sessionId, sessionData] of sessionsToSearch) {

@@ -86,7 +86,7 @@ describe('transform: parseArgs --yes', () => {
 describe('transform: analyzeChanges returns empty for no candidates', () => {
   it('returns [] when no assertions match criteria', () => {
     const ledger = makeTestLedger();
-    const id = makeAssertion(ledger, { status: 'established', confidence: 0.9 });
+    makeAssertion(ledger, { status: 'established', confidence: 0.9 });
     const assertions = ledger.queryActiveByPlane('project:test');
 
     const changes = analyzeChanges(assertions, { action: 'promote' });
@@ -128,7 +128,7 @@ describe('transform: analyzeChanges verifies stale state_bound', () => {
   it('marks state_bound assertions as needing verification', () => {
     const ledger = makeTestLedger();
     const staleDate = new Date(Date.now() - 25 * 24 * 60 * 60 * 1000).toISOString();
-    const id = makeAssertion(ledger, {
+    makeAssertion(ledger, {
       staleness_model: 'state_bound',
       created_at: staleDate,
     });
@@ -149,7 +149,7 @@ describe('transform: analyzeChanges fossilizes old unverified', () => {
   it('marks old established unverified assertions as fossilize candidates', () => {
     const ledger = makeTestLedger();
     const oldDate = new Date(Date.now() - 100 * 24 * 60 * 60 * 1000).toISOString();
-    const id = makeAssertion(ledger);
+    makeAssertion(ledger);
 
     const assertions = ledger.queryActiveByPlane('project:test').map(a => ({
       ...a,
@@ -167,7 +167,7 @@ describe('transform: analyzeChanges fossilizes old unverified', () => {
 describe('transform: analyzeChanges weights low confidence', () => {
   it('marks low-confidence assertions for weighting', () => {
     const ledger = makeTestLedger();
-    const id = makeAssertion(ledger, { confidence: 0.3 });
+    makeAssertion(ledger, { confidence: 0.3 });
 
     const assertions = ledger.queryActiveByPlane('project:test');
     const changes = analyzeChanges(assertions, { action: 'weight' });
@@ -213,13 +213,13 @@ describe('transform: analyzeChanges action=all combines all types', () => {
     ledger.reinforceAssertion(promoteId, { source_span: 'session:002' });
 
     // Verifiable (state_bound, stale)
-    const verifyId = makeAssertion(ledger, {
+    makeAssertion(ledger, {
       claim: 'verify me',
       staleness_model: 'state_bound',
     });
 
     // Weightable (low confidence)
-    const weightId = makeAssertion(ledger, { claim: 'weight me', confidence: 0.2 });
+    makeAssertion(ledger, { claim: 'weight me', confidence: 0.2 });
 
     const assertions = ledger.queryActiveByPlane('project:test').map((a, i) => {
       if (i === 1) {

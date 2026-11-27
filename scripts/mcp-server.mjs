@@ -38,16 +38,11 @@ import {
   UnsubscribeRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js';
 
-import { fileURLToPath } from 'url';
 import { createRequire } from 'module';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = import.meta.dirname || fileURLToPath(new URL('.', import.meta.url));
 const require = createRequire(import.meta.url);
 
 const {
-  loadIndex,
-  loadGraph,
   neuralSearch,
   getBundle,
   listProjects,

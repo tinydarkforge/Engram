@@ -146,7 +146,7 @@ describe('AgentBridge Client', () => {
 
     it('sends auth token in headers when provided', async () => {
       receivedRequests = [];
-      const client = await connect({ url: serverUrl, token: 'test-secret-token' });
+      await connect({ url: serverUrl, token: 'test-secret-token' });
 
       // All requests should have the auth header
       receivedRequests.forEach((req) => {

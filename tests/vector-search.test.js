@@ -17,6 +17,13 @@ function cleanupFixture(tmpDir) {
   fs.rmSync(tmpDir, { recursive: true, force: true });
 }
 
+function clearEmbeddingCache(fixturePath) {
+  for (const filename of ['embeddings.json', 'embeddings.msgpack']) {
+    fs.rmSync(path.join(fixturePath, '.cache', filename), { force: true });
+  }
+  fs.rmSync(path.join(fixturePath, '.cache', 'embeddings'), { recursive: true, force: true });
+}
+
 function loadVectorSearchWithFixture(fixturePath) {
   const modulesToClear = Object.keys(require.cache).filter(
     (k) => k.includes('vector-search') || k.includes('paths')
@@ -210,9 +217,8 @@ describe('VectorSearch', () => {
 
   describe('search() without embeddings', () => {
     it('returns empty results when no embeddings exist', async () => {
-      // Remove any cached embeddings
-      const embPath = path.join(fixturePath, '.cache', 'embeddings.json');
-      if (fs.existsSync(embPath)) fs.unlinkSync(embPath);
+      // Remove every cache representation, including migrated binary files
+      clearEmbeddingCache(fixturePath);
 
       const vs = new VectorSearch();
       vs.embeddings = { sessions: {}, version: '1.0.0' };
@@ -225,9 +231,8 @@ describe('VectorSearch', () => {
 
   describe('getStats()', () => {
     it('returns stats with zero embeddings', () => {
-      // Remove any cached embeddings
-      const embPath = path.join(fixturePath, '.cache', 'embeddings.json');
-      if (fs.existsSync(embPath)) fs.unlinkSync(embPath);
+      // Remove every cache representation, including migrated binary files
+      clearEmbeddingCache(fixturePath);
 
       const vs = new VectorSearch();
       const stats = vs.getStats();

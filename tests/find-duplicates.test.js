@@ -15,12 +15,6 @@ const os = require('os');
 
 let tmpDir;
 let findDuplicates;
-let VectorSearch;
-
-function makeEmbedding(values) {
-  // Pad/trim to 4 dims for test speed
-  return values;
-}
 
 function writeEmbeddings(dir, sessions) {
   const cacheDir = path.join(dir, '.cache');
@@ -48,14 +42,6 @@ function loadTools(fixturePath) {
 
   const tools = require('../scripts/mcp-tools');
   return tools;
-}
-
-function loadVS(fixturePath) {
-  Object.keys(require.cache)
-    .filter(k => k.includes('vector-search') || k.includes('paths'))
-    .forEach(k => delete require.cache[k]);
-  process.env.ENGRAM_PATH = fixturePath;
-  return require('../scripts/vector-search');
 }
 
 describe('findDuplicates (MCP tool)', () => {

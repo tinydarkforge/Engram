@@ -446,7 +446,6 @@ if (require.main === module) {
       } else {
         const autoSummarize = args.includes('--auto-summarize');
         const topicsIndex = args.indexOf('--topics');
-        const projectIndex = args.indexOf('--project');
         const commit = args.includes('--commit');
         const push = args.includes('--push');
 

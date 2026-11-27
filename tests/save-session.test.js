@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const { describe, it, before, after, beforeEach } = require('node:test');
+const { describe, it, before, after } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('fs');
 const path = require('path');
@@ -130,7 +130,6 @@ describe('SessionSaver', () => {
       const id = saver.generateSessionId([longTopic]);
 
       // Topic slug is limited to 24 chars
-      const parts = id.split('-');
       // The topic part is after date and time components
       // Format: te-2025-12-01-1234-this-is-a-very-long-topic-nonce
       assert.ok(id.length < 100, 'ID should not be excessively long');
