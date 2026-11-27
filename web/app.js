@@ -487,10 +487,8 @@ function initGraphToggle() {
 // ─────────────────────────────────────────────────────────────
 
 async function updateSidebarProjects() {
-  if (state.projects.length === 0) {
-    const projectsData = await api.get('/projects');
-    state.projects = projectsData.projects;
-  }
+  const projectsData = await api.get('/projects');
+  state.projects = projectsData.projects;
 
   const html = state.projects
     .sort((a, b) => b.sessions - a.sessions)
@@ -894,6 +892,12 @@ document.addEventListener('DOMContentLoaded', () => {
   initSessionDetail();
   loadDashboard();
   updateSidebarProjects();
+  setInterval(() => {
+    if (!document.hidden) {
+      loadDashboard();
+      updateSidebarProjects();
+    }
+  }, 30000);
   document.getElementById('footer-version').textContent = 'v1.0.0';
 
   const closeBtn = document.getElementById('detail-close');

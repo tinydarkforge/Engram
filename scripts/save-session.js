@@ -293,7 +293,7 @@ class SessionSaver {
       const index = readJSON(indexPath);
       if (!index) return;
 
-      // Update project session count
+      // Rebuild project counts from project directories.
     const projectDirName = resolveProjectDirName(ENGRAM_PATH, this.currentProject);
     const sessionsIndexPath = path.join(
       ENGRAM_PATH,
@@ -304,28 +304,50 @@ class SessionSaver {
 
       const sessionsIndex = readJSON(sessionsIndexPath);
       if (sessionsIndex) {
-        // v2.0 uses abbreviated keys: p=projects, sc=session_count, u=last_updated
-        if (index.p) {
-          if (!index.p[this.currentProject]) {
-            index.p[this.currentProject] = { sc: 0, u: '' };
+        // Rebuild project entries so deletions are reflected immediately.
+        const existingProjects = index.p || {};
+        const rebuiltProjects = {};
+        const projectsDir = path.join(ENGRAM_PATH, 'summaries', 'projects');
+        if (fs.existsSync(projectsDir)) {
+          for (const projectDir of fs.readdirSync(projectsDir, { withFileTypes: true })) {
+            if (!projectDir.isDirectory()) continue;
+            const projectIndexPath = path.join(projectsDir, projectDir.name, 'sessions-index.json');
+            const projectIndex = readJSON(projectIndexPath);
+            if (!projectIndex) continue;
+            const projectName = projectIndex.project || projectDir.name;
+            const existing = existingProjects[projectName] || {};
+            rebuiltProjects[projectName] = {
+              ...existing,
+              sc: projectIndex.total_sessions || (projectIndex.sessions?.length || 0),
+              u: projectIndex.last_updated || new Date().toISOString().split('T')[0],
+            };
           }
-          index.p[this.currentProject].sc = sessionsIndex.total_sessions;
-          index.p[this.currentProject].u = new Date().toISOString().split('T')[0];
         }
+        index.p = rebuiltProjects;
 
-        // Update topics index - v2.0 uses: t=topics, p=projects, sc=session_count
-        if (index.t && sessionsIndex.topics_index) {
-          Object.entries(sessionsIndex.topics_index).forEach(([topic, sessionIds]) => {
-            if (!index.t[topic]) {
-              index.t[topic] = { p: [], sc: 0 };
+        // Recompute the global topic index from every project.
+        if (index.t) {
+          const globalTopics = {};
+          const topicProjectsDir = path.join(ENGRAM_PATH, 'summaries', 'projects');
+          if (fs.existsSync(topicProjectsDir)) {
+            for (const projectDir of fs.readdirSync(topicProjectsDir, { withFileTypes: true })) {
+              if (!projectDir.isDirectory()) continue;
+              const projectIndexPath = path.join(topicProjectsDir, projectDir.name, 'sessions-index.json');
+              const projectIndex = readJSON(projectIndexPath);
+              if (!projectIndex?.topics_index) continue;
+              for (const [topic, sessionIds] of Object.entries(projectIndex.topics_index)) {
+                if (!globalTopics[topic]) globalTopics[topic] = { p: [], ids: new Set() };
+                if (!globalTopics[topic].p.includes(projectIndex.project || projectDir.name)) {
+                  globalTopics[topic].p.push(projectIndex.project || projectDir.name);
+                }
+                for (const sessionId of sessionIds) globalTopics[topic].ids.add(sessionId);
+              }
             }
-            // Add project if not already there
-            if (!index.t[topic].p.includes(this.currentProject)) {
-              index.t[topic].p.push(this.currentProject);
-            }
-            // Update session count for this topic
-            index.t[topic].sc = sessionIds.length;
-          });
+          }
+          index.t = {};
+          for (const [topic, aggregate] of Object.entries(globalTopics)) {
+            index.t[topic] = { p: aggregate.p, sc: aggregate.ids.size };
+          }
         }
       }
 
@@ -335,6 +357,12 @@ class SessionSaver {
         .reduce((sum, p) => sum + (p.sc || 0), 0);
 
       atomicWriteFileSync(indexPath, JSON.stringify(index, null, 2));
+      if (this.loader?.persistentCache) {
+        this.loader.persistentCache.delete('index');
+      }
+      if (this.loader) {
+        this.loader.index = index;
+      }
     });
   }
 
@@ -345,11 +373,12 @@ class SessionSaver {
     const { push = false } = options;
     try {
       const pathsToAdd = ['index.json'];
-      const projectSummariesPath = path.join('summaries', 'projects', this.currentProject);
+      const projectDirName = resolveProjectDirName(ENGRAM_PATH, this.currentProject);
+      const projectSummariesPath = path.join('summaries', 'projects', projectDirName);
       if (fs.existsSync(path.join(ENGRAM_PATH, projectSummariesPath))) {
         pathsToAdd.push(projectSummariesPath);
       }
-      const projectContentPath = path.join('content', 'projects', this.currentProject);
+      const projectContentPath = path.join('content', 'projects', projectDirName);
       if (fs.existsSync(path.join(ENGRAM_PATH, projectContentPath))) {
         pathsToAdd.push(projectContentPath);
       }
