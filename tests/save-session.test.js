@@ -288,6 +288,35 @@ describe('SessionSaver', () => {
       await saver.updateMainIndex();
       assert.ok(true);
     });
+    it('invalidates persistent index cache after updating main index', async () => {
+      let deletedKey = null;
+      const saver = Object.create(SessionSaver.prototype);
+      saver.currentProject = 'TestSaveProject';
+      saver.loader = {
+        persistentCache: { delete: (key) => { deletedKey = key; } },
+      };
+      await saver.updateMainIndex();
+      assert.equal(deletedKey, 'index');
+    });
+
+    it('computes global topic counts across projects', async () => {
+      const secondProjectDir = path.join(fixturePath, 'summaries', 'projects', 'SecondProject');
+      fs.mkdirSync(secondProjectDir, { recursive: true });
+      fs.writeFileSync(path.join(secondProjectDir, 'sessions-index.json'), JSON.stringify({
+        project: 'SecondProject',
+        total_sessions: 2,
+        topics_index: { indexing: ['second-a', 'second-b'] },
+        sessions: [],
+      }));
+
+      const saver = Object.create(SessionSaver.prototype);
+      saver.currentProject = 'TestSaveProject';
+      await saver.saveSession('Global topic test', ['indexing']);
+
+      const mainIndex = JSON.parse(fs.readFileSync(path.join(fixturePath, 'index.json'), 'utf8'));
+      assert.equal(mainIndex.t.indexing.sc, 3);
+    });
+
     it('updates session count in main index', async () => {
       const saver = Object.create(SessionSaver.prototype);
       saver.currentProject = 'TestSaveProject';

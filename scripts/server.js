@@ -109,9 +109,29 @@ function clampLimit(value, defaultVal, max) {
   return Math.min(n, max);
 }
 
+let indexFingerprint = null;
+
 function ensureIndexLoaded() {
-  if (!engram.index) {
+  const indexPath = path.join(ENGRAM_PATH, 'index.json');
+  const fingerprint = (() => {
+    try {
+      const stat = fs.statSync(indexPath);
+      return `${stat.mtimeMs}:${stat.size}`;
+    } catch {
+      return null;
+    }
+  })();
+
+  if (!fingerprint) {
+    if (!engram.index) engram.loadIndex();
+    return;
+  }
+
+  if (!engram.index || fingerprint !== indexFingerprint) {
+    engram.persistentCache.delete('index');
+    engram.index = null;
     engram.loadIndex();
+    indexFingerprint = fingerprint;
   }
 }
 
