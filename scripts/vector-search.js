@@ -220,7 +220,6 @@ class VectorSearch {
             created_at: item.updated_at,
           };
         }
-        return this.embeddings;
       }
     } catch (e) {
       console.warn('⚠️  Failed to load embeddings from SQLite:', e.message);
@@ -242,6 +241,7 @@ class VectorSearch {
         const db = this.ensureVectorStore();
         for (const [sessionId, data] of Object.entries(this.embeddings.sessions)) {
           if (!Array.isArray(data.embedding) || data.embedding.length !== 384) continue;
+          if (vectorStore.hasEntity(db, 'session', sessionId)) continue;
           vectorStore.upsert(db, {
             entityType: 'session',
             entityId: sessionId,
@@ -289,7 +289,9 @@ class VectorSearch {
         this.saveProjectBinary(proj, sessions);
         for (const [sessionId, data] of Object.entries(sessions)) {
           if (!Array.isArray(data.embedding) || data.embedding.length !== 384) continue;
-          vectorStore.upsert(this.ensureVectorStore(), {
+          const db = this.ensureVectorStore();
+          if (vectorStore.hasEntity(db, 'session', sessionId)) continue;
+          vectorStore.upsert(db, {
             entityType: 'session',
             entityId: sessionId,
             project: proj,
@@ -414,7 +416,9 @@ class VectorSearch {
       this.saveProjectBinary(proj, sessions);
       for (const [sessionId, data] of Object.entries(sessions)) {
         if (!Array.isArray(data.embedding) || data.embedding.length !== 384) continue;
-        vectorStore.upsert(this.ensureVectorStore(), {
+        const db = this.ensureVectorStore();
+        if (vectorStore.hasEntity(db, 'session', sessionId)) continue;
+        vectorStore.upsert(db, {
           entityType: 'session',
           entityId: sessionId,
           project: proj,

@@ -97,8 +97,15 @@ function upsert(db, item) {
       JSON.stringify(embedding)
     );
   });
-  transaction();
+  transaction.immediate();
   return vecRowId;
+}
+
+function hasEntity(db, entityType, entityId) {
+  return !!db.prepare(`
+    SELECT 1 FROM embedding_items
+    WHERE entity_type = ? AND entity_id = ?
+  `).get(entityType, entityId);
 }
 
 function remove(db, entityType, entityId) {
@@ -123,7 +130,8 @@ function search(db, queryEmbedding, options = {}) {
   }
 
   const limit = Math.max(1, Math.min(Number(options.limit) || 20, 100));
-  const candidateLimit = Math.max(limit * 10, limit);
+  const vecCount = db.prepare('SELECT COUNT(*) AS count FROM vec_embeddings').get().count;
+  const candidateLimit = Math.max(vecCount, limit);
   const rows = db.prepare(`
     SELECT rowid, distance
     FROM vec_embeddings
@@ -175,6 +183,7 @@ module.exports = {
   ensureVirtualTable,
   ensureMetadataTable,
   upsert,
+  hasEntity,
   remove,
   search,
   listItems,
