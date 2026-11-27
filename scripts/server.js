@@ -123,7 +123,12 @@ function ensureIndexLoaded() {
   })();
 
   if (!fingerprint) {
-    if (!engram.index) engram.loadIndex();
+    if (indexFingerprint !== null || engram.index) {
+      engram.persistentCache.delete('index');
+      engram.index = null;
+      try { engram.loadIndex(); } catch { /* valid fallback may not exist */ }
+    }
+    indexFingerprint = null;
     return;
   }
 

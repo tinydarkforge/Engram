@@ -78,8 +78,12 @@ class Engram {
     let format = 'none';
     let fromCache = false;
 
-    // Try persistent cache first (instant!)
-    const cached = this.persistentCache.get(cacheKey);
+    // index.json is authoritative. Never let persistent cache override a
+    // freshly written JSON index by setup, migrations or external writers.
+    const jsonCandidate = path.join(ENGRAM_PATH, 'index.json');
+    const cached = fs.existsSync(jsonCandidate)
+      ? null
+      : this.persistentCache.get(cacheKey);
     if (cached) {
       this.index = cached;
       format = 'cache';
