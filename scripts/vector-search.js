@@ -14,6 +14,7 @@ const path = require('path');
 const { decode: msgpackDecode } = require('@msgpack/msgpack');
 const { resolveEngramPath } = require('./paths');
 const { readJSON } = require('./safe-json');
+const vectorStore = require('./vector-store');
 
 const ENGRAM_PATH = resolveEngramPath(__dirname);
 const EMBEDDINGS_PATH = path.join(ENGRAM_PATH, '.cache', 'embeddings.json');
@@ -117,6 +118,7 @@ class VectorSearch {
     this.embedder = null;
     this.embeddings = null;
     this._persistPromise = null;
+    this._vectorDb = null;
   }
 
   /**
@@ -191,10 +193,40 @@ class VectorSearch {
   /**
    * Load cached embeddings from disk (Binary preferred, then msgpack, then JSON)
    */
+  ensureVectorStore() {
+    if (!this._vectorDb) {
+      const dbPath = path.join(ENGRAM_PATH, '.cache', 'engram.db');
+      fs.mkdirSync(path.dirname(dbPath), { recursive: true });
+      this._vectorDb = vectorStore.openDatabase(dbPath);
+      vectorStore.ensureMetadataTable(this._vectorDb);
+      vectorStore.ensureVirtualTable(this._vectorDb);
+    }
+    return this._vectorDb;
+  }
+
   loadEmbeddings() {
     this.embeddings = { sessions: {}, version: '1.0.0' };
 
-    // 1. Try migration if legacy exists and binary doesn't
+    // 1. SQLite is the source of truth for session embeddings.
+    try {
+      const db = this.ensureVectorStore();
+      const items = vectorStore.listItems(db).filter((item) => item.entity_type === 'session');
+      if (items.length > 0) {
+        for (const item of items) {
+          this.embeddings.sessions[item.entity_id] = {
+            embedding: item.embedding,
+            project: item.project,
+            text_preview: item.text_preview,
+            created_at: item.updated_at,
+          };
+        }
+        return this.embeddings;
+      }
+    } catch (e) {
+      console.warn('⚠️  Failed to load embeddings from SQLite:', e.message);
+    }
+
+    // 2. Migrate legacy cache formats once, then use SQLite as source of truth.
     if (!fs.existsSync(EMBEDDINGS_BINARY_DIR) && (fs.existsSync(EMBEDDINGS_MSGPACK_PATH) || fs.existsSync(EMBEDDINGS_PATH))) {
       this.migrateToBinary();
     }
@@ -205,6 +237,19 @@ class VectorSearch {
         const files = fs.readdirSync(EMBEDDINGS_BINARY_DIR).filter(f => f.endsWith('.bin'));
         for (const file of files) {
           this.loadProjectBinary(file);
+        }
+
+        const db = this.ensureVectorStore();
+        for (const [sessionId, data] of Object.entries(this.embeddings.sessions)) {
+          if (!Array.isArray(data.embedding) || data.embedding.length !== 384) continue;
+          vectorStore.upsert(db, {
+            entityType: 'session',
+            entityId: sessionId,
+            project: data.project,
+            textPreview: data.text_preview,
+            embedding: data.embedding,
+            updatedAt: data.created_at,
+          });
         }
         return this.embeddings;
       } catch (e) {
@@ -242,9 +287,20 @@ class VectorSearch {
 
       for (const [proj, sessions] of Object.entries(byProject)) {
         this.saveProjectBinary(proj, sessions);
+        for (const [sessionId, data] of Object.entries(sessions)) {
+          if (!Array.isArray(data.embedding) || data.embedding.length !== 384) continue;
+          vectorStore.upsert(this.ensureVectorStore(), {
+            entityType: 'session',
+            entityId: sessionId,
+            project: proj,
+            textPreview: data.text_preview,
+            embedding: data.embedding,
+            updatedAt: data.created_at,
+          });
+        }
       }
 
-      // Keep legacy for safety but could rename/delete here
+      // Keep legacy cache files for compatibility, but SQLite is authoritative.
       console.log(`✅ Migration complete. ${Object.keys(legacyData.sessions).length} sessions moved to binary.`);
     }
   }
@@ -356,6 +412,17 @@ class VectorSearch {
 
     for (const [proj, sessions] of Object.entries(byProject)) {
       this.saveProjectBinary(proj, sessions);
+      for (const [sessionId, data] of Object.entries(sessions)) {
+        if (!Array.isArray(data.embedding) || data.embedding.length !== 384) continue;
+        vectorStore.upsert(this.ensureVectorStore(), {
+          entityType: 'session',
+          entityId: sessionId,
+          project: proj,
+          textPreview: data.text_preview,
+          embedding: data.embedding,
+          updatedAt: data.created_at,
+        });
+      }
     }
   }
 
@@ -521,15 +588,7 @@ class VectorSearch {
       keywordWeight = 0.3
     } = options;
 
-    // Load embeddings
-    if (project) {
-      // Lazy load only the specific project
-      const safeProj = project.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-      this.loadProjectBinary(`${safeProj}.bin`);
-    } else if (!this.embeddings || Object.keys(this.embeddings.sessions).length === 0) {
-      // Load everything as fallback
-      this.loadEmbeddings();
-    }
+    this.loadEmbeddings();
 
     if (!this.embeddings || Object.keys(this.embeddings.sessions).length === 0) {
       return {
@@ -539,34 +598,28 @@ class VectorSearch {
       };
     }
 
-    // Generate query embedding
     const queryEmbedding = await this.embed(query);
+    const vectorResults = vectorStore.search(this.ensureVectorStore(), queryEmbedding, {
+      limit: Math.max(limit * 5, limit),
+      project,
+      entityTypes: ['session'],
+    });
 
-    // Calculate similarity with filtered sessions
     const results = [];
-    const sessionsToSearch = project 
-      ? Object.entries(this.embeddings.sessions).filter(([, s]) => s.project === project)
-      : Object.entries(this.embeddings.sessions);
+    for (const vectorResult of vectorResults) {
+      const sessionId = vectorResult.entity_id;
+      const sessionData = this.embeddings.sessions[sessionId];
+      if (!sessionData) continue;
 
-    for (const [sessionId, sessionData] of sessionsToSearch) {
-      if (!sessionData.embedding) continue;
-
-      let semanticScore;
-      try {
-        semanticScore = this.cosineSimilarity(queryEmbedding, sessionData.embedding);
-      } catch { continue; }
-
-      // Hybrid: combine semantic + keyword scores
+      const semanticScore = this.cosineSimilarity(queryEmbedding, vectorResult.embedding);
       let combinedScore = semanticScore;
       let keywordScoreVal = 0;
 
       if (hybrid && sessionData.text_preview) {
         keywordScoreVal = this.keywordScore(query, sessionData.text_preview);
-        // Weighted combination: (1-w)*semantic + w*keyword
         combinedScore = (1 - keywordWeight) * semanticScore + keywordWeight * keywordScoreVal;
       }
 
-      // Apply time decay if enabled
       let finalScore = combinedScore;
       let decayFactor = 1.0;
 

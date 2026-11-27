@@ -12,6 +12,7 @@ const { resolveEngramPath } = require('./paths');
 const { findNearDuplicate, findNegations } = require('./dedup');
 const { rankAssertions, selectForContext: _selectForContext } = require('./rank');
 const { computeOutcomePriors } = require('./feedback/outcome-prior');
+const { loadExtension } = require('./vector-store');
 
 const ENGRAM_PATH = resolveEngramPath(__dirname);
 const DB_PATH = path.join(ENGRAM_PATH, '.cache', 'engram.db');
@@ -23,6 +24,7 @@ function getDb() {
     const cacheDir = path.dirname(DB_PATH);
     if (!fs.existsSync(cacheDir)) fs.mkdirSync(cacheDir, { recursive: true });
     _db = new Database(DB_PATH);
+    loadExtension(_db);
     _db.pragma('journal_mode = WAL');
     _db.pragma('busy_timeout = 5000');
     _db.pragma('foreign_keys = ON');

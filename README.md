@@ -216,12 +216,14 @@ engram setup --agent windsurf     # Windsurf
 
 ## Architecture
 
+Engram uses SQLite as the source of truth. Semantic embeddings are indexed by `sqlite-vec` in the same database, while the normal SQL table stores entity IDs, project metadata, preview text, model and dimensions. Legacy JSON, MessagePack and binary caches are migrated into SQLite when encountered.
+
 ```
 scripts/     Runtime, CLI, MCP servers, ledger, consolidation
 web/         Dashboard UI (Express + static files)
 tests/       29 test files (node:test)
 schemas/     JSON schemas for sessions and ledger
-migrations/  SQLite schema migrations
+migrations/  SQLite schema migrations, including the vector index
 examples/    Curated session records
 ```
 
