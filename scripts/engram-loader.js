@@ -102,14 +102,14 @@ class Engram {
     const gzipPath = `${basePath}.json.gz`;
     const jsonPath = `${basePath}.json`;
 
-    // Try MessagePack first (fastest + smallest)
-    if (fs.existsSync(msgpackPath)) {
+    // Plain JSON is authoritative after writes. Derived gzip/MsgPack copies
+    // must never override a freshly updated index.json.
+    if (fs.existsSync(jsonPath)) {
       try {
-        const buffer = fs.readFileSync(msgpackPath);
-        this.index = msgpackDecode(buffer);
-        format = 'msgpack';
+        this.index = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
+        format = 'json';
       } catch (e) {
-        console.warn('⚠️  Failed to load MessagePack, trying fallback:', e.message);
+        console.warn('⚠️  Failed to load JSON, trying fallbacks:', e.message);
       }
     }
 
@@ -125,13 +125,14 @@ class Engram {
       }
     }
 
-    // Fallback to plain JSON
-    if (!this.index && fs.existsSync(jsonPath)) {
+    // Fallback to MessagePack only if no JSON or gzip copy exists.
+    if (!this.index && fs.existsSync(msgpackPath)) {
       try {
-        this.index = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
-        format = 'json';
+        const buffer = fs.readFileSync(msgpackPath);
+        this.index = msgpackDecode(buffer);
+        format = 'msgpack';
       } catch (e) {
-        console.warn('⚠️  Failed to load JSON index:', e.message);
+        console.warn('⚠️  Failed to load MessagePack:', e.message);
       }
     }
 
