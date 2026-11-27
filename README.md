@@ -245,4 +245,4 @@ MIT — see [LICENSE](LICENSE).
 
 ---
 
-<p align="center"><a href="https://github.com/tinydarkforge/Engram">GitHub</a> · <a href="mailto:hello@tinydarkforge.com">Contact</a></p>
+<p align="center"><a href="https://github.com/tinydarkforge/Engram">GitHub</a> · <a href="mailto:daniel.oceno@gmail.com">Contact</a></p>
