@@ -62,11 +62,7 @@ function createSentinel(getLedgerFn, getDb) {
 
     if (rows.length === 0) {
       setWatermark(plane, now);
-      const active = ledger.queryActiveByPlane(plane, { limit: sampleSize * 2 });
-      const activeIds = new Set(active.map((row) => row.id));
-      const storedTensions = ledger.queryTensions().filter((pair) =>
-        activeIds.has(pair.a_id) && activeIds.has(pair.b_id)
-      );
+      const storedTensions = ledger.queryTensions({ plane });
       return {
         tensions_found: storedTensions.length,
         skipped: true,
@@ -78,11 +74,7 @@ function createSentinel(getLedgerFn, getDb) {
     const unChecked = rows.filter((r) => !isChecked(r.id));
     if (unChecked.length === 0) {
       setWatermark(plane, now);
-      const active = ledger.queryActiveByPlane(plane, { limit: sampleSize * 2 });
-      const activeIds = new Set(active.map((row) => row.id));
-      const storedTensions = ledger.queryTensions().filter((pair) =>
-        activeIds.has(pair.a_id) && activeIds.has(pair.b_id)
-      );
+      const storedTensions = ledger.queryTensions({ plane });
       return {
         tensions_found: storedTensions.length,
         skipped: true,

@@ -68,8 +68,15 @@ function loadSessionSaverWithFixture(fixturePath) {
   const originalResolve = pathsModule.resolveEngramPath;
   pathsModule.resolveEngramPath = () => fixturePath;
 
+  process.env.ENGRAM_PATH = fixturePath;
   const SessionSaver = require('../scripts/save-session');
-  return { SessionSaver, restore: () => { pathsModule.resolveEngramPath = originalResolve; } };
+  return {
+    SessionSaver,
+    restore: () => {
+      pathsModule.resolveEngramPath = originalResolve;
+      delete process.env.ENGRAM_PATH;
+    }
+  };
 }
 
 describe('SessionSaver', () => {
@@ -93,6 +100,7 @@ describe('SessionSaver', () => {
 
   after(() => {
     restore();
+    delete process.env.ENGRAM_PATH;
     cleanupFixture(fixturePath);
   });
 

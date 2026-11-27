@@ -292,8 +292,20 @@ function createLedger(getDbFn) {
   // -------------------------------------------------------------------------
   // queryTensions
   // -------------------------------------------------------------------------
-  function queryTensions({ resolved = false } = {}) {
+  function queryTensions({ resolved = false, plane } = {}) {
     const db = getDbFn();
+
+    if (plane) {
+      const resolvedCondition = resolved ? 'tp.resolved_at IS NOT NULL' : 'tp.resolved_at IS NULL';
+      return db.prepare(`
+        SELECT DISTINCT tp.*
+        FROM tension_pairs tp
+        JOIN assertions a1 ON a1.id = tp.a_id
+        JOIN assertions a2 ON a2.id = tp.b_id
+        WHERE ${resolvedCondition} AND a1.plane = ? AND a2.plane = ?
+        ORDER BY tp.detected_at DESC
+      `).all(plane, plane);
+    }
 
     const condition = resolved ? 'WHERE resolved_at IS NOT NULL' : 'WHERE resolved_at IS NULL';
     return db.prepare(`SELECT * FROM tension_pairs ${condition} ORDER BY detected_at DESC`).all();

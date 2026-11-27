@@ -551,7 +551,10 @@ class VectorSearch {
     for (const [sessionId, sessionData] of sessionsToSearch) {
       if (!sessionData.embedding) continue;
 
-      const semanticScore = this.cosineSimilarity(queryEmbedding, sessionData.embedding);
+      let semanticScore;
+      try {
+        semanticScore = this.cosineSimilarity(queryEmbedding, sessionData.embedding);
+      } catch { continue; }
 
       // Hybrid: combine semantic + keyword scores
       let combinedScore = semanticScore;
@@ -748,7 +751,12 @@ class VectorSearch {
 
         if (!emb1 || !emb2) continue;
 
-        const similarity = this.cosineSimilarity(emb1, emb2);
+        let similarity;
+        try {
+          similarity = this.cosineSimilarity(emb1, emb2);
+        } catch {
+          continue;
+        }
 
         if (similarity >= threshold) {
           duplicates.push({
@@ -802,7 +810,12 @@ class VectorSearch {
     for (const [id, data] of Object.entries(this.embeddings.sessions)) {
       if (id === sessionId || !data.embedding) continue;
 
-      const similarity = this.cosineSimilarity(targetSession.embedding, data.embedding);
+      let similarity;
+      try {
+        similarity = this.cosineSimilarity(targetSession.embedding, data.embedding);
+      } catch {
+        continue;
+      }
 
       if (similarity >= minSimilarity) {
         results.push({

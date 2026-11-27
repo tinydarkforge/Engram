@@ -69,6 +69,11 @@ describe('VectorSearch', () => {
       assert.equal(vs.cosineSimilarity(a, b), 0);
     });
 
+    it('throws for mixed-dimension vectors only at direct API level', () => {
+      const vs = new VectorSearch();
+      assert.throws(() => vs.cosineSimilarity([1, 0], [1, 0, 0]), /same length/);
+    });
+
     it('returns -1 for opposite vectors', () => {
       const vs = new VectorSearch();
       const a = [1, 0, 0];

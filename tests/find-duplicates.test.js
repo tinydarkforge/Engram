@@ -173,6 +173,13 @@ describe('VectorSearch.findDuplicates()', () => {
     assert.equal(result.duplicates_found, 0);
   });
 
+  it('skips mismatched dimensions instead of throwing', () => {
+    vs.embeddings.sessions['x-mixed'] = { embedding: [1, 0], text_preview: 'mixed' };
+    const result = vs.findDuplicates({ threshold: 0.0 });
+    assert.ok(Array.isArray(result.duplicates));
+    delete vs.embeddings.sessions['x-mixed'];
+  });
+
   it('sorts results by similarity descending', () => {
     const result = vs.findDuplicates({ threshold: 0.0 });
     for (let i = 1; i < result.duplicates.length; i++) {
