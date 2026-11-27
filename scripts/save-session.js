@@ -373,11 +373,12 @@ class SessionSaver {
     const { push = false } = options;
     try {
       const pathsToAdd = ['index.json'];
-      const projectSummariesPath = path.join('summaries', 'projects', this.currentProject);
+      const projectDirName = resolveProjectDirName(ENGRAM_PATH, this.currentProject);
+      const projectSummariesPath = path.join('summaries', 'projects', projectDirName);
       if (fs.existsSync(path.join(ENGRAM_PATH, projectSummariesPath))) {
         pathsToAdd.push(projectSummariesPath);
       }
-      const projectContentPath = path.join('content', 'projects', this.currentProject);
+      const projectContentPath = path.join('content', 'projects', projectDirName);
       if (fs.existsSync(path.join(ENGRAM_PATH, projectContentPath))) {
         pathsToAdd.push(projectContentPath);
       }
