@@ -13,9 +13,30 @@
   <img src="web/engram-dashboard.png" alt="Engram Dashboard" width="720">
 </p>
 
-**Engram** is an **epistemic engine** for AI coding agents — not just memory. It persists facts with confidence, corroboration, and contradiction tracking across repositories, autonomously learns from outcomes, exposes everything over MCP, and replaces itself in your context window on a token budget.
+**Engram is local engineering memory for AI coding agents.** It indexes session summaries, stores confidence-ranked assertions in SQLite, detects contradictions, and injects a token-budgeted slice of context through MCP or a CLI.
 
-> **Epistemic engine** = contradiction detection + confidence-ranked retrieval + autonomous fact lifecycle + token-budgeted injection. Engram doesn't just store what you said — it tracks what's true, what conflicts, and what's worth remembering.
+```mermaid
+flowchart LR
+    A[Developer session] --> B[Session capture]
+    B --> C[Session index]
+    B --> D[Assertion ledger]
+    C --> E[Keyword / semantic retrieval]
+    D --> F[Confidence and tension ranking]
+    E --> G[Token-budgeted context]
+    F --> G
+    G --> H[Claude Code or another MCP client]
+
+    subgraph Local machine
+        B
+        C
+        D
+        E
+        F
+        G
+    end
+```
+
+No cloud database is required. The default data directory is `~/.engram`.
 
 ---
 
@@ -72,7 +93,7 @@ engram setup
 ```bash
 git clone https://github.com/tinydarkforge/Engram.git
 cd Engram
-npm install
+npm ci
 npm run setup
 ```
 
@@ -102,10 +123,10 @@ engram semantic "authentication work"
 engram search "oauth"
 
 # One-shot query against the assertion ledger
-engram ask "what do we know about authentication"   # new in v5
+engram ask "what do we know about authentication"
 
-# Temporal compaction — fossilize low-signal assertions
-engram compact   # new in v5
+# Compact low-signal assertions
+engram compact
 
 # View status and ledger health
 engram status
@@ -129,7 +150,7 @@ The dashboard exposes live metrics endpoints:
 
 ### Background consolidation
 
-Engram runs periodic consolidation (every 5 min) to close the learning loop:
+The dashboard runs periodic consolidation (every 5 min) to close the learning loop:
 
 ```
 ledger_scan    →  Detect new contradictions (tensions)
@@ -160,28 +181,16 @@ engram setup --agent windsurf     # Windsurf
 
 ---
 
-## Features
+## Core capabilities
 
-| | Engram | Gentleman-Programming/engram (Go) | mem0 | Letta / Zep |
-|---|---|---|---|---|
-| Local-first (no cloud) | Yes | Yes | No | No |
-| **Contradiction detection + auto-resolve** | **Yes** | No | No | No |
-| **Confidence-ranked retrieval** | **Yes** | No | No | No |
-| **Assertion ledger** (confidence, quorum, status) | **Yes** | No | No | No |
-| **Autonomous consolidation (learning loop)** | **Yes** | No | No | No |
-| **Post-hoc outcome scoring** | **Yes** | No | No | No |
-| **Counterfactual importance weighting** | **Yes** | No | No | No |
-| **Semantic recall** (by meaning, not keyword) | **Yes** | No | No | Yes |
-| **Temporal compaction** (fossilize low-signal) | **Yes** | No | No | No |
-| **Event-driven confidence adjustment** | **Yes** | No | No | No |
-| MCP-native (7+ agents) | Yes | No | No | No |
-| Git-hook session capture | Yes | Yes | Partial | Partial |
-| Token-budgeted retrieval | Yes | Yes | No | No |
-| Semantic search (local ONNX) | Yes | No | Yes | Yes |
-| Cross-session diff | Yes | No | No | No |
-| Agent handoff | Yes | No | Limited | Limited |
-| MCP Resources with subscriptions | Yes | No | No | No |
-| Live dashboard (tension radar, velocity, etc.) | Yes | No | No | No |
+- **Cross-project memory** — save and retrieve engineering context across repositories.
+- **Session capture** — summarize manual notes or Git changes into a per-project index.
+- **Confidence-ranked ledger** — track assertions, quorum, status, lineage, and staleness in SQLite.
+- **Contradiction tracking** — identify opposing claims and unresolved tensions.
+- **Local semantic search** — uses an ONNX model after the first semantic query; keyword search needs no model download.
+- **Token-budgeted retrieval** — pack relevant context into a caller-defined budget.
+- **MCP integration** — expose memory tools to MCP-compatible coding clients.
+- **Local dashboard** — inspect stats, assertions, tensions, velocity, and consolidation status.
 
 ---
 
@@ -189,7 +198,7 @@ engram setup --agent windsurf     # Windsurf
 
 - **Node.js** `>=20`
 - **macOS** or **Linux** (Windows not supported — shell scripts and symlinks)
-- **Semantic search** downloads a ~100 MB ONNX embedding model on first query. Keyword search works without it.
+- **Semantic search** may download an embedding model on first use. Keyword search works without it.
 
 ---
 
@@ -213,11 +222,20 @@ migrations/  SQLite schema migrations
 examples/    Curated session records
 ```
 
-Engram runs two servers:
-- **HTTP API + Dashboard** (port 3000) — REST endpoints and web UI
-- **MCP server** (port 3001) — Streamable HTTP and stdio transports for Claude Code
+```mermaid
+flowchart TD
+    A[engram setup] --> B[Local data in ~/.engram]
+    B --> C[engram remember]
+    C --> D[Session index]
+    C --> E[SQLite assertion ledger]
+    F[engram mcp] --> G[MCP-compatible coding agent]
+    D --> F
+    E --> F
+    G --> H[engram start]
+    H --> I[Dashboard on localhost:3000]
+```
 
-Both can run simultaneously. The MCP server accepts optional API key authentication.
+The dashboard and HTTP API listen on `127.0.0.1:3000` by default. The optional streamable HTTP MCP server listens on `127.0.0.1:3001` and supports stdio as well.
 
 ---
 
