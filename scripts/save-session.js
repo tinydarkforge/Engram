@@ -293,7 +293,7 @@ class SessionSaver {
       const index = readJSON(indexPath);
       if (!index) return;
 
-      // Update project session count
+      // Rebuild project counts from project directories.
     const projectDirName = resolveProjectDirName(ENGRAM_PATH, this.currentProject);
     const sessionsIndexPath = path.join(
       ENGRAM_PATH,
@@ -304,23 +304,35 @@ class SessionSaver {
 
       const sessionsIndex = readJSON(sessionsIndexPath);
       if (sessionsIndex) {
-        // v2.0 uses abbreviated keys: p=projects, sc=session_count, u=last_updated
-        if (index.p) {
-          if (!index.p[this.currentProject]) {
-            index.p[this.currentProject] = { sc: 0, u: '' };
+        // Rebuild project entries so deletions are reflected immediately.
+        const existingProjects = index.p || {};
+        const rebuiltProjects = {};
+        const projectsDir = path.join(ENGRAM_PATH, 'summaries', 'projects');
+        if (fs.existsSync(projectsDir)) {
+          for (const projectDir of fs.readdirSync(projectsDir, { withFileTypes: true })) {
+            if (!projectDir.isDirectory()) continue;
+            const projectIndexPath = path.join(projectsDir, projectDir.name, 'sessions-index.json');
+            const projectIndex = readJSON(projectIndexPath);
+            if (!projectIndex) continue;
+            const projectName = projectIndex.project || projectDir.name;
+            const existing = existingProjects[projectName] || {};
+            rebuiltProjects[projectName] = {
+              ...existing,
+              sc: projectIndex.total_sessions || (projectIndex.sessions?.length || 0),
+              u: projectIndex.last_updated || new Date().toISOString().split('T')[0],
+            };
           }
-          index.p[this.currentProject].sc = sessionsIndex.total_sessions;
-          index.p[this.currentProject].u = new Date().toISOString().split('T')[0];
         }
+        index.p = rebuiltProjects;
 
         // Recompute the global topic index from every project.
         if (index.t) {
           const globalTopics = {};
-          const projectsDir = path.join(ENGRAM_PATH, 'summaries', 'projects');
-          if (fs.existsSync(projectsDir)) {
-            for (const projectDir of fs.readdirSync(projectsDir, { withFileTypes: true })) {
+          const topicProjectsDir = path.join(ENGRAM_PATH, 'summaries', 'projects');
+          if (fs.existsSync(topicProjectsDir)) {
+            for (const projectDir of fs.readdirSync(topicProjectsDir, { withFileTypes: true })) {
               if (!projectDir.isDirectory()) continue;
-              const projectIndexPath = path.join(projectsDir, projectDir.name, 'sessions-index.json');
+              const projectIndexPath = path.join(topicProjectsDir, projectDir.name, 'sessions-index.json');
               const projectIndex = readJSON(projectIndexPath);
               if (!projectIndex?.topics_index) continue;
               for (const [topic, sessionIds] of Object.entries(projectIndex.topics_index)) {
